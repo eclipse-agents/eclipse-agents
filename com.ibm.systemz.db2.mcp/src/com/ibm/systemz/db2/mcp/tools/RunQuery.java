@@ -1,7 +1,5 @@
 package com.ibm.systemz.db2.mcp.tools;
 
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Map;
 
 import com.ibm.systemz.db2.mcp.AbstractTool;
@@ -22,7 +20,7 @@ public class RunQuery extends AbstractTool {
 
 	@Override
 	public String getDescription() {
-		return "Run a read-only query against the Db2 for z/OS database by passing in parameters for a connection-uuid and a query";
+		return "Run a read-only query against the Db2 for z/OS database by passing in parameters for a connection-uuid and a query.  On success nothing will be returned.";
 	}
 
 	@Override
@@ -46,17 +44,9 @@ public class RunQuery extends AbstractTool {
 	@Override
 	public CallToolResult apply(Map<String, Object> arguments) {
 		
-		CallToolResult result = null;
-		Object query = arguments.get("query");
-	 	
-    	try {
-    		Statement s = server.getConnection().createStatement();
-    		result = toResult(s.executeQuery(query.toString()));
-
-		} catch (SQLException e) {
-			result = toResult(e);
-		}
-        return result;
+		String connectionUUID = arguments.get("connection-uuid").toString();
+		String query = arguments.get("query").toString();
+		return server.runQuery(connectionUUID, query);
 	}
 
 }

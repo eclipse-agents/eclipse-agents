@@ -52,15 +52,15 @@ public class ListTableColumns extends AbstractTool {
 		
 		CallToolResult result = null;
 	 	
-    	try {
-    		PreparedStatement s = server.getConnection().prepareStatement(CataNaviQuery.TABLE_COLUMNS);
-    		s.setString(1, schema);
-    		s.setString(2, table);
-    		result = toResult(s.executeQuery());
-
-		} catch (SQLException e) {
-			result = toResult(e);
-		}
+//    	try {
+//    		PreparedStatement s = server.getConnection().prepareStatement(CataNaviQuery.TABLE_COLUMNS);
+//    		s.setString(1, schema);
+//    		s.setString(2, table);
+//    		result = toResult(s.executeQuery());
+//
+//		} catch (SQLException e) {
+//			result = toResult(e);
+//		}
         return result;
 	}
 

@@ -30,7 +30,7 @@ public class ListConnections extends AbstractTool {
 
 	@Override
 	public String getDescription() {
-		return "List the connections available for Db2 for z/OS database";
+		return "List the available Db2 for z/OS connections";
 	}
 
 	@Override

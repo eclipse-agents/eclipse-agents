@@ -1,7 +1,5 @@
 package com.ibm.systemz.db2.mcp.tools;
 
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Map;
 
 import com.ibm.systemz.db2.mcp.AbstractTool;
@@ -43,15 +41,9 @@ public class ListSchemas extends AbstractTool {
 	@Override
 	public CallToolResult apply(Map<String, Object> arguments) {
 		
-		CallToolResult result = null;
-	 	
-    	try {
-    		Statement s = server.getConnection().createStatement();
-			result = toResult(s.executeQuery("SELECT DISTINCT(CREATOR) AS SCHEMA FROM SYSIBM.SYSTABLES;"));
-		} catch (SQLException e) {
-			result = toResult(e);
-		}
-        return result;
+		String connectionUUID = arguments.get("connection-uuid").toString();
+		String sqlStatement = "SELECT DISTINCT(CREATOR) AS SCHEMA FROM SYSIBM.SYSTABLES LIMIT 10;";
+		return server.runQuery(connectionUUID, sqlStatement);
 	}
 
 }

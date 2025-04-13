@@ -56,36 +56,36 @@ public class ListTables extends AbstractTool {
 		CallToolResult result = null;
 	 	
 
-		StringBuffer filters = new StringBuffer();
-		if (table != null) {
-			filters.append(" AND TB1.NAME LIKE ?");
-		}
-		if (schema != null) {
-			filters.append(" AND TB1.CREATOR LIKE ?");
-		}
-		
-    	try {
-    		String query = String.format(CataNaviQuery.TABLE_LIST, filters);
-    		server.log(LoggingLevel.INFO, this, query);
-    		PreparedStatement s = server.getConnection().prepareStatement(query);
-    		
-    		if (table != null) {
-    			s.setString(1,  table.toString());
-    		}
-    		if (schema != null) {
-    			if (table != null) {
-    				s.setString(2,  schema.toString());
-    			} else {
-    				s.setString(1,  schema.toString());
-    			}
-    		}
-			
-    		result = toResult(s.executeQuery());
-
-		} catch (SQLException e) {
-			server.log(this, e.getLocalizedMessage(), e);
-			result = toResult(e);
-		}
+//		StringBuffer filters = new StringBuffer();
+//		if (table != null) {
+//			filters.append(" AND TB1.NAME LIKE ?");
+//		}
+//		if (schema != null) {
+//			filters.append(" AND TB1.CREATOR LIKE ?");
+//		}
+//		
+//    	try {
+//    		String query = String.format(CataNaviQuery.TABLE_LIST, filters);
+//    		server.log(LoggingLevel.INFO, this, query);
+//    		PreparedStatement s = server.getConnection().prepareStatement(query);
+//    		
+//    		if (table != null) {
+//    			s.setString(1,  table.toString());
+//    		}
+//    		if (schema != null) {
+//    			if (table != null) {
+//    				s.setString(2,  schema.toString());
+//    			} else {
+//    				s.setString(1,  schema.toString());
+//    			}
+//    		}
+//			
+//    		result = toResult(s.executeQuery());
+//
+//		} catch (SQLException e) {
+//			server.log(this, e.getLocalizedMessage(), e);
+//			result = toResult(e);
+//		}
         return result;
 	}
 
