@@ -134,7 +134,7 @@ public class Server implements org.eclipse.ui.IStartup {
 
 	public CallToolResult runQuery(String connectionId, String sqlContent) {
 		
-		Object response = ConnectionEnvironment.executeStatement2(connectionId, sqlContent);
+		Object response = ConnectionEnvironment.executeStatement(connectionId, sqlContent);
 
 		List<Content> result = new ArrayList<Content>();
 //		boolean isError = false;
