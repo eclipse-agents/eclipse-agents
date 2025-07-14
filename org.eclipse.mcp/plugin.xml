@@ -2,6 +2,10 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+   <extension point="org.eclipse.ui.startup">
+      <startup class="org.eclipse.mcp.Startup"/>
+   </extension>
+    
    <extension
          id="org.eclipse.mcp.fragment"
          point="org.eclipse.e4.workbench.model">

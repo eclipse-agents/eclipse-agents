@@ -1,0 +1,21 @@
+package org.eclipse.mcp.builtin.resource;
+
+import org.eclipse.mcp.AbstractResource;
+import org.eclipse.mcp.Server;
+
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
+
+public class Editors extends AbstractResource {
+
+	public Editors(Server server) {
+		super(server);
+	}
+
+	@Override
+	public ReadResourceResult apply(ReadResourceRequest t) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -14,6 +14,8 @@ public class Activator extends AbstractUIPlugin {
 	// The shared instance
 	private static Activator plugin;
 	
+	Server server;
+	
 	/**
 	 * The constructor
 	 */
@@ -24,6 +26,8 @@ public class Activator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		
+		server = new Server();
 		
 	}
 

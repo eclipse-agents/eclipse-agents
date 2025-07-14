@@ -7,24 +7,26 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import com.google.gson.JsonObject;
 
-import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
+import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 
-public abstract class AbstractTool implements Function<Map<String, Object>, CallToolResult> {
+public abstract class AbstractTool implements BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> {
 	
 	protected Server server;
 	
 	public AbstractTool(Server server) {
 		this.server = server;
 		Tool tool = new Tool(getName(), getDescription(), getSchema());
+		
 		server.getSyncServer().addTool(new SyncToolSpecification(tool, this));
 	}
 	

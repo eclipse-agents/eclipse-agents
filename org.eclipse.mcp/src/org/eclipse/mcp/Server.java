@@ -2,8 +2,7 @@ package org.eclipse.mcp;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -11,6 +10,9 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.mcp.builtin.resource.Editors;
+import org.eclipse.mcp.builtin.tool.Problems;
+import org.eclipse.mcp.builtin.tool.ListConsoles;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,11 +20,10 @@ import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
+import jakarta.servlet.Servlet;
 
 public class Server implements org.eclipse.ui.IStartup {
 
@@ -37,20 +38,20 @@ public class Server implements org.eclipse.ui.IStartup {
 	public Server() {
 
 		int port = 45450;
-//		Runtime.getRuntime().addShutdownHook(new Thread() {
-//	        @Override
-//	        public void run() {
-//	        	Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
-//	        	for (Thread t: map.keySet()) {
-//	        		StringBuffer b = new StringBuffer();
-//	        		b.append(t.getName() + "\n");
-//	        		for (StackTraceElement e: map.get(t)) {
-//	        			b.append("\t" + e.getFileName() + " + " + e.getClassName() + "+" + e.getMethodName() + "+" + e.getLineNumber() + "\n");
-//	        		}
-//	        		JOptionPane.showMessageDialog(null, b.toString());
-//	        	}
-//	        }
-//	    });
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+	        @Override
+	        public void run() {
+	        	Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
+	        	for (Thread t: map.keySet()) {
+	        		StringBuffer b = new StringBuffer();
+	        		b.append(t.getName() + "\n");
+	        		for (StackTraceElement e: map.get(t)) {
+	        			b.append("\t" + e.getFileName() + " + " + e.getClassName() + "+" + e.getMethodName() + "+" + e.getLineNumber() + "\n");
+	        		}
+	        		JOptionPane.showMessageDialog(null, b.toString());
+	        	}
+	        }
+	    });
 		
 		try {
 			
@@ -75,6 +76,8 @@ public class Server implements org.eclipse.ui.IStartup {
 			log(LoggingLevel.INFO, this, url);
 
 			// Tools
+			new Problems(this);
+			new ListConsoles(this);
 //			new ListConnections(this);
 //			new ListSchemas(this);
 //			new ListTables(this);
@@ -82,28 +85,29 @@ public class Server implements org.eclipse.ui.IStartup {
 //			new RunQuery(this);
 			
 			// Resources
+			new Editors(this);
 //			new Schema(this, "ADMF001");
 //			new Schema(this, "SYSIBM");
 			
 
-//			syncServer.notifyToolsListChanged();
+			syncServer.notifyToolsListChanged();
 
-//			QueuedThreadPool threadPool = new QueuedThreadPool();
-//			threadPool.setName("mcp-server");
+			QueuedThreadPool threadPool = new QueuedThreadPool();
+			threadPool.setName("mcp-server");
 //
-//			org.eclipse.jetty.server.Server jettyServer = new org.eclipse.jetty.server.Server(threadPool);
+			org.eclipse.jetty.server.Server jettyServer = new org.eclipse.jetty.server.Server(threadPool);
 
-//			ServerConnector connector = new ServerConnector(jettyServer);
-//			connector.setPort(45450);
-//			jettyServer.addConnector(connector);
+			ServerConnector connector = new ServerConnector(jettyServer);
+			connector.setPort(45450);
+			jettyServer.addConnector(connector);
 //
-//			ServletContextHandler context = new ServletContextHandler();
-//			context.setContextPath("/");
-//			context.addServlet(new ServletHolder((Servlet)transportProvider), "/*");
-//			jettyServer.setHandler(context);
-//			jettyServer.start();
+			ServletContextHandler context = new ServletContextHandler();
+			context.setContextPath("/");
+			context.addServlet(new ServletHolder((Servlet)transportProvider), "/*");
+			jettyServer.setHandler(context);
+			jettyServer.start();
 			
-//			syncServer.notifyToolsListChanged();
+			syncServer.notifyToolsListChanged();
 
 			// Send logging notifications
 			log(LoggingLevel.INFO, this, "Server initialized");
