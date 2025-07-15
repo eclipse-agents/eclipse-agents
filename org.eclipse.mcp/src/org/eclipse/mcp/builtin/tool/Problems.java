@@ -10,8 +10,7 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 
 public class Problems extends AbstractTool {
 
-	public Problems(Server server) {
-		super(server);
+	public Problems() {
 	}
 
 	@Override

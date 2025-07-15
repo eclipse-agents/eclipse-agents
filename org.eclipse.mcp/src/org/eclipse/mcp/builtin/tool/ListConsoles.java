@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.mcp.AbstractTool;
-import org.eclipse.mcp.Server;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
@@ -17,9 +19,10 @@ import io.modelcontextprotocol.spec.McpSchema.TextContent;
 
 public class ListConsoles extends AbstractTool {
 
-	public ListConsoles(Server server) {
-		super(server);
-		// TODO Auto-generated constructor stub
+	Gson gson;
+	public ListConsoles() {
+		super();
+		gson = new Gson();
 	}
 
 	@Override
@@ -50,10 +53,24 @@ public class ListConsoles extends AbstractTool {
 		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
 		List<Content> result = new ArrayList<Content>();
 		for (IConsole console: manager.getConsoles()) {
-			result.add(new TextContent(console.getName()));
+			Console c = new Console(console.getName(), console.hashCode(),  console.getType());
+			result.add(new TextContent(gson.toJson(c)));
 		}
 		
 		return new CallToolResult(result, true);
+	}
+	
+	class Console {
+		String name;
+		int id;
+		String type;
+		
+		public Console(String name, int id, String type) {
+			super();
+			this.name = name;
+			this.id = id;
+			this.type = type;
+		}
 	}
 
 }

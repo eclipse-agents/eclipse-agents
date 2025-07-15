@@ -10,22 +10,21 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.mcp.builtin.resource.Editors;
-import org.eclipse.mcp.builtin.tool.Problems;
-import org.eclipse.mcp.builtin.tool.ListConsoles;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.server.McpServer;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
+import io.modelcontextprotocol.spec.McpSchema.Tool;
 import jakarta.servlet.Servlet;
 
-public class Server implements org.eclipse.ui.IStartup {
+public class Server {
 
 	private boolean copyLogsToSysError = true; // Boolean.getBoolean("com.ibm.systemz.db2.mcp.copyLogsToSysError");
 												// //$NON-NLS-1$
@@ -61,23 +60,37 @@ public class Server implements org.eclipse.ui.IStartup {
 				    new HttpServletSseServerTransportProvider(
 				        new ObjectMapper(), "/", "/sse");
 			
-			ServerCapabilities capabilities = ServerCapabilities.builder().resources(false, false) // Enable resource support
+			ServerCapabilities capabilities = ServerCapabilities.builder().resources(true, false) // Enable resource support
 					.tools(true) // Enable tool support
 					.prompts(false) // Enable prompt support
 					.logging() // Enable logging support
 					.build();
 			
+			
+			Builtins builtins = new Builtins();
+			
+			
 			// Create a server with custom configuration
 			this.syncServer = McpServer.sync(transportProvider)
 				    .serverInfo("IBM Developer for z", "0.0.1")
 				    .capabilities(capabilities)
+				    .resourceTemplates(builtins.templates.templates)
 				    .build();
 			
+			
 			log(LoggingLevel.INFO, this, url);
+			
+			
 
+			for (AbstractTool at: builtins.tools) {
+				Tool tool = new Tool(at.getName(), at.getDescription(), at.getSchema());				
+				syncServer.addTool(new SyncToolSpecification(tool, at));
+			}
+			
+			
 			// Tools
-			new Problems(this);
-			new ListConsoles(this);
+//			new Problems(this);
+//			new ListConsoles(this);
 //			new ListConnections(this);
 //			new ListSchemas(this);
 //			new ListTables(this);
@@ -85,9 +98,11 @@ public class Server implements org.eclipse.ui.IStartup {
 //			new RunQuery(this);
 			
 			// Resources
-			new Editors(this);
+//			new Editors(this);
 //			new Schema(this, "ADMF001");
 //			new Schema(this, "SYSIBM");
+			
+			
 			
 
 			syncServer.notifyToolsListChanged();
@@ -155,9 +170,4 @@ public class Server implements org.eclipse.ui.IStartup {
 			ex = ex.getNextException(); // For drivers that support chained exceptions
 		}
 	}
-
-	@Override
-	public void earlyStartup() {
-	}
-
 }

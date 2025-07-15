@@ -8,8 +8,8 @@ import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 
 public class Editors extends AbstractResource {
 
-	public Editors(Server server) {
-		super(server);
+	public Editors() {
+		super();
 	}
 
 	@Override
