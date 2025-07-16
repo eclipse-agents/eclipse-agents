@@ -27,7 +27,7 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		
-		server = new Server();
+		server = new Server(45450);
 		
 	}
 

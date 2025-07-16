@@ -104,4 +104,11 @@ MCP servers can be shared externally over http, or consumed internally using Jav
 - [quarkus examples](https://github.com/quarkiverse/quarkus-mcp-servers/tree/main/jdbc)
 - [spring mcp](https://github.com/spring-projects-experimental/spring-ai-mcp)
 - [MCP Client and Server with the Java MCP SDK and LangChain4j](https://glaforge.dev/posts/2025/04/04/mcp-client-and-server-with-java-mcp-sdk-and-langchain4j)
+
+### API Examples in the field:
+- [Claude Code API Applied to other IDEs](https://github.com/anthropics/claude-code/issues/1234)
+- [Windsurf Flow Awareness](https://windsurf.com/blog/windsurf-wave-9-swe-1)
+- [The Hidden Algorithms Powering Your Coding Assistant](https://diamantai.substack.com/p/the-hidden-algorithms-powering-your?utm_campaign=post)
+
+### Prior Examples
 - [Db2 for z/OS MCP prototype](https://github.ibm.com/jflicke/ibmz-mcp) that can run inside of IBM Developer for z and expose tools from its live process

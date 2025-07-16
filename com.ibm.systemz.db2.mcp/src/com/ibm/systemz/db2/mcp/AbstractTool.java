@@ -6,31 +6,60 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 import com.google.gson.JsonObject;
+import com.ibm.systemz.db2.ide.ConnectionEnvironment;
+import com.ibm.systemz.db2.rse.db.queries.Execution;
+import com.ibm.systemz.db2.rse.db.queries.ExecutionStatus;
+import com.ibm.systemz.db2.rse.db.queries.QueryModel;
 
-import io.modelcontextprotocol.server.McpServerFeatures;
-import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.modelcontextprotocol.spec.McpSchema.Content;
-import io.modelcontextprotocol.spec.McpSchema.TextContent;
-import io.modelcontextprotocol.spec.McpSchema.Tool;
-
-public abstract class AbstractTool implements Function<Map<String, Object>, CallToolResult> {
+public abstract class AbstractTool extends org.eclipse.mcp.AbstractTool {
 	
-	protected Server server;
-	
-	public AbstractTool(Server server) {
-		this.server = server;
-		Tool tool = new Tool(getName(), getDescription(), getSchema());
-		server.getSyncServer().addTool(new McpServerFeatures.SyncToolRegistration(tool, this));
+	public AbstractTool() {
 	}
 	
 	public abstract String getName();
 	public abstract String getDescription();
 	public abstract String getSchema();
 	
+	protected String[] runQuery(String connectionId, String sqlStatement) {
+		Object response = ConnectionEnvironment.executeStatement(connectionId, sqlStatement);
+
+		List<String> result = new ArrayList<String>();
+		boolean isError = false;
+		if (response instanceof Throwable) {
+			throw (Throwable)response;
+		} else if (response instanceof QueryModel) {
+			//TODO needs hardening
+			Execution execution = ((QueryModel)response).executions.get(0);
+			ExecutionStatus executionStatus = execution.executionStatus;
+			if ("-1".equals(executionStatus.returnCode)) {
+				JsonObject o = new JsonObject();
+				o.addProperty("returnCode", executionStatus.returnCode);
+				o.addProperty("updateCount", executionStatus.updateCount);
+				o.addProperty("sqlCode", executionStatus.sqlCode);
+				o.addProperty("sqlState", executionStatus.sqlState);
+				o.addProperty("messageText", executionStatus.messageText);
+				o.addProperty("elapsedTime", executionStatus.elapsedTime);
+				result.add(o.toString());
+				isError = true;
+			} else {
+				ResultSet resultSet = execution.resultSets[0];
+				for (String[] row: resultSet.getRows()) {
+					JsonObject o = new JsonObject();
+					for (int i = 0; i < resultSet.colCount; i++) {
+						o.addProperty(resultSet.columnNames[i], row[i]);
+					}
+					result.add(new TextContent(o.toString()));
+				}
+				return new CallToolResult(result, false);
+			}
+		} else {
+			//TODO
+			result.add(new TextContent("Unexpected Response"));
+	}
+	
+	return new CallToolResult(result, false);
 	public CallToolResult toResult(ResultSet rs) throws SQLException {
 		List<Content> result = new ArrayList<Content>();
 		

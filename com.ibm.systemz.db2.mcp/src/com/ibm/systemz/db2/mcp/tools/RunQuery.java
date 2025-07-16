@@ -42,6 +42,12 @@ public class RunQuery extends AbstractTool {
 	}
 
 	@Override
+	public String[] apply(Map<String, Object> t) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
 	public CallToolResult apply(Map<String, Object> arguments) {
 		
 		String connectionUUID = arguments.get("connection-uuid").toString();

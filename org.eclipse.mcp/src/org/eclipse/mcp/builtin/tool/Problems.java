@@ -36,9 +36,7 @@ public class Problems extends AbstractTool {
 	}
 
 	@Override
-	public CallToolResult apply(McpSyncServerExchange t, Map<String, Object> u) {
-		
+	public String[] apply(Map<String, Object> t) {
+		// TODO Auto-generated method stub
 		return null;
-	}
-
-}
+	}}

@@ -37,3 +37,8 @@ Bundle-ClassPath: lib/jackson-annotations-2.17.0.jar,
  lib/reactor-core-3.7.0.jar,
  lib/slf4j-api-2.0.16.jar,
  .
+Export-Package: io.modelcontextprotocol.server,
+ io.modelcontextprotocol.server.transport,
+ io.modelcontextprotocol.spec,
+ io.modelcontextprotocol.util,
+ org.eclipse.mcp

@@ -49,15 +49,14 @@ public class ListConsoles extends AbstractTool {
 	
 
 	@Override
-	public CallToolResult apply(McpSyncServerExchange t, Map<String, Object> u) {
+	public String[] apply(Map<String, Object> u) {
 		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-		List<Content> result = new ArrayList<Content>();
+		List<String> result = new ArrayList<String>();
 		for (IConsole console: manager.getConsoles()) {
 			Console c = new Console(console.getName(), console.hashCode(),  console.getType());
-			result.add(new TextContent(gson.toJson(c)));
+			result.add(gson.toJson(c));
 		}
-		
-		return new CallToolResult(result, true);
+		return result.toArray(new String[0]);
 	}
 	
 	class Console {

@@ -8,7 +8,8 @@ Bundle-Vendor: IBM
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  com.google.gson,
- com.ibm.systemz.db2
+ com.ibm.systemz.db2,
+ org.eclipse.mcp
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: com.ibm.systemz.db2.mcp
 Bundle-ActivationPolicy: lazy

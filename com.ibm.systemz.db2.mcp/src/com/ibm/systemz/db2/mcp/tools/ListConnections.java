@@ -20,7 +20,7 @@ import io.modelcontextprotocol.spec.McpSchema.TextContent;
 public class ListConnections extends AbstractTool {
 
 	public ListConnections(Server server) {
-		super(server);
+		super();
 	}
 
 	@Override
@@ -46,22 +46,16 @@ public class ListConnections extends AbstractTool {
 	}
 
 	@Override
-	public CallToolResult apply(Map<String, Object> arguments) {
-		
-		List<Content> result = new ArrayList<Content>();
-		
+	public String[] apply(Map<String, Object> t) {
+		List<String> result = new ArrayList<String>();
 		for (ConnectionSummary summary: ConnectionEnvironment.getLocationSummaries()) {
-		
 			JsonObject o = new JsonObject();
 			if (KIND.db2.equals(summary.getKind())) {
 				o.addProperty("connection-uuid", summary.getId().toString());
 				o.addProperty("name", summary.getName());
 			}
-				
-			result.add(new TextContent(o.toString()));
+			result.add(o.toString());
 		}
-		
-		return new CallToolResult(result, false);
+		return result.toArray(new String[0]);
 	}
-
 }

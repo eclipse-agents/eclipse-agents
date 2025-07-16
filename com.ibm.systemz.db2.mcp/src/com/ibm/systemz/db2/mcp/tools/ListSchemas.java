@@ -1,7 +1,13 @@
 package com.ibm.systemz.db2.mcp.tools;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
+import com.ibm.systemz.db2.ide.ConnectionEnvironment;
+import com.ibm.systemz.db2.ide.ConnectionSummary;
+import com.ibm.systemz.db2.ide.ConnectionSummary.KIND;
 import com.ibm.systemz.db2.mcp.AbstractTool;
 import com.ibm.systemz.db2.mcp.Server;
 
@@ -36,6 +42,15 @@ public class ListSchemas extends AbstractTool {
 				"required": ["connection-uuid"]
 			}
 			""";
+	}
+	
+	@Override
+	public String[] apply(Map<String, Object> arguments) {
+		List<String> result = new ArrayList<String>();
+		String connectionUUID = arguments.get("connection-uuid").toString();
+		String sqlStatement = "SELECT DISTINCT(CREATOR) AS SCHEMA FROM SYSIBM.SYSTABLES LIMIT 10;";
+		return server.runQuery(connectionUUID, sqlStatement);
+		return result.toArray(new String[0]);
 	}
 
 	@Override

@@ -32,11 +32,11 @@ public class Server {
 	McpSyncServer syncServer;
 	String url;
 	Connection connection;
+	int port;
 
 	
-	public Server() {
+	public Server(int port) {
 
-		int port = 45450;
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
 	        public void run() {
@@ -84,7 +84,7 @@ public class Server {
 
 			for (AbstractTool at: builtins.tools) {
 				Tool tool = new Tool(at.getName(), at.getDescription(), at.getSchema());				
-				syncServer.addTool(new SyncToolSpecification(tool, at));
+				syncServer.addTool(at.getSpecification());
 			}
 			
 			
