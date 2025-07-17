@@ -1,5 +1,7 @@
 package org.eclipse.mcp;
 
+import org.eclipse.mcp.internal.ExtensionManager;
+import org.eclipse.mcp.internal.ServerManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -14,8 +16,6 @@ public class Activator extends AbstractUIPlugin {
 	// The shared instance
 	private static Activator plugin;
 	
-	Server server;
-	
 	/**
 	 * The constructor
 	 */
@@ -27,8 +27,8 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		
-		server = new Server(45450);
-		
+		ExtensionManager extensionManager = new ExtensionManager();
+		ServerManager serverManager = new ServerManager(extensionManager);
 	}
 
 	@Override

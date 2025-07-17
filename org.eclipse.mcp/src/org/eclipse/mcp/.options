@@ -1,0 +1,4 @@
+# Main Debug Trace switch
+org.eclipse.mcp/debug = false
+# Trace location for extension management
+org.eclipse.mcp/debug/extension = false

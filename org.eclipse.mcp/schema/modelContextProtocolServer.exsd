@@ -1,0 +1,311 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.eclipse.mcp" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="org.eclipse.mcp" id="modelContextProtocolServer" name="Model Conntext Protocol Server"/>
+      </appinfo>
+      <documentation>
+         &lt;p&gt;
+The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used to declare model context protocol servers, tools and potentially resource and prompts in the future.  MCP tools are used to expose IDE tooling to Agent assisted development tools
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="tool"/>
+            <element ref="server"/>
+            <element ref="toolServerBinding"/>
+            <element ref="defaultEnablement"/>
+         </sequence>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  an optional identifier of the extension instance
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  an optional name of the extension instance
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  a fully qualified identifier of the target extension point
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="tool">
+      <annotation>
+         <documentation>
+            This element is used to define a model context protocol tool. If more than one of these elements exist with the same &lt;code&gt;id&lt;/code&gt; attribute, only the last declared element (in order of reading the registry) is considered valid.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  The description of this MCP tool that is shared with MCP clients
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of this tool
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The name of this MCP tool that is shared with MCP clients
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="schema" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The JSON schema this tool takes as input argument
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="false"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The fully qualified name of the AbstractTool implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.ITool&lt;/tt&gt; and have an zero-parameter constructor.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.ITool"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="server">
+      <annotation>
+         <documentation>
+            This element is used to define an MCP server that hosts a collection of tools and may server content over a localhost endpoint. If more than one of these elements exist with the same &lt;code&gt;id&lt;/code&gt; attribute, only the last declared element (in order of reading the registry) is considered valid.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  a translatable short description of this server for display in the UI
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of this server
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the translatable name of this server for display in the UI
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="version" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the version of this server for display in the logs
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="defaultPort" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The default port to be used if this server exposes its tools on a localhost http server
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="toolServerBinding">
+      <annotation>
+         <documentation>
+            This element allows one to bind tool to a server
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="toolId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of the activity to bind
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/tool/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="serverId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of the server to bind
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/server/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="defaultEnablement">
+      <annotation>
+         <documentation>
+            This element allows one to specify that a given tool should be enabled by default.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of the tool
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/tool/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="since"/>
+      </appinfo>
+      <documentation>
+         &lt;p&gt;
+3.0
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         The following is an example of several activity and category definitions as well as associated bindings.
+&lt;p&gt;
+&lt;pre&gt;
+ &lt;extension point=&quot;org.eclipse.ui.activities&quot;&gt;
+  &lt;activity id=&quot;com.xyz.Activity&quot;
+      description=&quot;Filters contributions from com.xyz&quot;
+   name=&quot;My Activity&quot; /&gt;
+
+  &lt;activity id=&quot;com.xyz.OtherActivity&quot;
+      description=&quot;Filters other contributions from com.xyz&quot;
+   name=&quot;My Other Activity&quot; /&gt;
+  &lt;!-- other activity requires activity --&gt;  
+  &lt;activityRequirementBinding activityId=&quot;com.xyz.OtherActivity&quot;
+   requiredActivityId=&quot;com.xyz.Activity&quot; /&gt;
+  &lt;category id=&quot;com.xyz.Category&quot;
+   description=&quot;com.xyz Activities&quot;
+   name=&quot;My Category&quot; /&gt;
+   
+     &lt;!-- put the activity in the category --&gt;
+  &lt;categoryActivityBinding activityId=&quot;com.xyz.Activity&quot;
+   categoryId=&quot;com.xyz.Category&quot; /&gt;
+   
+     &lt;!-- bind all contributions from plugin com.xyz --&gt;
+  &lt;activityPatternBinding id=&quot;com.xyz.Activity&quot;
+   pattern=&quot;com\.xyz/.*&quot; /&gt;
+  
+  &lt;!-- bind my.contribution from plugin com.xyz.other --&gt;
+  &lt;activityPatternBinding id=&quot;com.xyz.OtherActivity&quot;
+   pattern=&quot;com\.xyz\.other/my.contribution&quot; /&gt;
+   
+  &lt;!-- the same, but not with a regular expression, since the pattern
+          should match the id exactly anyway --&gt;
+  &lt;activityPatternBinding id=&quot;com.xyz.OtherActivity&quot;
+   isEqualityPattern=&quot;true&quot;
+   pattern=&quot;com.xyz.other/my.contribution&quot; /&gt;
+   
+  &lt;!-- our activity should be enabled by default --&gt;
+  &lt;defaultEnablement id=&quot;com.xyz.Activity&quot; /&gt;  
+ &lt;/extension&gt;
+&lt;/pre&gt;
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiInfo"/>
+      </appinfo>
+      <documentation>
+         &lt;p&gt;
+There is currently no public API for declaring activities or associated elements other than this extension point.  The state of activities in the workbench is accessible via &lt;code&gt;org.eclipse.ui.IWorkbench.getActivitySupport()&lt;/code&gt;.  From here you may query and update the set of currently enabled activities.
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+
+   <annotation>
+      <appinfo>
+         <meta.section type="implementation"/>
+      </appinfo>
+      <documentation>
+         There are no &quot;default activities&quot; provided by the workbench.  Activities are intended to be defined at the product level, such as the Eclipse SDK, so as to tightly integrate all of the (known) components that product contains.
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="copyright"/>
+      </appinfo>
+      <documentation>
+         Copyright (c) 2000, 2005 IBM Corporation and others.&lt;br&gt;
+
+This program and the accompanying materials are made
+available under the terms of the Eclipse Public License 2.0 which accompanies
+this distribution, and is available at &lt;a 
+href=&quot;https://www.eclipse.org/legal/epl-2.0&quot;&gt;https://www.eclipse.org/legal/epl-v20.html&lt;/a&gt;/
+
+SPDX-License-Identifier: EPL-2.0
+      </documentation>
+   </annotation>
+
+</schema>

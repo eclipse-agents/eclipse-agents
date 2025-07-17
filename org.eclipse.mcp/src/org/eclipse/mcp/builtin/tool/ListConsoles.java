@@ -4,47 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.mcp.AbstractTool;
+import org.eclipse.mcp.IModelContextProtocolTool;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import io.modelcontextprotocol.server.McpSyncServerExchange;
-import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.modelcontextprotocol.spec.McpSchema.Content;
-import io.modelcontextprotocol.spec.McpSchema.TextContent;
-
-public class ListConsoles extends AbstractTool {
+public class ListConsoles implements IModelContextProtocolTool {
 
 	Gson gson;
 	public ListConsoles() {
 		super();
 		gson = new Gson();
-	}
-
-	@Override
-	public String getName() {
-		return "eclipse-list-consoles";
-	}
-
-	@Override
-	public String getDescription() {
-		return "Return a list of active consoles";
-	}
-
-	@Override
-	public String getSchema() {
-		return """
-				{
-				"type": "object",
-				"properties": {
-				},
-				"required": []
-			}
-			""";
 	}
 	
 

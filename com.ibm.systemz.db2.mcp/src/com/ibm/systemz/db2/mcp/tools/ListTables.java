@@ -48,6 +48,12 @@ public class ListTables extends AbstractTool {
 	}
 
 	@Override
+	public String[] apply(Map<String, Object> t) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
 	public CallToolResult apply(Map<String, Object> arguments) {
 		
 		Object schema = arguments.get("schema-filter");

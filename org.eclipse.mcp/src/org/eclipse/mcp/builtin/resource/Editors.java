@@ -1,7 +1,6 @@
 package org.eclipse.mcp.builtin.resource;
 
 import org.eclipse.mcp.AbstractResource;
-import org.eclipse.mcp.Server;
 
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;

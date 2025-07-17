@@ -1,17 +1,14 @@
 package com.ibm.systemz.db2.mcp;
 
 
-import java.sql.ResultSet;
+
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.JsonObject;
-import com.ibm.systemz.db2.ide.ConnectionEnvironment;
-import com.ibm.systemz.db2.rse.db.queries.Execution;
-import com.ibm.systemz.db2.rse.db.queries.ExecutionStatus;
-import com.ibm.systemz.db2.rse.db.queries.QueryModel;
+import com.ibm.systemz.db2.rse.db.queries.ResultSet;
 
 public abstract class AbstractTool extends org.eclipse.mcp.AbstractTool {
 	
