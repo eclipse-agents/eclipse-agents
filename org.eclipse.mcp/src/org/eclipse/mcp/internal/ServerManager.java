@@ -8,6 +8,4 @@ public class ServerManager {
 			new ManagedServer(server).start();
 		}
 	}
-
-
 }

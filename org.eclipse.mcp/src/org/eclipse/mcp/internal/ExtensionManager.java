@@ -96,6 +96,11 @@ public class ExtensionManager {
 			return tools.toArray(new Tool[0]);
 		}
 		
+		public ResourceManager[] getResourceManagers() {
+			//TODO: implement resource managers
+			return new ResourceManager[] { new ResourceManager() };
+		}
+		
 		public String getId() {
 			return id;
 		}
@@ -169,7 +174,9 @@ public class ExtensionManager {
 		public boolean isValid() {
 			return isValid;
 		}
-		
+	}
+	
+	public class ResourceManager {
 		
 	}
 }

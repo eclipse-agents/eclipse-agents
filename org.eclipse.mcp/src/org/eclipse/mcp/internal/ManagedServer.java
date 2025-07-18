@@ -12,6 +12,7 @@ import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.mcp.ModenContextProtocolException;
+import org.eclipse.mcp.builtin.resource.Editors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,7 +53,7 @@ public class ManagedServer {
 			    new HttpServletSseServerTransportProvider(
 			        new ObjectMapper(), "/", "/sse");
 		
-		ServerCapabilities capabilities = ServerCapabilities.builder().resources(false, false) // Enable resource support
+		ServerCapabilities capabilities = ServerCapabilities.builder().resources(true, true) // Enable resource support
 				.tools(extension.getTools().length > 0) // Enable tool support
 				.prompts(false) // Enable prompt support
 				.logging() // Enable logging support
@@ -92,6 +93,14 @@ public class ManagedServer {
 			});
 			syncServer.addTool(spec);
 		}
+		
+		//TODO handle via extension point
+		Editors editorsFactory = new Editors();
+		ResourceManager resourceManager = new ResourceManager(this, editorsFactory);
+		editorsFactory.initialize(resourceManager);
+//		ManagedServer server, IMCPResourceManagerFactory factory
+//		editorsFactory.initialize(this.syncServer, new ResourceManager());
+		
 	
 
 		syncServer.notifyToolsListChanged();
@@ -121,6 +130,10 @@ public class ManagedServer {
 			JOptionPane.showMessageDialog(null, e.getLocalizedMessage());
 			e.printStackTrace();
 		}
+	}
+	
+	McpSyncServer getSyncServer() {
+		return syncServer;
 	}
 	
 	public void stop() {
