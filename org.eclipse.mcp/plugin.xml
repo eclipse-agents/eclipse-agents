@@ -7,7 +7,7 @@
    </extension>
     
    <extension-point id="org.eclipse.mcp.modelContextProtocolServer" name="Model Context Protocol Server" schema="schema/modelContextProtocolServer.exsd"/>
-   <extension
+   <!--extension
          point="org.eclipse.mcp.modelContextProtocolServer">
       <server
             description="Set of default tools for enabling Agent-driven development"
@@ -20,6 +20,7 @@
             class="org.eclipse.mcp.builtin.tool.ListConsoles"
             id="org.eclipse.mcp.builtin.tool.ListConsoles"
             name="listEditors"
+            description="List the open editors"
             schema="{
 				&quot;type&quot;: &quot;object&quot;,
 				&quot;properties&quot;: {
@@ -31,7 +32,7 @@
             serverId="org.eclipse.mcp.builtins"
             toolId="org.eclipse.mcp.builtin.tool.ListConsoles">
       </toolServerBinding>
-   </extension>
+   </extension-->
 
    <extension point="org.eclipse.ui.trace.traceComponents">
       <component

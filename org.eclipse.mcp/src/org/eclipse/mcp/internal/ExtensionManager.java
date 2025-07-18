@@ -57,16 +57,13 @@ public class ExtensionManager {
 					if (tools.containsKey(toolId)) {
 						servers.get(serverId).addTool(tools.get(toolId));
 					} else {
-//						TODO: error						
+						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + toolId);				
 					}
 				} else {
-//					TODO: error
+					Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
 				}
-				Server s = new Server(extensionElement);
-				servers.put(s.id, s);
-			} else if ("tool".equals(extensionElement.getName())) {
-				Tool t = new Tool(extensionElement);
-				tools.put(t.id, t);
+			} else if ("defaultEnablement".equals(extensionElement.getName())) {
+				//TODO
 			}
 		}
 	}
