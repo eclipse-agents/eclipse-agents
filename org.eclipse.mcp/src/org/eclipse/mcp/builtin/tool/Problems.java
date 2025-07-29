@@ -2,9 +2,9 @@ package org.eclipse.mcp.builtin.tool;
 
 import java.util.Map;
 
-import org.eclipse.mcp.IModelContextProtocolTool;
+import org.eclipse.mcp.IMCPTool;
 
-public class Problems implements IModelContextProtocolTool {
+public class Problems implements IMCPTool {
 
 	public Problems() {
 	}

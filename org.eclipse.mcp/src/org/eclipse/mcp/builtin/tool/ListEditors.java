@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.mcp.IModelContextProtocolTool;
+import org.eclipse.mcp.IMCPTool;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -12,7 +12,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.google.gson.Gson;
 
-public class ListEditors implements IModelContextProtocolTool {
+public class ListEditors implements IMCPTool {
 
 	Gson gson;
 	public ListEditors() {

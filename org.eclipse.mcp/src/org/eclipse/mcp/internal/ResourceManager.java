@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.eclipse.mcp.IMCPResourceFactory;
 import org.eclipse.mcp.IMCPResourceManager;
-import org.eclipse.mcp.IMCPResourceManagerFactory;
 
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
@@ -19,9 +19,9 @@ import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 public class ResourceManager implements IMCPResourceManager {
 
 	ManagedServer server;
-	IMCPResourceManagerFactory factory;
+	IMCPResourceFactory factory;
 	
-	public ResourceManager(ManagedServer server, IMCPResourceManagerFactory factory) {
+	public ResourceManager(ManagedServer server, IMCPResourceFactory factory) {
 		this.server = server;
 		this.factory = factory;
 		factory.initialize(this);

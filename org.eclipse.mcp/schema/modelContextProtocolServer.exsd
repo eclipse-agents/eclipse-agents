@@ -13,12 +13,18 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
    </annotation>
 
    <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="tool"/>
+            <element ref="resourceFactory"/>
             <element ref="server"/>
             <element ref="toolServerBinding"/>
-            <element ref="defaultEnablement"/>
+            <element ref="resourceFactoryServerBinding"/>
          </sequence>
          <attribute name="id" type="string">
             <annotation>
@@ -86,18 +92,62 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
                <documentation>
                   The JSON schema this tool takes as input argument
                </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The fully qualified name of the AbstractTool implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPTool&lt;/tt&gt; and have an zero-parameter constructor.
+               </documentation>
                <appinfo>
-                  <meta.attribute translatable="false"/>
+                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPTool"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="resourceFactory">
+      <annotation>
+         <documentation>
+            This element is used to define a factory to dynamically create and remove model context protocol resources from the server.  If more than one of these elements exist with the same &lt;code&gt;id&lt;/code&gt; attribute, only the last declared element (in order of reading the registry) is considered valid.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  The description of this MCP resource factory
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of this resource manager
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The name of this MCP resource factory
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
                </appinfo>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  The fully qualified name of the AbstractTool implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.ITool&lt;/tt&gt; and have an zero-parameter constructor.
+                  The fully qualified name of the IMCPResourceFactory implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPResourceFactory&lt;/tt&gt; and have an zero-parameter constructor.  Factories are responsible for dynamically adding and removing resources and translating a url to string content
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.ITool"/>
+                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPResourceFactory"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -191,20 +241,30 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
       </complexType>
    </element>
 
-   <element name="defaultEnablement">
+   <element name="resourceFactoryServerBinding">
       <annotation>
          <documentation>
-            This element allows one to specify that a given tool should be enabled by default.
+            This element allows one to bind tool to a server
          </documentation>
       </annotation>
       <complexType>
-         <attribute name="id" type="string" use="required">
+         <attribute name="resourceFactoryId" type="string" use="required">
             <annotation>
                <documentation>
-                  the unique identifier of the tool
+                  the unique identifier of the activity to bind
                </documentation>
                <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/tool/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/resourceFactory/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="serverId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of the server to bind
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/server/@id"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -230,42 +290,48 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
          The following is an example of several activity and category definitions as well as associated bindings.
 &lt;p&gt;
 &lt;pre&gt;
- &lt;extension point=&quot;org.eclipse.ui.activities&quot;&gt;
-  &lt;activity id=&quot;com.xyz.Activity&quot;
-      description=&quot;Filters contributions from com.xyz&quot;
-   name=&quot;My Activity&quot; /&gt;
-
-  &lt;activity id=&quot;com.xyz.OtherActivity&quot;
-      description=&quot;Filters other contributions from com.xyz&quot;
-   name=&quot;My Other Activity&quot; /&gt;
-  &lt;!-- other activity requires activity --&gt;  
-  &lt;activityRequirementBinding activityId=&quot;com.xyz.OtherActivity&quot;
-   requiredActivityId=&quot;com.xyz.Activity&quot; /&gt;
-  &lt;category id=&quot;com.xyz.Category&quot;
-   description=&quot;com.xyz Activities&quot;
-   name=&quot;My Category&quot; /&gt;
-   
-     &lt;!-- put the activity in the category --&gt;
-  &lt;categoryActivityBinding activityId=&quot;com.xyz.Activity&quot;
-   categoryId=&quot;com.xyz.Category&quot; /&gt;
-   
-     &lt;!-- bind all contributions from plugin com.xyz --&gt;
-  &lt;activityPatternBinding id=&quot;com.xyz.Activity&quot;
-   pattern=&quot;com\.xyz/.*&quot; /&gt;
-  
-  &lt;!-- bind my.contribution from plugin com.xyz.other --&gt;
-  &lt;activityPatternBinding id=&quot;com.xyz.OtherActivity&quot;
-   pattern=&quot;com\.xyz\.other/my.contribution&quot; /&gt;
-   
-  &lt;!-- the same, but not with a regular expression, since the pattern
-          should match the id exactly anyway --&gt;
-  &lt;activityPatternBinding id=&quot;com.xyz.OtherActivity&quot;
-   isEqualityPattern=&quot;true&quot;
-   pattern=&quot;com.xyz.other/my.contribution&quot; /&gt;
-   
-  &lt;!-- our activity should be enabled by default --&gt;
-  &lt;defaultEnablement id=&quot;com.xyz.Activity&quot; /&gt;  
- &lt;/extension&gt;
+  &lt;extension
+         point=&quot;org.eclipse.mcp.modelContextProtocolServer&quot;&gt;
+      &lt;server
+            description=&quot;Set of default tools for enabling Agent-driven development&quot;
+            id=&quot;org.eclipse.mcp.builtins&quot;
+            name=&quot;Built-in Eclipse MCP Server&quot;
+            version=&quot;0.0.1&quot;
+            defaultPort=&quot;12931&quot;&gt;
+      &lt;/server&gt;
+      &lt;tool
+            class=&quot;org.eclipse.mcp.builtin.tool.ListConsoles&quot;
+            id=&quot;org.eclipse.mcp.builtin.tool.ListConsoles&quot;
+            name=&quot;listConsoles&quot;
+            description=&quot;List the open consoles&quot;
+            schema=&quot;{
+				&amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
+				&amp;quot;properties&amp;quot;: {
+				},
+				&amp;quot;required&amp;quot;: []
+			}&quot;&gt;
+      &lt;/tool&gt;
+      &lt;tool
+            class=&quot;org.eclipse.mcp.builtin.tool.ListEditors&quot;
+            id=&quot;org.eclipse.mcp.builtin.tool.ListEditors&quot;
+            name=&quot;listEditors&quot;
+            description=&quot;List the open editors&quot;
+            schema=&quot;{
+				&amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
+				&amp;quot;properties&amp;quot;: {
+				},
+				&amp;quot;required&amp;quot;: []
+			}&quot;&gt;
+      &lt;/tool&gt;
+      &lt;toolServerBinding
+            serverId=&quot;org.eclipse.mcp.builtins&quot;
+            toolId=&quot;org.eclipse.mcp.builtin.tool.ListConsoles&quot;&gt;
+      &lt;/toolServerBinding&gt;
+      &lt;toolServerBinding
+            serverId=&quot;org.eclipse.mcp.builtins&quot;
+            toolId=&quot;org.eclipse.mcp.builtin.tool.ListEditors&quot;&gt;
+      &lt;/toolServerBinding&gt;
+   &lt;/extension&gt;
 &lt;/pre&gt;
 &lt;/p&gt;
       </documentation>
@@ -281,7 +347,6 @@ There is currently no public API for declaring activities or associated elements
 &lt;/p&gt;
       </documentation>
    </annotation>
-
 
    <annotation>
       <appinfo>

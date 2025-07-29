@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.mcp.IModelContextProtocolTool;
+import org.eclipse.mcp.IMCPTool;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 
 import com.google.gson.Gson;
 
-public class ListConsoles implements IModelContextProtocolTool {
+public class ListConsoles implements IMCPTool {
 
 	Gson gson;
 	public ListConsoles() {

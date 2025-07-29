@@ -2,7 +2,7 @@ package org.eclipse.mcp;
 
 import java.util.Map;
 
-public interface IModelContextProtocolTool {
+public interface IMCPTool {
 	
 	/** 
 	 * @param The tools input parameters as defined by its declared JSON Schema

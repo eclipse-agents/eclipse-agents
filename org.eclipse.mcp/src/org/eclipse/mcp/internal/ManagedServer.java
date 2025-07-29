@@ -11,8 +11,7 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.mcp.ModenContextProtocolException;
-import org.eclipse.mcp.builtin.resource.Editors;
+import org.eclipse.mcp.MCPException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -94,16 +93,13 @@ public class ManagedServer {
 			syncServer.addTool(spec);
 		}
 		
-		//TODO handle via extension point
-//		Editors editorsFactory = new Editors();
-//		ResourceManager resourceManager = new ResourceManager(this, editorsFactory);
-//		editorsFactory.initialize(resourceManager);
-//		ManagedServer server, IMCPResourceManagerFactory factory
-//		editorsFactory.initialize(this.syncServer, new ResourceManager());
-		
-	
+		for (ExtensionManager.ResourceFactory resourceFactory: extension.getResourceFactories()) {	
+			ResourceManager resourceManager = new ResourceManager(this, resourceFactory.getImplementation());
+			resourceFactory.getImplementation().initialize(resourceManager);
+		}
 
 		syncServer.notifyToolsListChanged();
+		syncServer.notifyResourcesListChanged();
 	
 		threadPool = new QueuedThreadPool();
 		threadPool.setName(extension.getName() + "-Thread");
@@ -157,7 +153,7 @@ public class ManagedServer {
 			.logger(sourceClass.getCanonicalName()).data(message).build());
 	}
 	
-	public void log(Object source, ModenContextProtocolException ex) {
+	public void log(Object source, MCPException ex) {
 		log(LoggingLevel.ERROR, source, "MCP Implementation Exception");
 		while (ex != null) {
 			log(LoggingLevel.ERROR, source, "Error msg: " + ex.getMessage());

@@ -1,6 +1,6 @@
 package org.eclipse.mcp;
 
-public interface IMCPResourceManagerFactory {
+public interface IMCPResourceFactory {
 	
 	public void initialize(IMCPResourceManager manager);
 	

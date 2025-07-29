@@ -1,8 +1,11 @@
 package org.eclipse.mcp.builtin.resource;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.mcp.IMCPResourceFactory;
 import org.eclipse.mcp.IMCPResourceManager;
-import org.eclipse.mcp.IMCPResourceManagerFactory;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -14,13 +17,15 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-public class Editors implements IMCPResourceManagerFactory {
+public class Editors implements IMCPResourceFactory {
 
 	IMCPResourceManager manager;
 	
 	IWindowListener windowListener;
 	IPageListener pageListener;
 	IPartListener partListener;
+	
+	Set<String> openURIs = new HashSet<String>();
 
 	public Editors() {
 		super();
@@ -93,7 +98,10 @@ public class Editors implements IMCPResourceManagerFactory {
 			if (input instanceof IFileEditorInput) {
 				IFile file = ((IFileEditorInput) input).getFile();
 				String uri = file.getLocationURI().toString();
-				manager.addResource(uri, part.getTitle(), part.getTitleToolTip(), "text/plain");
+				if (!openURIs.contains(uri)) {
+					manager.addResource(uri, part.getTitle(), part.getTitleToolTip(), "text/plain");
+					openURIs.add(uri);
+				}
 			}
 		}
 	}
@@ -104,7 +112,10 @@ public class Editors implements IMCPResourceManagerFactory {
 			if (input instanceof IFileEditorInput) {
 				IFile file = ((IFileEditorInput) input).getFile();
 				String uri = file.getLocationURI().toString();
-				manager.removeResource(uri);
+				if (openURIs.contains(uri)) {
+					manager.removeResource(uri);
+					openURIs.remove(uri);
+				}
 			}
 		}
 	}

@@ -72,6 +72,16 @@
             serverId="org.eclipse.mcp.builtins"
             toolId="org.eclipse.mcp.builtin.tool.ListEditors">
       </toolServerBinding>
+      <resourceFactory
+            class="org.eclipse.mcp.builtin.resource.Editors"
+            id="org.eclipse.mcp.builtin.resource.Editors"
+            name="Open Editors"
+            description="Contributes resources for each open editor text editor">
+      </resourceFactory>
+      <resourceFactoryServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            resourceFactoryId="org.eclipse.mcp.builtin.resource.Editors">
+      </resourceFactoryServerBinding>
    </extension>
 
    <extension point="org.eclipse.ui.trace.traceComponents">

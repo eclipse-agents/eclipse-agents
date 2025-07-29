@@ -17,7 +17,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.mcp.IModelContextProtocolTool;
+import org.eclipse.mcp.IMCPResourceFactory;
+import org.eclipse.mcp.IMCPTool;
 import org.eclipse.mcp.Tracer;
 
 /**
@@ -32,6 +33,7 @@ public class ExtensionManager {
 	
 	Map<String, Server> servers = new HashMap<String, Server>();
 	Map<String, Tool> tools = new HashMap<String, Tool>();
+	Map<String, ResourceFactory> resourceFactories = new HashMap<String, ResourceFactory>();
 	
 	enum ELEMENT { tool, server, toolServerBinding, defaultEnablement }
 	
@@ -46,6 +48,9 @@ public class ExtensionManager {
 			} else if ("tool".equals(extensionElement.getName())) {
 				Tool t = new Tool(extensionElement);
 				tools.put(t.id, t);
+			} else if ("resourceFactory".equals(extensionElement.getName())) {
+				ResourceFactory rf = new ResourceFactory(extensionElement);
+				resourceFactories.put(rf.id, rf);
 			}
 		}
 		
@@ -62,8 +67,18 @@ public class ExtensionManager {
 				} else {
 					Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
 				}
-			} else if ("defaultEnablement".equals(extensionElement.getName())) {
-				//TODO
+			} if ("resourceFactoryServerBinding".equals(extensionElement.getName())) {
+				String serverId = extensionElement.getAttribute("serverId");
+				String resourceFactoryId = extensionElement.getAttribute("resourceFactoryId");
+				if (servers.containsKey(serverId)) {
+					if (resourceFactories.containsKey(resourceFactoryId)) {
+						servers.get(serverId).addResourceFactory(resourceFactories.get(resourceFactoryId));
+					} else {
+						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + resourceFactoryId);				
+					}
+				} else {
+					Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
+				}
 			}
 		}
 	}
@@ -78,6 +93,7 @@ public class ExtensionManager {
 		boolean serveHttp = true;
 		
 		List<Tool> tools;
+		List<ResourceFactory> resourceFactories;
 		
 		public Server(IConfigurationElement e) {
 			this.id =  e.getAttribute("id"); 
@@ -86,19 +102,23 @@ public class ExtensionManager {
 			this.version = e.getAttribute("version");
 			this.defaultPort = e.getAttribute("defaultPort");
 			tools = new ArrayList<Tool>();
+			resourceFactories = new ArrayList<ResourceFactory>();
 		}
 		
 		public void addTool(Tool t) {
 			tools.add(t);
 		}
 		
+		public void addResourceFactory(ResourceFactory factory) {
+			resourceFactories.add(factory);
+		}
+		
 		public Tool[] getTools() {
 			return tools.toArray(new Tool[0]);
 		}
 		
-		public ResourceManager[] getResourceManagers() {
-			//TODO: implement resource managers
-			return new ResourceManager[] { new ResourceManager() };
+		public ResourceFactory[] getResourceFactories() {
+			return resourceFactories.toArray(new ResourceFactory[0]);
 		}
 		
 		public String getId() {
@@ -129,7 +149,7 @@ public class ExtensionManager {
 	public class Tool {
 
 		String id, name, description, schema;
-		IModelContextProtocolTool implementation;
+		IMCPTool implementation;
 		boolean isValid;
 		
 		public Tool(IConfigurationElement e) {
@@ -140,8 +160,8 @@ public class ExtensionManager {
 			
 			try {
 				Object impl = e.createExecutableExtension("class");
-				if (impl instanceof IModelContextProtocolTool) {
-					implementation = (IModelContextProtocolTool)impl;
+				if (impl instanceof IMCPTool) {
+					implementation = (IMCPTool)impl;
 				} else {
 					Tracer.trace().trace(Tracer.EXTENSION, impl.getClass() + " not instance of ITool; " + toString());
 					isValid = false;
@@ -167,7 +187,7 @@ public class ExtensionManager {
 			return schema;
 		}
 
-		public IModelContextProtocolTool getImplementation() {
+		public IMCPTool getImplementation() {
 			return implementation;
 		}
 
@@ -176,7 +196,49 @@ public class ExtensionManager {
 		}
 	}
 	
-	public class ResourceManager {
+	
+	public class ResourceFactory {
+
+		String id, name, description;
+		IMCPResourceFactory implementation;
+		boolean isValid;
 		
+		public ResourceFactory(IConfigurationElement e) {
+			this.id =  e.getAttribute("id"); 
+			this.name = e.getAttribute("name");
+			this.description = e.getAttribute("description");
+			
+			try {
+				Object impl = e.createExecutableExtension("class");
+				if (impl instanceof IMCPResourceFactory) {
+					implementation = (IMCPResourceFactory)impl;
+				} else {
+					Tracer.trace().trace(Tracer.EXTENSION, impl.getClass() + " not instance of ITool; " + toString());
+					isValid = false;
+				}
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getDescription() {
+			return description;
+		}
+
+		public IMCPResourceFactory getImplementation() {
+			return implementation;
+		}
+
+		public boolean isValid() {
+			return isValid;
+		}
 	}
 }
