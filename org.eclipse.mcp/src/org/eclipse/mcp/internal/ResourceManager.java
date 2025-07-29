@@ -44,6 +44,7 @@ public class ResourceManager implements IMCPResourceManager {
 				});
 	
 		server.getSyncServer().addResource(spec);
+		server.getSyncServer().notifyResourcesListChanged();
 		return null;
 	}
 

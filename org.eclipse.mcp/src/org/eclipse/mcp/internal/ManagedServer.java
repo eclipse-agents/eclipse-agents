@@ -53,7 +53,7 @@ public class ManagedServer {
 			    new HttpServletSseServerTransportProvider(
 			        new ObjectMapper(), "/", "/sse");
 		
-		ServerCapabilities capabilities = ServerCapabilities.builder().resources(true, true) // Enable resource support
+		ServerCapabilities capabilities = ServerCapabilities.builder().resources(false, false) // Enable resource support
 				.tools(extension.getTools().length > 0) // Enable tool support
 				.prompts(false) // Enable prompt support
 				.logging() // Enable logging support
@@ -95,9 +95,9 @@ public class ManagedServer {
 		}
 		
 		//TODO handle via extension point
-		Editors editorsFactory = new Editors();
-		ResourceManager resourceManager = new ResourceManager(this, editorsFactory);
-		editorsFactory.initialize(resourceManager);
+//		Editors editorsFactory = new Editors();
+//		ResourceManager resourceManager = new ResourceManager(this, editorsFactory);
+//		editorsFactory.initialize(resourceManager);
 //		ManagedServer server, IMCPResourceManagerFactory factory
 //		editorsFactory.initialize(this.syncServer, new ResourceManager());
 		

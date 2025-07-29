@@ -4,7 +4,8 @@ To expose an aspect of your IDE plugin as an MCP tool, do the following:
 
 ## Implement your MCP Tool
 
-1. Create a class that implements 'IModelContextProtocolTool'
+1. Add plugin `org.eclipse.mcp` as a dependency to your plugin
+2. Create a class that implements `IModelContextProtocolTool`
 
 ```java
 public interface IModelContextProtocolTool {
@@ -16,7 +17,7 @@ public interface IModelContextProtocolTool {
 }
 ```
 
-2. Define a JSON schema that describes the arguments your tool will accept, for example
+3. Define a JSON schema that describes the arguments your tool will accept, for example
 
 ```json
 {
@@ -33,7 +34,7 @@ public interface IModelContextProtocolTool {
 }
 ```
 
-3. Implement the logic for your tool, returning an array of Strings as your result
+4. Implement the logic for your tool, returning an array of Strings as your result
 
 ## Declare your tool as an extension in your plugin.xml
 
@@ -81,7 +82,7 @@ Thats all that is required.  Upon startup, MCP servers will start up and serve c
 
 ### Future Considerations
 
-1. Mechanism for shell-shared MCP Clients to invoke MCP tools as Java calls rather than HTTP calls, removing the need for HTTP endpoints when consumed internally.
+1. Mechanism for shell-shared MCP Clients to invoke MCP tools as Java calls rather than HTTP calls, removing the need for HTTP endpoints when consumed internally and hand registration of MCP endpoints into co-installed MCP clients.
 2. Preferences to  
     1. Enable/Disable MCP Servers and Tools
     2. Override the default HTTP port

@@ -2,12 +2,36 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+   <extension-point id="org.eclipse.mcp.modelContextProtocolServer" name="Model Context Protocol Server" schema="schema/modelContextProtocolServer.exsd"/>
+   
+     <extension point="org.eclipse.ui.keywords">
+        <keyword label="MCP"
+            id="org.eclipse.mcp.keyword.mcp"/>
+        <keyword label="MODEL"
+            id="org.eclipse.mcp.keyword.model"/>
+        <keyword label="CONTEXT"
+            id="org.eclipse.mcp.keyword.context"/>
+        <keyword label="PROTOCOL"
+            id="org.eclipse.mcp.keyword.protocol"/>
+  </extension>
+  
+   <extension point="org.eclipse.ui.preferencePages"> 
+      <page 
+         id="org.eclipse.mcp.preferences.general" 
+         name="Platform MCP Servers" 
+         class="com.ibm.systemz.db2.ide.preferences.Db2GeneralPreferencePage">
+         <keywordReference id="org.eclipse.mcp.keyword.mcp"/>
+         <keywordReference id="org.eclipse.mcp.keyword.model"/>
+         <keywordReference id="org.eclipse.mcp.keyword.context"/>
+         <keywordReference id="org.eclipse.mcp.keyword.protocol"/>
+      </page>
+   </extension> 
+   
    <extension point="org.eclipse.ui.startup">
       <startup class="org.eclipse.mcp.Startup"/>
    </extension>
     
-   <extension-point id="org.eclipse.mcp.modelContextProtocolServer" name="Model Context Protocol Server" schema="schema/modelContextProtocolServer.exsd"/>
-   <!--extension
+   <extension
          point="org.eclipse.mcp.modelContextProtocolServer">
       <server
             description="Set of default tools for enabling Agent-driven development"
@@ -19,6 +43,18 @@
       <tool
             class="org.eclipse.mcp.builtin.tool.ListConsoles"
             id="org.eclipse.mcp.builtin.tool.ListConsoles"
+            name="listConsoles"
+            description="List the open consoles"
+            schema="{
+				&quot;type&quot;: &quot;object&quot;,
+				&quot;properties&quot;: {
+				},
+				&quot;required&quot;: []
+			}">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.builtin.tool.ListEditors"
+            id="org.eclipse.mcp.builtin.tool.ListEditors"
             name="listEditors"
             description="List the open editors"
             schema="{
@@ -32,7 +68,11 @@
             serverId="org.eclipse.mcp.builtins"
             toolId="org.eclipse.mcp.builtin.tool.ListConsoles">
       </toolServerBinding>
-   </extension-->
+      <toolServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            toolId="org.eclipse.mcp.builtin.tool.ListEditors">
+      </toolServerBinding>
+   </extension>
 
    <extension point="org.eclipse.ui.trace.traceComponents">
       <component

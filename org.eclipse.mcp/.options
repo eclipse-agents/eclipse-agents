@@ -1,0 +1,4 @@
+# Main Debug Trace switch
+com.ecliplse.mcp/debug = false
+# Trace location for implementations
+com.ecliplse.mcp/debug/extensions = false
