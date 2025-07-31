@@ -3,7 +3,7 @@
 <schema targetNamespace="org.eclipse.mcp" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.eclipse.mcp" id="modelContextProtocolServer" name="Model Conntext Protocol Server"/>
+         <meta.schema plugin="org.eclipse.mcp" id="modelContextProtocolServer" name="Model Context Protocol Server"/>
       </appinfo>
       <documentation>
          &lt;p&gt;
@@ -23,6 +23,7 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
             <element ref="tool"/>
             <element ref="resourceFactory"/>
             <element ref="server"/>
+            <element ref="category"/>
             <element ref="toolServerBinding"/>
             <element ref="resourceFactoryServerBinding"/>
          </sequence>
@@ -104,6 +105,16 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="categoryId" type="string" use="optional">
+            <annotation>
+               <documentation>
+                  the unique identifier of the category for this tool
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/category/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -148,6 +159,16 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPResourceFactory"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="categoryId" type="string" use="optional">
+            <annotation>
+               <documentation>
+                  the unique identifier of the category for this resource factory
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/category/@id"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -211,6 +232,32 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
       </complexType>
    </element>
 
+   <element name="category">
+      <annotation>
+         <documentation>
+            This element allows one to define a category for Tools, Resource Managers
+         </documentation>
+      </annotation>
+      <complexType>
+          <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of this category
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the translatable name of this category for display in the UI
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
    <element name="toolServerBinding">
       <annotation>
          <documentation>

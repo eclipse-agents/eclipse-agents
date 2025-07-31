@@ -15,11 +15,14 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.mcp.IMCPResourceFactory;
 import org.eclipse.mcp.IMCPTool;
 import org.eclipse.mcp.Tracer;
+import org.eclipse.mcp.internal.preferences.ServerElement;
 
 /**
  * 
@@ -27,52 +30,69 @@ import org.eclipse.mcp.Tracer;
 public class ExtensionManager {
 	
 	Map<String, Server> servers = new HashMap<String, Server>();
+	Map<String, String> categories = new HashMap<String, String>();
 	Map<String, Tool> tools = new HashMap<String, Tool>();
 	Map<String, ResourceFactory> resourceFactories = new HashMap<String, ResourceFactory>();
 	
-	enum ELEMENT { tool, server, toolServerBinding, defaultEnablement }
+	enum ELEMENT { tool, server, category, toolServerBinding, defaultEnablement }
 	
 	public ExtensionManager() {
-		IExtensionRegistry extReg = Platform.getExtensionRegistry();
-		IConfigurationElement[] extensionElements = extReg.getConfigurationElementsFor("org.eclipse.mcp.modelContextProtocolServer");
+//		IExtensionRegistry extReg = Platform.getExtensionRegistry();
+//		IConfigurationElement[] extensionElements = extReg.getConfigurationElementsFor("org.eclipse.mcp.modelContextProtocolServer");
 		
-		for (IConfigurationElement extensionElement: extensionElements) {
-			if ("server".equals(extensionElement.getName())) {
-				Server s = new Server(extensionElement);
-				servers.put(s.id, s);
-			} else if ("tool".equals(extensionElement.getName())) {
-				Tool t = new Tool(extensionElement);
-				tools.put(t.id, t);
-			} else if ("resourceFactory".equals(extensionElement.getName())) {
-				ResourceFactory rf = new ResourceFactory(extensionElement);
-				resourceFactories.put(rf.id, rf);
+		IExtensionRegistry extReg = Platform.getExtensionRegistry();
+		IExtensionPoint point = extReg.getExtensionPoint("org.eclipse.mcp.modelContextProtocolServer"); //$NON-NLS-1$
+		
+		point.getExtensions();
+		for (IExtension extension : point.getExtensions()) {
+			System.out.println(extension.getNamespaceIdentifier());
+			System.out.println(extension.getSimpleIdentifier());
+			System.out.println(extension.getExtensionPointUniqueIdentifier());
+			
+			for (IConfigurationElement extensionElement : extension.getConfigurationElements()) {
+				if ("server".equals(extensionElement.getName())) {
+					Server s = new Server(extensionElement);
+					servers.put(s.id, s);
+				} else if ("tool".equals(extensionElement.getName())) {
+					Tool t = new Tool(extensionElement);
+					tools.put(t.id, t);
+				} else if ("resourceFactory".equals(extensionElement.getName())) {
+					ResourceFactory rf = new ResourceFactory(extensionElement);
+					resourceFactories.put(rf.id, rf);
+				} else if ("category".equals(extensionElement.getName())) {
+					String id = extensionElement.getAttribute("id");
+					String name = extensionElement.getAttribute("name");
+					categories.put(id, name);
+				}
 			}
 		}
-		
-		for (IConfigurationElement extensionElement: extensionElements) {
-			if ("toolServerBinding".equals(extensionElement.getName())) {
-				String serverId = extensionElement.getAttribute("serverId");
-				String toolId = extensionElement.getAttribute("toolId");
-				if (servers.containsKey(serverId)) {
-					if (tools.containsKey(toolId)) {
-						servers.get(serverId).addTool(tools.get(toolId));
+			
+		for (IExtension extension : point.getExtensions()) {
+			for (IConfigurationElement extensionElement : extension.getConfigurationElements()) {
+				if ("toolServerBinding".equals(extensionElement.getName())) {
+					String serverId = extensionElement.getAttribute("serverId");
+					String toolId = extensionElement.getAttribute("toolId");
+					if (servers.containsKey(serverId)) {
+						if (tools.containsKey(toolId)) {
+							servers.get(serverId).addTool(tools.get(toolId));
+						} else {
+							Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + toolId);				
+						}
 					} else {
-						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + toolId);				
+						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
 					}
-				} else {
-					Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
-				}
-			} if ("resourceFactoryServerBinding".equals(extensionElement.getName())) {
-				String serverId = extensionElement.getAttribute("serverId");
-				String resourceFactoryId = extensionElement.getAttribute("resourceFactoryId");
-				if (servers.containsKey(serverId)) {
-					if (resourceFactories.containsKey(resourceFactoryId)) {
-						servers.get(serverId).addResourceFactory(resourceFactories.get(resourceFactoryId));
+				} if ("resourceFactoryServerBinding".equals(extensionElement.getName())) {
+					String serverId = extensionElement.getAttribute("serverId");
+					String resourceFactoryId = extensionElement.getAttribute("resourceFactoryId");
+					if (servers.containsKey(serverId)) {
+						if (resourceFactories.containsKey(resourceFactoryId)) {
+							servers.get(serverId).addResourceFactory(resourceFactories.get(resourceFactoryId));
+						} else {
+							Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + resourceFactoryId);				
+						}
 					} else {
-						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + resourceFactoryId);				
+						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
 					}
-				} else {
-					Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
 				}
 			}
 		}
@@ -97,6 +117,8 @@ public class ExtensionManager {
 		
 		List<Tool> tools;
 		List<ResourceFactory> resourceFactories;
+		//TODO
+		String categoryId;
 		
 		public Server(IConfigurationElement e) {
 			this.id =  e.getAttribute("id"); 
@@ -149,9 +171,9 @@ public class ExtensionManager {
 		}
 	}
 	
-	public class Tool {
+	public class Tool implements ServerElement {
 
-		String id, name, description, schema;
+		String id, name, description, schema, categoryId;
 		IMCPTool implementation;
 		boolean isValid;
 		
@@ -160,6 +182,7 @@ public class ExtensionManager {
 			this.name = e.getAttribute("name");
 			this.description = e.getAttribute("description");
 			this.schema = e.getAttribute("schema");
+			this.categoryId = e.getAttribute("categoryId");
 			
 			try {
 				Object impl = e.createExecutableExtension("class");
@@ -174,14 +197,25 @@ public class ExtensionManager {
 			}
 		}
 
+		@Override
 		public String getId() {
 			return id;
 		}
 
+		@Override
 		public String getName() {
 			return name;
 		}
+		
+		@Override
+		public String getCategory() {
+			if (categories.containsKey(categoryId)) {
+				return categories.get(categoryId);
+			}
+			return "";
+		}
 
+		@Override
 		public String getDescription() {
 			return description;
 		}
@@ -194,15 +228,16 @@ public class ExtensionManager {
 			return implementation;
 		}
 
+		@Override
 		public boolean isValid() {
 			return isValid;
 		}
 	}
 	
 	
-	public class ResourceFactory {
+	public class ResourceFactory implements ServerElement {
 
-		String id, name, description;
+		String id, name, description, categoryId;
 		IMCPResourceFactory implementation;
 		boolean isValid;
 		
@@ -210,6 +245,7 @@ public class ExtensionManager {
 			this.id =  e.getAttribute("id"); 
 			this.name = e.getAttribute("name");
 			this.description = e.getAttribute("description");
+			this.categoryId = e.getAttribute("categoryId");
 			
 			try {
 				Object impl = e.createExecutableExtension("class");
@@ -224,14 +260,25 @@ public class ExtensionManager {
 			}
 		}
 
+		@Override
 		public String getId() {
 			return id;
 		}
 
+		@Override
 		public String getName() {
 			return name;
 		}
+		
+		@Override
+		public String getCategory() {
+			if (categories.containsKey(categoryId)) {
+				return categories.get(categoryId);
+			}
+			return "";
+		}
 
+		@Override
 		public String getDescription() {
 			return description;
 		}

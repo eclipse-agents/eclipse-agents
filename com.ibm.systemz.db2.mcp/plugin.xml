@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.mcp.modelContextProtocolServer"
+         id="com.ibm.systemz.db2.mcp"
+         name="Db2 for z/OS">
+      <category
+            id="com.ibm.systemz.db2.mcp.category"
+            name="Db2 for z/OS">
+      </category>
+      <server
+            description="Db2 for z/OS Tools"
+            id="com.ibm.systemz.db2.mcp.server"
+            name="Db2 for z/OS"
+            version="0.0.1"
+            defaultPort="12932">
+      </server>
+      <!--tool
+            categoryId="org.eclipse.mcp.builtins.workbench"
+            class="org.eclipse.mcp.builtin.tool.ListConsoles"
+            description="Run a Db2 for z/OS SQL Query"
+            id="com.ibm.systemz.db2.mcp.tools.RunQuery"
+            name="db2-runQuery"
+            schema="{&#x0A;  &quot;type&quot;: &quot;object&quot;,&#x0A;  &quot;properties&quot;: {&#x0A;    &quot;query&quot;: {&#x0A;      &quot;type&quot;: &quot;string&quot;&#x0A;    }&#x0A;  },&#x0A;  &quot;required&quot;: [&quot;query&quot;]&#x0A;}">
+      </tool-->
+      <tool
+            categoryId="com.ibm.systemz.db2.mcp.category"
+            class="com.ibm.systemz.db2.mcp.tools.ListConnections"
+            description="List Db2 for z/OS Connections"
+            id="com.ibm.systemz.db2.mcp.tools.ListConnections"
+            name="db2-listConnections"
+            schema="{&#x0A;  &quot;type&quot;: &quot;object&quot;,&#x0A;  &quot;properties&quot;: {},&#x0A;  &quot;required&quot;: []&#x0A;}">
+      </tool>
+      <toolServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            toolId="com.ibm.systemz.db2.mcp.tools.ListConnections">
+      </toolServerBinding>
+      <toolServerBinding
+            serverId="com.ibm.systemz.db2.mcp.server"
+            toolId="com.ibm.systemz.db2.mcp.tools.ListConnections">
+      </toolServerBinding>
+   </extension>
+
+</plugin>

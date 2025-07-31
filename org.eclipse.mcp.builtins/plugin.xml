@@ -3,11 +3,17 @@
 <plugin>
 
     <extension
-         point="org.eclipse.mcp.modelContextProtocolServer">
+         point="org.eclipse.mcp.modelContextProtocolServer"
+         id="org.eclipse.mcp.builtins"
+         name="Built-Ins">
+      <category
+            id="org.eclipse.mcp.builtins.workbench"
+            name="Workbench">
+      </category>
       <server
-            description="Set of default tools for enabling Agent-driven development"
+            description="Workbench tools and resources"
             id="org.eclipse.mcp.builtins"
-            name="Built-in Eclipse MCP Server"
+            name="Workbench"
             version="0.0.1"
             defaultPort="12931">
       </server>
@@ -16,6 +22,7 @@
             id="org.eclipse.mcp.builtins.tool.ListConsoles"
             name="listConsoles"
             description="List the open consoles"
+            categoryId="org.eclipse.mcp.builtins.workbench"
             schema="{
 				&quot;type&quot;: &quot;object&quot;,
 				&quot;properties&quot;: {
@@ -28,6 +35,7 @@
             id="org.eclipse.mcp.builtins.tool.ListEditors"
             name="listEditors"
             description="List the open editors"
+            categoryId="org.eclipse.mcp.builtins.workbench"
             schema="{
 				&quot;type&quot;: &quot;object&quot;,
 				&quot;properties&quot;: {
@@ -47,7 +55,8 @@
             class="org.eclipse.mcp.builtin.resource.Editors"
             id="org.eclipse.mcp.builtins.resource.Editors"
             name="Open Editors"
-            description="Contributes resources for each open editor text editor">
+            description="Contributes resources for each open editor text editor"
+            categoryId="org.eclipse.mcp.builtins.workbench">
       </resourceFactory>
       <resourceFactoryServerBinding
             serverId="org.eclipse.mcp.builtins"

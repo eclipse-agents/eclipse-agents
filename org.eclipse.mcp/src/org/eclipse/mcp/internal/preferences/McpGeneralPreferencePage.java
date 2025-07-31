@@ -65,6 +65,8 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 	private class ServersLabelProvider extends LabelProvider implements ITableLabelProvider {
 
+		public final static String[] columns = {"Name", "Description", "HTTP Port"};
+
 		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
 			if (columnIndex == 0) {
@@ -84,8 +86,6 @@ public class McpGeneralPreferencePage extends PreferencePage
 						return ((IPreferencedServer)element).getDescription();
 					case 2:
 						return ((IPreferencedServer)element).getHttpPort();
-					case 3:
-						return "OK";
 					default:
 						return "e"; //$NON-NLS-1$
 				}
@@ -96,6 +96,8 @@ public class McpGeneralPreferencePage extends PreferencePage
 	
 	private class ToolsLabelProvider extends LabelProvider implements ITableLabelProvider {
 
+		public final static String[] columns = new String[] { "Name", "Type", "Category", "Description"};
+		
 		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
 			if(columnIndex == 0) {
@@ -110,29 +112,20 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 		@Override
 		public String getColumnText(Object element, int columnIndex) {
-			if (element instanceof Tool) {
+			if (element instanceof ServerElement) {
 				switch (columnIndex) {
 					case 0:
-						return ((Tool)element).getName();
+						return ((ServerElement)element).getName();
 					case 1:
-						return "Tool";
+						return ( element instanceof Tool) ? "Tool" : "Resources";
 					case 2:
-						return ((Tool)element).getDescription();
+						return ((ServerElement)element).getCategory();
+					case 3:
+						return ((ServerElement)element).getDescription();
 					default:
 						return "e"; //$NON-NLS-1$
 				}
-			} else if (element instanceof ResourceFactory) {
-				switch (columnIndex) {
-				case 0:
-					return ((ResourceFactory)element).getName();
-				case 1:
-					return "Resource";
-				case 2:
-					return ((ResourceFactory)element).getDescription();
-				default:
-					return "e"; //$NON-NLS-1$
 			}
-		}
 			return "?";
 		}
 	}
@@ -158,11 +151,8 @@ public class McpGeneralPreferencePage extends PreferencePage
 		gd.horizontalSpan= 2;
 		innerParent.setLayoutData(gd);
 
-		String[] columnNames = new String[] { 
-			"Name", "Description", "HTTP Port", "Status"
-		};
 		
-		serverComposite = new TableComposite(innerParent, columnNames, new ServersLabelProvider()) {		
+		serverComposite = new TableComposite(innerParent, ServersLabelProvider.columns, new ServersLabelProvider()) {		
 			@Override
 			public void doubleClick(DoubleClickEvent arg0) {
 				// TODO Auto-generated method stub
@@ -211,12 +201,9 @@ public class McpGeneralPreferencePage extends PreferencePage
 		serverComposite.getTableViewer().setAllChecked(false);
 //		TODO tableComposite.getTableViewer().setCheckedElements();
 
-		// TOOLS
-		columnNames = new String[] { 
-			"Name", "Type", "Description"
-		};
+		
 			
-		toolsComposite = new TableComposite(innerParent, columnNames, new ToolsLabelProvider()) {		
+		toolsComposite = new TableComposite(innerParent, ToolsLabelProvider.columns, new ToolsLabelProvider()) {		
 			@Override
 			public void doubleClick(DoubleClickEvent arg0) {
 				// TODO Auto-generated method stub
