@@ -22,12 +22,7 @@ import org.eclipse.mcp.IMCPTool;
 import org.eclipse.mcp.Tracer;
 
 /**
- * To prevent having commands bound to editors contexts not present in the installation,
- * we manage our own contexts and synchronize their activation with the potentiality
- * of specific editor contexts being activated or deactivated.
  * 
- * When a command is bound to an editor id that doesn't exist, it still appears in the 
- * Keys preferences, bound to an editor id string, rather than an editor name.
  */
 public class ExtensionManager {
 	
@@ -85,6 +80,14 @@ public class ExtensionManager {
 	
 	public ExtensionManager.Server[] getServers() {
 		return servers.values().toArray(new Server[0]);
+	}
+	
+	public Tool getTool(String id) {
+		return tools.get(id);
+	}
+	
+	public ResourceFactory getResourceFactory(String id) {
+		return resourceFactories.get(id);
 	}
 	
 	public class Server {

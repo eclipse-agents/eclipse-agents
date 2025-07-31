@@ -18,8 +18,8 @@
    <extension point="org.eclipse.ui.preferencePages"> 
       <page 
          id="org.eclipse.mcp.preferences.general" 
-         name="Platform MCP Servers" 
-         class="com.ibm.systemz.db2.ide.preferences.Db2GeneralPreferencePage">
+         name="MCP Servers" 
+         class="org.eclipse.mcp.internal.preferences.McpGeneralPreferencePage">
          <keywordReference id="org.eclipse.mcp.keyword.mcp"/>
          <keywordReference id="org.eclipse.mcp.keyword.model"/>
          <keywordReference id="org.eclipse.mcp.keyword.context"/>

@@ -15,6 +15,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.ResourceLocator;
 import org.eclipse.mcp.internal.ExtensionManager;
+import org.eclipse.mcp.internal.PreferenceManager;
 import org.eclipse.mcp.internal.ServerManager;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -37,6 +38,9 @@ public class Activator extends AbstractUIPlugin {
 	private static Activator plugin;
 	
 	private ScopedPreferenceStore preferenceStore = null;
+	private ExtensionManager extensionManager = null;
+	private ServerManager serverManager = null;
+	private PreferenceManager preferenceManager = null;
 
 	/**
 	 * The constructor
@@ -55,8 +59,9 @@ public class Activator extends AbstractUIPlugin {
 			public void bundleChanged(BundleEvent event) {
 				if (event.getBundle() == getBundle() && event.getType() == BundleEvent.STARTED) {
 					Tracer.trace().trace(Tracer.DEBUG, event.getBundle().getBundleId() + " STARTED"); //$NON-NLS-1$
-					ExtensionManager extensionManager = new ExtensionManager();
-					ServerManager serverManager = new ServerManager(extensionManager);
+					extensionManager = new ExtensionManager();
+					preferenceManager = new PreferenceManager();
+					serverManager = new ServerManager(extensionManager);
 				}
 			}
 		});
@@ -67,8 +72,6 @@ public class Activator extends AbstractUIPlugin {
 		} else {
 			Tracer.trace().trace(Tracer.DEBUG, "Copy action cannot be initialized w/o a workbench"); //$NON-NLS-1$
 		}
-		
-		
 	}
 
 	@Override
@@ -84,6 +87,19 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static Activator getDefault() {
 		return plugin;
+	}
+	
+
+	public ExtensionManager getExtensionManager() {
+		return extensionManager;
+	}
+
+	public ServerManager getServerManager() {
+		return serverManager;
+	}
+	
+	public PreferenceManager getPreferenceManager() {
+		return preferenceManager;
 	}
 
 	@Override
