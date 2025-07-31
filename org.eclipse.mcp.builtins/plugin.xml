@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension
+         point="org.eclipse.mcp.modelContextProtocolServer">
+      <server
+            description="Set of default tools for enabling Agent-driven development"
+            id="org.eclipse.mcp.builtins"
+            name="Built-in Eclipse MCP Server"
+            version="0.0.1"
+            defaultPort="12931">
+      </server>
+      <tool
+            class="org.eclipse.mcp.builtin.tool.ListConsoles"
+            id="org.eclipse.mcp.builtins.tool.ListConsoles"
+            name="listConsoles"
+            description="List the open consoles"
+            schema="{
+				&quot;type&quot;: &quot;object&quot;,
+				&quot;properties&quot;: {
+				},
+				&quot;required&quot;: []
+			}">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.builtin.tool.ListEditors"
+            id="org.eclipse.mcp.builtins.tool.ListEditors"
+            name="listEditors"
+            description="List the open editors"
+            schema="{
+				&quot;type&quot;: &quot;object&quot;,
+				&quot;properties&quot;: {
+				},
+				&quot;required&quot;: []
+			}">
+      </tool>
+      <toolServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            toolId="org.eclipse.mcp.builtins.tool.ListConsoles">
+      </toolServerBinding>
+      <toolServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            toolId="org.eclipse.mcp.builtins.tool.ListEditors">
+      </toolServerBinding>
+      <resourceFactory
+            class="org.eclipse.mcp.builtin.resource.Editors"
+            id="org.eclipse.mcp.builtins.resource.Editors"
+            name="Open Editors"
+            description="Contributes resources for each open editor text editor">
+      </resourceFactory>
+      <resourceFactoryServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            resourceFactoryId="org.eclipse.mcp.builtins.resource.Editors">
+      </resourceFactoryServerBinding>
+   </extension>
+
+</plugin>

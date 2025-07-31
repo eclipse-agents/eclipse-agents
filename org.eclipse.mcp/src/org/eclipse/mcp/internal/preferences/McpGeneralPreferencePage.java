@@ -20,6 +20,7 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.mcp.Activator;
+import org.eclipse.mcp.Images;
 import org.eclipse.mcp.internal.ExtensionManager.ResourceFactory;
 import org.eclipse.mcp.internal.ExtensionManager.Tool;
 import org.eclipse.mcp.internal.PreferenceManager;
@@ -66,6 +67,9 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
+			if (columnIndex == 0) {
+				return Activator.getDefault().getImageRegistry().get(Images.IMG_SERVER);
+			}
 			return null;
 		}
 
@@ -94,12 +98,18 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
+			if(columnIndex == 0) {
+				if (element instanceof Tool) {
+					return Activator.getDefault().getImageRegistry().get(Images.IMG_TOOL);
+				} else if (element instanceof ResourceFactory) {
+					return Activator.getDefault().getImageRegistry().get(Images.IMG_RESOURCEMANAGER);
+				}
+			}
 			return null;
 		}
 
 		@Override
 		public String getColumnText(Object element, int columnIndex) {
-			System.out.println(element);
 			if (element instanceof Tool) {
 				switch (columnIndex) {
 					case 0:

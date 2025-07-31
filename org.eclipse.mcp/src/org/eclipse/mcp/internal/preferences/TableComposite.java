@@ -70,7 +70,7 @@ public abstract class TableComposite extends Composite implements IStructuredCon
 		for (int i = 0; i < columnNames.length; i++) {	
 			TableColumn column = new TableColumn(table, SWT.NONE);
 			column.setText(columnNames[i]);
-			columnLayout.setColumnData(column, new ColumnWeightData(i, 10, true));
+			columnLayout.setColumnData(column, new ColumnWeightData(columnNames.length - i));
 			column.addSelectionListener(new TableColumnSelectionAdapter(column, i, comparator));
 		}
 	
