@@ -27,11 +27,11 @@ import org.eclipse.swt.widgets.TableColumn;
 public abstract class TableComposite extends Composite implements IStructuredContentProvider, IDoubleClickListener, ISelectionChangedListener, ICheckStateListener, SelectionListener {
 
 	private CheckboxTableViewer viewer;
-	private Button add;
-	private Button edit;
-	private Button remove;
-	private Button restore;
-	private Button revert;
+	Button add;
+	Button edit;
+	Button remove;
+	Button restore;
+	Button revert;
 	
 	public TableComposite(Composite parent, String[] columnNames, ITableLabelProvider labelProvider) {
 		

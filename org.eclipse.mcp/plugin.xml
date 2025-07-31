@@ -29,6 +29,18 @@
 		</page>
 	</extension>
 
+	 <extension point="org.eclipse.ui.propertyPages">
+       <page name="General"
+            class="com.ibm.systemz.db2.ide.preferences.Db2RunSqlOptionsPropertyPage"
+            id="com.ibm.systemz.db2.jdbc.properties">
+            <enabledWhen>
+                <and>
+                    <instanceof value="org.eclipse.mcp.IMCPElementPropertyInput"/>
+                </and>
+            </enabledWhen>
+      </page>
+    </extension>
+	
 	<extension point="org.eclipse.ui.startup">
 		<startup class="org.eclipse.mcp.Startup" />
 	</extension>

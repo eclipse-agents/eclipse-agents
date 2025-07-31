@@ -154,39 +154,39 @@ public class McpGeneralPreferencePage extends PreferencePage
 		
 		serverComposite = new TableComposite(innerParent, ServersLabelProvider.columns, new ServersLabelProvider()) {		
 			@Override
-			public void doubleClick(DoubleClickEvent arg0) {
+			public void doubleClick(DoubleClickEvent event) {
 				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
+			public void selectionChanged(SelectionChangedEvent event) {
 				
-				toolsComposite.getTableViewer().setInput(arg0.getStructuredSelection().getFirstElement());
+				toolsComposite.getTableViewer().setInput(event.getStructuredSelection().getFirstElement());
 			
 				
 			}
 
 			@Override
-			public void checkStateChanged(CheckStateChangedEvent arg0) {
+			public void checkStateChanged(CheckStateChangedEvent event) {
 				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
+			public void widgetDefaultSelected(SelectionEvent event) {
 				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
-			public void widgetSelected(SelectionEvent arg0) {
+			public void widgetSelected(SelectionEvent event) {
 				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
-			public Object[] getElements(Object arg0) {
+			public Object[] getElements(Object parent) {
 				return preferenceManager.getServers();
 			}
 			
@@ -205,41 +205,39 @@ public class McpGeneralPreferencePage extends PreferencePage
 			
 		toolsComposite = new TableComposite(innerParent, ToolsLabelProvider.columns, new ToolsLabelProvider()) {		
 			@Override
-			public void doubleClick(DoubleClickEvent arg0) {
+			public void doubleClick(DoubleClickEvent event) {
 				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
+			public void selectionChanged(SelectionChangedEvent event) {
 				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
-			public void checkStateChanged(CheckStateChangedEvent arg0) {
+			public void checkStateChanged(CheckStateChangedEvent event) {
 				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				// TODO Auto-generated method stub
-				
+			public void widgetDefaultSelected(SelectionEvent event) {}
+
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				if (event.getSource() ==  toolsComposite.edit) {
+					
+				}
 			}
 
 			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public Object[] getElements(Object arg0) {
-				if (arg0 instanceof IPreferencedServer) {
+			public Object[] getElements(Object parent) {
+				if (parent instanceof IPreferencedServer) {
 					return Stream.concat(
-						Arrays.stream(((IPreferencedServer)arg0).getTools()), 
-						Arrays.stream(((IPreferencedServer)arg0).getResourceFactories()))
+						Arrays.stream(((IPreferencedServer)parent).getTools()), 
+						Arrays.stream(((IPreferencedServer)parent).getResourceFactories()))
                     	.toArray();
 				}
 				return new Object[0];
@@ -318,7 +316,7 @@ public class McpGeneralPreferencePage extends PreferencePage
 	}
 
 	@Override
-	public void modifyText(ModifyEvent arg0) {
+	public void modifyText(ModifyEvent event) {
 		updateValidation();
 	}
 }
