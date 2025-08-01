@@ -81,18 +81,10 @@ public class ManagedServer {
 					
 					try {
 						
-						List<DialogSettings> settings = new ArrayList<DialogSettings>();
-						PreferenceManager pm = new PreferenceManager();
-						pm.load();
-						for (IPreferencedServer server: pm.getServers()) {
-							if (server.getId().equals(extension.getId()) ) {
-								for (String propertyEditorId: toolExtension.getPropertyEditorIds()) {
-									settings.add(server.getElementSettings(toolExtension.getId(), propertyEditorId));
-								}
-							}
-						}
 						
-						String[] rawText = toolExtension.getImplementation().apply(u, settings.toArray(DialogSettings[]::new));
+						ElementProperties elementProperties = new ElementProperties(extension.getId(), toolExtension.getId(), toolExtension.getPropertyEditorIds());
+						
+						String[] rawText = toolExtension.getImplementation().apply(u, elementProperties);
 						for (String s: rawText) {
 							content.add(new TextContent(s));
 						}

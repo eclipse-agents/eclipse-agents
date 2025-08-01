@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jface.dialogs.DialogSettings;
+import org.eclipse.mcp.IElementProperties;
 import org.eclipse.mcp.IMCPTool;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -22,7 +22,7 @@ public class ListEditors implements IMCPTool {
 	}
 	
 	@Override
-	public String[] apply(Map<String, Object> t, DialogSettings[] settings) {
+	public String[] apply(Map<String, Object> t, IElementProperties properties) {
 		List<String> result = new ArrayList<String>();
 		for (IWorkbenchWindow ww: PlatformUI.getWorkbench().getWorkbenchWindows()) {
 			for (IWorkbenchPage page: ww.getPages()) {

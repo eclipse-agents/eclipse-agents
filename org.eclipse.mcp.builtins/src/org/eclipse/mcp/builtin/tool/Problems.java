@@ -2,7 +2,7 @@ package org.eclipse.mcp.builtin.tool;
 
 import java.util.Map;
 
-import org.eclipse.jface.dialogs.DialogSettings;
+import org.eclipse.mcp.IElementProperties;
 import org.eclipse.mcp.IMCPTool;
 
 public class Problems implements IMCPTool {
@@ -11,7 +11,7 @@ public class Problems implements IMCPTool {
 	}
 
 	@Override
-	public String[] apply(Map<String, Object> t, DialogSettings[] settings) {
+	public String[] apply(Map<String, Object> t, IElementProperties properties) {
 		// TODO Auto-generated method stub
 		return null;
 	}}

@@ -92,6 +92,15 @@ public class PreferenceManager {
 		return servers.toArray(new IPreferencedServer[0]);
 	}
 	
+	public IPreferencedServer getServer(String id) {
+		for (IPreferencedServer server: servers) {
+			if (server.getId().equals(id)) {
+				return server;
+			}
+		}
+		return null;
+	}
+	
 	public  IMCPElementPropertyInput getElementPropertyInput(String serverId, String elementId) {
 
 		return new IMCPElementPropertyInput() {
