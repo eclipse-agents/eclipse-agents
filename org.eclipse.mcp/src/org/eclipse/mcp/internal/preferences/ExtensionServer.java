@@ -218,31 +218,31 @@ public class ExtensionServer implements IPreferencedServer {
 
 	@Override
 	public DialogSettings getElementSettings(String elementId, String propertiesId) {
-		if (settings.getSection(TOOL_PREFERENCES) != null) {
-			IDialogSettings toolSettings = (DialogSettings)settings.getSection(TOOL_PREFERENCES);
-			if (toolSettings.getSection(propertiesId) != null) {
-				return (DialogSettings)toolSettings.getSection(propertiesId);
+		DialogSettings elementsSection = (DialogSettings)settings.getSection(TOOL_PREFERENCES);
+		if (elementsSection != null) {
+			DialogSettings elementSection  = (DialogSettings)elementsSection.getSection(elementId);
+			if (elementSection != null) {
+				DialogSettings propertyEditorSection  = (DialogSettings)elementSection.getSection(propertiesId);
+				if (propertyEditorSection != null) {
+					return propertyEditorSection;
+				}
 			}
 		}
+		
 		return new DialogSettings(propertiesId);
 	}
 
 	@Override
 	public void setElementSettings(String elementId, String propertiesId, DialogSettings toolSettings) {
-		if (settings.getSection(TOOL_PREFERENCES) == null) {
-			settings.addNewSection(TOOL_PREFERENCES);
-		}
-		DialogSettings toolsSection = (DialogSettings)settings.getSection(TOOL_PREFERENCES);
+		DialogSettings elementsSection = (DialogSettings)DialogSettings.getOrCreateSection(settings, TOOL_PREFERENCES);;
+		DialogSettings elementSection  = (DialogSettings)DialogSettings.getOrCreateSection(elementsSection, elementId);;
 		
-		if (toolsSection.getSection(propertiesId) != null) {
-			toolsSection.removeSection(propertiesId);
-		}
 		
-		if (!propertiesId.equals(toolSettings.getName())) {
-			toolsSection.addSection(toolSettings);
-		} else {
-			//TODO
-		}	
+		if (elementSection.getSection(toolSettings.getName()) != null) {
+			elementSection.removeSection(toolSettings.getName());
+		}
+
+		elementSection.addSection(toolSettings);
 	}
 	
 }

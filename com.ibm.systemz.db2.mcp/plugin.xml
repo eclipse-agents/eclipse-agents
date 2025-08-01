@@ -27,6 +27,9 @@
          <propertyPage
                id="com.ibm.systemz.db2.mcp.tools.properties.RunQueryProperties">
          </propertyPage>
+         <propertyPage
+               id="com.ibm.systemz.db2.mcp.tools.properties.ActiveConnectionProperties">
+         </propertyPage>
       </tool>
       <tool
             categoryId="com.ibm.systemz.db2.mcp.category"
@@ -46,8 +49,17 @@
       </toolServerBinding>
    </extension>
 
-   	 <extension point="org.eclipse.ui.propertyPages">
-       <page name="Run SQL"
+   <extension point="org.eclipse.ui.propertyPages">
+       <page name="Active Connection"
+            class="com.ibm.systemz.db2.mcp.tools.properties.ActiveConnectionProperties"
+            id="com.ibm.systemz.db2.mcp.tools.properties.ActiveConnectionProperties">
+            <enabledWhen>
+                <instanceof
+                    value="org.eclipse.mcp.IMCPElementPropertyInput">
+                </instanceof>
+            </enabledWhen>
+      </page>
+      <page name="Run SQL Options"
             class="com.ibm.systemz.db2.mcp.tools.properties.RunQueryProperties"
             id="com.ibm.systemz.db2.mcp.tools.properties.RunQueryProperties">
             <enabledWhen>
@@ -56,5 +68,5 @@
                 </instanceof>
             </enabledWhen>
       </page>
-    </extension>
+   </extension>
 </plugin>

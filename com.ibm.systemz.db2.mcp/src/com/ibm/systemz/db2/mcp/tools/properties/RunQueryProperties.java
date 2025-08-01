@@ -10,137 +10,37 @@
 package com.ibm.systemz.db2.mcp.tools.properties;
 
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.DialogSettings;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.PropertyPage;
+
+import com.ibm.systemz.db2.ide.preferences.Db2RunSqlOptionsPropertyPage;
+import com.ibm.systemz.db2.ide.preferences.model.RunningOptions;
 
 
-public class RunQueryProperties  extends PropertyPage implements IWorkbenchPreferencePage, SelectionListener, ModifyListener {
+public class RunQueryProperties  extends Db2RunSqlOptionsPropertyPage {
 
 	
 
 
 	private Composite control;
-	
-	public RunQueryProperties() {
-		super();
-		setTitle("Db2 for z/OS");
-	}
-	
+
 	@Override
-	protected Control createContents(Composite parent) {
-		
-		control = new Composite(parent, SWT.NONE);
-		control.setLayout(new GridLayout(1, false));
-		control.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, true));
-
-		Group connectionReuseGroup = new Group(control, SWT.NONE);
-		connectionReuseGroup.setText("Group 1");
-		connectionReuseGroup.setLayoutData(new GridData());
-		connectionReuseGroup.setLayout(new GridLayout(1, true));
-		
-		control.setSize(control.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.ibm.systemz.db2.ide.preferences.Db2RunSqlOptionsPropertyPage"); //$NON-NLS-1$
-
-		loadPreferences();
-		updateValidation();
-		updateEnablement();
-		
-		IAdaptable element = getElement();
-
-		return control;
+	protected void savePreferences() {
+		// TODO Auto-generated method stub
+		super.savePreferences();
 	}
 
 	@Override
-	public void init(IWorkbench workbench) {
-		
+	protected RunningOptions loadPreferences() {
+		// TODO Auto-generated method stub
+		return super.loadPreferences();
+	}
+
+	@Override
+	protected RunningOptions loadDefaultPreferences() {
+		// TODO Auto-generated method stub
+		return super.loadDefaultPreferences();
 	}
 	
-	private void updateValidation() {
-		
-	}
-	
-	private void updateEnablement() {
 
-	}
-
-	private void loadPreferences() {
-		IAdaptable element = getElement();
-	}
-	
-	private void loadModelIntoUX(DialogSettings model) {
-		
-	}
-	
-	@Override
-	protected void performApply() {
-		savePreferences();
-	}
-
-	@Override
-	public boolean performCancel() {
-		return super.performCancel();
-	}
-
-	@Override
-	public boolean performOk() {
-		savePreferences();
-		return super.performOk();
-	}
-    
-    @Override
-	protected void performDefaults() {
-    	
-    	loadModelIntoUX(null);
-		
-		updateEnablement();
-		updateValidation();
-	}
-    
-	@Override
-	public void widgetDefaultSelected(SelectionEvent event) {
-		widgetSelected(event);		
-	}
-
-	@Override
-	public void widgetSelected(SelectionEvent event) {
-		updateEnablement();
-		updateValidation();
-	}
-
-	@Override
-	public void modifyText(ModifyEvent arg0) {
-		updateValidation();
-	}
-	
-	private void savePreferences() {
-		IAdaptable element = getElement();
-		
-	}
-	
-	private void updateSelectonIfNeeded(Button button, boolean select) {
-		if (button.getSelection() != select) {
-			button.setSelection(select);
-		}
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-	}
 
 }

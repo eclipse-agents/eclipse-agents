@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * IBM Confidential - OCO Source Materials
  * 
@@ -7,11 +6,12 @@
  * The source code for this program is not published or otherwise divested of its trade secrets, irrespective of what
  * has been deposited with the U.S. Copyright Office.
  *******************************************************************************/
-package org.eclipse.mcp;
+
+package com.ibm.systemz.db2.mcp.tools.properties;
+
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.DialogSettings;
-import org.eclipse.mcp.internal.preferences.IPreferenceConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -20,38 +20,63 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 
-public class ServerElementPropertyPage  extends PropertyPage implements IPreferenceConstants, IWorkbenchPreferencePage, SelectionListener, ModifyListener {
+public class ActiveConnectionProperties  extends PropertyPage implements IWorkbenchPreferencePage, SelectionListener, ModifyListener {
 
-	public static final String copyright = Copyright.COPYRIGHT;
+	
 
 
 	private Composite control;
 	
-	public ServerElementPropertyPage(String title) {
+	public ActiveConnectionProperties() {
 		super();
-		setTitle(title);
+		setTitle("Db2 for z/OS");
 	}
 	
 	@Override
 	protected Control createContents(Composite parent) {
 		
 		control = new Composite(parent, SWT.NONE);
-		control.setLayout(new GridLayout(1, false));
+		control.setLayout(new GridLayout(2, false));
 		control.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, true));
 
-		Group connectionReuseGroup = new Group(control, SWT.NONE);
-		connectionReuseGroup.setText("Group 1");
-		connectionReuseGroup.setLayoutData(new GridData());
-		connectionReuseGroup.setLayout(new GridLayout(1, true));
+		Button rollback = new Button(control, SWT.CHECK);
+		rollback.setText("Only allow read-only queries");
+		GridData gd = new GridData();
+		gd.horizontalSpan = 2;
+		rollback.setLayoutData(gd);
+		
+		Button connectionDeferToEditor = new Button(control, SWT.CHECK);
+		connectionDeferToEditor.setText("Use connection associated with Active Editor when available");
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		connectionDeferToEditor.setLayoutData(gd);
+		
+		Button runOptionsDeferToEditor = new Button(control, SWT.CHECK);
+		runOptionsDeferToEditor.setText("Use Run SQL Options of the Active Editor when available");
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		runOptionsDeferToEditor.setLayoutData(gd);
+		
+		Button connectionFixed = new Button(control, SWT.CHECK);
+		connectionFixed.setText("Always use the following connection:");
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		connectionFixed.setLayoutData(gd);
+		
+		Combo connectionCombo = new Combo(control, SWT.READ_ONLY);
+		connectionCombo.setText("Select one...");
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		connectionFixed.setLayoutData(gd);
 		
 		control.setSize(control.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.ibm.systemz.db2.ide.preferences.Db2RunSqlOptionsPropertyPage"); //$NON-NLS-1$
