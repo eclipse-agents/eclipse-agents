@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.mcp.Activator;
+import org.eclipse.mcp.IMCPElementPropertyInput;
 import org.eclipse.mcp.internal.preferences.ExtensionServer;
 import org.eclipse.mcp.internal.preferences.IPreferencedServer;
 
@@ -68,5 +69,46 @@ public class PreferenceManager {
 	
 	public IPreferencedServer[] getServers() {
 		return servers.toArray(new IPreferencedServer[0]);
+	}
+	
+	public  IMCPElementPropertyInput getElementPropertyInput(String serverId, String elementId) {
+
+		return new IMCPElementPropertyInput() {
+
+			@Override
+			public String getServerId() {
+				return serverId;
+			}
+
+			@Override
+			public String getElementId() {
+				return elementId;
+			}
+
+			@Override
+			public DialogSettings loadCurrentSettings(String propertyEditorId) {
+				for (IPreferencedServer server: servers) {
+					if (server.getId().equals(serverId)) {
+						return server.getElementSettings(elementId, propertyEditorId);
+					}
+				}
+				return null;
+			}
+
+			@Override
+			public void applySettings(String propertyEditorId, DialogSettings settings) {
+				for (IPreferencedServer server: servers) {
+					if (server.getId().equals(serverId)) {
+						server.setElementSettings(elementId, propertyEditorId, settings);
+					}
+				}
+				//TODO
+			}
+
+			@Override
+			public <T> T getAdapter(Class<T> arg0) {
+				return null;
+			}
+		};
 	}
 }

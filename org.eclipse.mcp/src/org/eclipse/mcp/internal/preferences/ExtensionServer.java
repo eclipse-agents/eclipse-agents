@@ -1,6 +1,7 @@
 package org.eclipse.mcp.internal.preferences;
 
 import org.eclipse.jface.dialogs.DialogSettings;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.mcp.internal.ExtensionManager;
 import org.eclipse.mcp.internal.ExtensionManager.ResourceFactory;
 import org.eclipse.mcp.internal.ExtensionManager.Tool;
@@ -66,7 +67,7 @@ public class ExtensionServer implements IPreferencedServer {
 			addedResourceFactoryIds = serverSettings.getArray(ADDED_RESOURCES);
 		}
 	}
-
+	
 	public void save() {
 
 		settings.put(NAME, customName);
@@ -213,6 +214,35 @@ public class ExtensionServer implements IPreferencedServer {
 	@Override
 	public ResourceFactory[] getResourceFactories() {
 		return extensionServer.getResourceFactories();
+	}
+
+	@Override
+	public DialogSettings getElementSettings(String elementId, String propertiesId) {
+		if (settings.getSection(TOOL_PREFERENCES) != null) {
+			IDialogSettings toolSettings = (DialogSettings)settings.getSection(TOOL_PREFERENCES);
+			if (toolSettings.getSection(propertiesId) != null) {
+				return (DialogSettings)toolSettings.getSection(propertiesId);
+			}
+		}
+		return new DialogSettings(propertiesId);
+	}
+
+	@Override
+	public void setElementSettings(String elementId, String propertiesId, DialogSettings toolSettings) {
+		if (settings.getSection(TOOL_PREFERENCES) == null) {
+			settings.addNewSection(TOOL_PREFERENCES);
+		}
+		DialogSettings toolsSection = (DialogSettings)settings.getSection(TOOL_PREFERENCES);
+		
+		if (toolsSection.getSection(propertiesId) != null) {
+			toolsSection.removeSection(propertiesId);
+		}
+		
+		if (!propertiesId.equals(toolSettings.getName())) {
+			toolsSection.addSection(toolSettings);
+		} else {
+			//TODO
+		}	
 	}
 	
 }

@@ -3,6 +3,8 @@ package org.eclipse.mcp.internal.preferences;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.dialogs.DialogSettings;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.Tracer;
 import org.eclipse.mcp.internal.ExtensionManager;
@@ -25,6 +27,8 @@ public interface IPreferencedServer {
 
 	public static final String ENABLED_TOOLS = "enabledToolIds";
 	public static final String ENABLED_RESOURCES = "enabledResourceFactoryIds";
+	
+	public static final String TOOL_PREFERENCES = "toolPreferences";
 	
 	public String getId();
 	public String getName();
@@ -75,4 +79,7 @@ public interface IPreferencedServer {
 		}
 		return (ExtensionManager.ResourceFactory[])resourceFactories.toArray();
 	}
+	
+	public DialogSettings getElementSettings(String elementId, String propertiesId);
+	public void setElementSettings(String elementId, String propertiesId, DialogSettings toolSettings);		
 }

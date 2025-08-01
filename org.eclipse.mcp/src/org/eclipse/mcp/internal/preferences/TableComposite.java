@@ -140,6 +140,12 @@ public abstract class TableComposite extends Composite implements IStructuredCon
 		return separator;
 	}
 
+	protected Object getSelection() {
+		if (getTableViewer().getStructuredSelection() != null) {
+			return getTableViewer().getStructuredSelection().getFirstElement();
+		}
+		return null;
+	}
 	protected CheckboxTableViewer getTableViewer() {
 		return viewer;
 	}

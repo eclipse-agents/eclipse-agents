@@ -45,10 +45,6 @@ public class ExtensionManager {
 		
 		point.getExtensions();
 		for (IExtension extension : point.getExtensions()) {
-			System.out.println(extension.getNamespaceIdentifier());
-			System.out.println(extension.getSimpleIdentifier());
-			System.out.println(extension.getExtensionPointUniqueIdentifier());
-			
 			for (IConfigurationElement extensionElement : extension.getConfigurationElements()) {
 				if ("server".equals(extensionElement.getName())) {
 					Server s = new Server(extensionElement);
@@ -56,9 +52,21 @@ public class ExtensionManager {
 				} else if ("tool".equals(extensionElement.getName())) {
 					Tool t = new Tool(extensionElement);
 					tools.put(t.id, t);
+					for (IConfigurationElement child: extensionElement.getChildren()) {
+						if (child.getName().equals("propertyPage")) {
+							t.addPropertyEditorId(child.getAttribute("id"));
+							//TODO validate id;
+						}
+					}
 				} else if ("resourceFactory".equals(extensionElement.getName())) {
 					ResourceFactory rf = new ResourceFactory(extensionElement);
 					resourceFactories.put(rf.id, rf);
+					for (IConfigurationElement child: extensionElement.getChildren()) {
+						if (child.getName().equals("propertyPage")) {
+							rf.addPropertyEditorId(child.getAttribute("id"));
+							//TODO validate id;
+						}
+					}
 				} else if ("category".equals(extensionElement.getName())) {
 					String id = extensionElement.getAttribute("id");
 					String name = extensionElement.getAttribute("name");
@@ -175,6 +183,7 @@ public class ExtensionManager {
 
 		String id, name, description, schema, categoryId;
 		IMCPTool implementation;
+		List<String> propertyPageIds = new ArrayList<String>();
 		boolean isValid;
 		
 		public Tool(IConfigurationElement e) {
@@ -196,6 +205,8 @@ public class ExtensionManager {
 				e1.printStackTrace();
 			}
 		}
+		
+		
 
 		@Override
 		public String getId() {
@@ -232,12 +243,28 @@ public class ExtensionManager {
 		public boolean isValid() {
 			return isValid;
 		}
+
+		@Override
+		public <T> T getAdapter(Class<T> arg0) {
+			return null;
+		}
+
+		@Override
+		public String[] getPropertyEditorIds() {
+			return propertyPageIds.toArray(String[]::new);
+		}
+
+		@Override
+		public void addPropertyEditorId(String id) {
+			propertyPageIds.add(id);
+		}
 	}
 	
 	
 	public class ResourceFactory implements ServerElement {
 
 		String id, name, description, categoryId;
+		List<String> propertyPageIds = new ArrayList<String>();
 		IMCPResourceFactory implementation;
 		boolean isValid;
 		
@@ -289,6 +316,21 @@ public class ExtensionManager {
 
 		public boolean isValid() {
 			return isValid;
+		}
+
+		@Override
+		public <T> T getAdapter(Class<T> arg0) {
+			return null;
+		}
+
+		@Override
+		public String[] getPropertyEditorIds() {
+			return propertyPageIds.toArray(String[]::new);
+		}
+
+		@Override
+		public void addPropertyEditorId(String id) {
+			propertyPageIds.add(id);
 		}
 	}
 }

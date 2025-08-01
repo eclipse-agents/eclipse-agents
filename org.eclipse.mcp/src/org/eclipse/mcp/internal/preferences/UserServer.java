@@ -1,5 +1,6 @@
 package org.eclipse.mcp.internal.preferences;
 
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 
 public class UserServer implements IPreferencedServer {
@@ -166,6 +167,16 @@ public class UserServer implements IPreferencedServer {
 
 	@Override
 	public void setEnabledResourceFactoryIds(String[] resourceFactoryIds) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public DialogSettings getElementSettings(String elementId, String propertiesId) {
+		return null;
+	}
+
+	@Override
+	public void setElementSettings(String elementId, String propertiesId, DialogSettings toolSettings) {
 		// TODO Auto-generated method stub
 		
 	}

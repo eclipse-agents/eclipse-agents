@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * IBM Confidential - OCO Source Materials
  * 
@@ -7,20 +6,13 @@
  * The source code for this program is not published or otherwise divested of its trade secrets, irrespective of what
  * has been deposited with the U.S. Copyright Office.
  *******************************************************************************/
-package org.eclipse.mcp.internal.preferences;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+package com.ibm.systemz.db2.mcp.tools.properties;
+
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.AccessibleEvent;
-import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -31,30 +23,22 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 
-import com.ibm.systemz.common.jface.Copyright;
-import com.ibm.systemz.db2.Activator;
-import com.ibm.systemz.db2.Messages;
-import com.ibm.systemz.db2.ide.preferences.model.RunningOptions;
-import com.ibm.systemz.db2.ide.validation.ImplicitRegisters;
 
-public class ServerElementPropertyPage  extends PropertyPage implements IPreferenceConstants, IPreferenceListener, IWorkbenchPreferencePage, SelectionListener, ModifyListener {
+public class RunQueryProperties  extends PropertyPage implements IWorkbenchPreferencePage, SelectionListener, ModifyListener {
 
-	public static final String copyright = Copyright.COPYRIGHT;
+	
 
 
 	private Composite control;
 	
-	public ServerElementPropertyPage() {
+	public RunQueryProperties() {
 		super();
-		setTitle("General");
+		setTitle("Db2 for z/OS");
 	}
 	
 	@Override
@@ -98,11 +82,9 @@ public class ServerElementPropertyPage  extends PropertyPage implements IPrefere
 		IAdaptable element = getElement();
 	}
 	
-	private void loadModelIntoUX(RunningOptions model) {
+	private void loadModelIntoUX(DialogSettings model) {
 		
 	}
-	
-	
 	
 	@Override
 	protected void performApply() {
@@ -122,8 +104,8 @@ public class ServerElementPropertyPage  extends PropertyPage implements IPrefere
     
     @Override
 	protected void performDefaults() {
-    	model.loadFromDefaults();
-    	loadModelIntoUX(model);
+    	
+    	loadModelIntoUX(null);
 		
 		updateEnablement();
 		updateValidation();
@@ -147,10 +129,7 @@ public class ServerElementPropertyPage  extends PropertyPage implements IPrefere
 	
 	private void savePreferences() {
 		IAdaptable element = getElement();
-		IFile file = ((IFileEditorInput)element).getFile();
-		RunningOptions model = new RunningOptions(file);
-		loadUXIntoModel(model);
-		model.saveToFile();
+		
 	}
 	
 	private void updateSelectonIfNeeded(Button button, boolean select) {
@@ -162,53 +141,6 @@ public class ServerElementPropertyPage  extends PropertyPage implements IPrefere
 	@Override
 	public void dispose() {
 		super.dispose();
-		EditorHelper.removePreferenceListener(this);
-	}
-
-	@Override
-	public void preferenceChanged(IFile file, Set<QualifiedName> modifiedPreferenceKeys) {
-		setJdbcPropertyMessages(file);
-	}
-	 
-	@Override
-	public Collection<QualifiedName> getFilteredQualifiedNames() {
-		return PREFERENCE_FILTER;
-	}
-	
-	/**
-	 * If the active connection has JDBC properties set that affect the default
-	 * current path or schema, display them in the background of the relevant Text 
-	 * @param file
-	 */
-	private void setJdbcPropertyMessages(IFile file) {
-
-		implicitRegisters = new ImplicitRegisters(file);
-
-		Activator.getDisplay().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				if (schemaText.isDisposed() || pathText.isDisposed()) {
-					return;
-				}
-				
-				String implicitSchema = implicitRegisters.getImplicitSchema();
-				if (implicitSchema == null) {
-					schemaText.setMessage(""); //$NON-NLS-1$
-				} else {
-					schemaText.setMessage(implicitSchema);
-				}
-			
-				String tooltip = implicitRegisters.getRunSqlOptionCurrentSchemaToolTip();
-				if (tooltip == null) {
-					schemaText.setToolTipText(""); //$NON-NLS-1$
-				} else {
-					schemaText.setToolTipText(tooltip);
-				}
-				
-				pathText.setMessage(""); //$NON-NLS-1$
-				
-			}
-		});
 	}
 
 }

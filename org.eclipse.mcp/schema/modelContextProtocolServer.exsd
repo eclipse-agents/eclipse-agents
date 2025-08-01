@@ -61,6 +61,9 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
          </documentation>
       </annotation>
       <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="propertyPage"/>
+         </sequence>
          <attribute name="description" type="string">
             <annotation>
                <documentation>
@@ -105,7 +108,7 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="categoryId" type="string" use="optional">
+         <attribute name="categoryId" type="string">
             <annotation>
                <documentation>
                   the unique identifier of the category for this tool
@@ -125,6 +128,9 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
          </documentation>
       </annotation>
       <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="propertyPage"/>
+         </sequence>
          <attribute name="description" type="string">
             <annotation>
                <documentation>
@@ -162,7 +168,7 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="categoryId" type="string" use="optional">
+         <attribute name="categoryId" type="string">
             <annotation>
                <documentation>
                   the unique identifier of the category for this resource factory
@@ -239,7 +245,7 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
          </documentation>
       </annotation>
       <complexType>
-          <attribute name="id" type="string" use="required">
+         <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
                   the unique identifier of this category
@@ -258,6 +264,7 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
          </attribute>
       </complexType>
    </element>
+
    <element name="toolServerBinding">
       <annotation>
          <documentation>
@@ -318,6 +325,37 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
       </complexType>
    </element>
 
+   <element name="propertyPage">
+      <annotation>
+         <documentation>
+            Specify an optional custom propertyPage to let the user customize the behavior of a tool or resource.
+    your class should implement org.eclipse.ui.dialogs.PropertyPage
+    you can load and save preferences from the input object, which is an instance of org.eclipse.mcp.IMCPElementPropertyInput
+ 
+ &lt;extension point=&quot;org.eclipse.ui.propertyPages&quot;&gt;
+    &lt;page name=&quot;My Page Name&quot;
+         class=&quot;com.foo.bar.MyPropertyPage&quot;
+         id=&quot;com.foo.bar.MyPropertyPage.ID&quot;&gt;
+         &lt;enabledWhen&gt;
+             &lt;instanceof
+                 value=&quot;org.eclipse.mcp.IMCPElementPropertyInput&quot;&gt;
+             &lt;/instanceof&gt;
+         &lt;/enabledWhen&gt;
+   &lt;/page&gt;
+ &lt;/extension&gt;
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the identifier of an 'org.eclipse.ui.propertyPages' extension that will enable for input of interface IMCPElementPropertyInput
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
    <annotation>
       <appinfo>
          <meta.section type="since"/>
@@ -352,11 +390,11 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
             name=&quot;listConsoles&quot;
             description=&quot;List the open consoles&quot;
             schema=&quot;{
-				&amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
-				&amp;quot;properties&amp;quot;: {
-				},
-				&amp;quot;required&amp;quot;: []
-			}&quot;&gt;
+    &amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
+    &amp;quot;properties&amp;quot;: {
+    },
+    &amp;quot;required&amp;quot;: []
+   }&quot;&gt;
       &lt;/tool&gt;
       &lt;tool
             class=&quot;org.eclipse.mcp.builtin.tool.ListEditors&quot;
@@ -364,11 +402,11 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
             name=&quot;listEditors&quot;
             description=&quot;List the open editors&quot;
             schema=&quot;{
-				&amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
-				&amp;quot;properties&amp;quot;: {
-				},
-				&amp;quot;required&amp;quot;: []
-			}&quot;&gt;
+    &amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
+    &amp;quot;properties&amp;quot;: {
+    },
+    &amp;quot;required&amp;quot;: []
+   }&quot;&gt;
       &lt;/tool&gt;
       &lt;toolServerBinding
             serverId=&quot;org.eclipse.mcp.builtins&quot;

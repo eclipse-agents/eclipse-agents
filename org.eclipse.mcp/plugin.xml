@@ -20,7 +20,7 @@
 	<extension point="org.eclipse.ui.preferencePages">
 		<page
 			id="org.eclipse.mcp.preferences.general"
-			name="MCP Servers"
+			name="MCP Workbench Services"
 			class="org.eclipse.mcp.internal.preferences.McpGeneralPreferencePage">
 			<keywordReference id="org.eclipse.mcp.keyword.mcp" />
 			<keywordReference id="org.eclipse.mcp.keyword.model" />
@@ -31,12 +31,12 @@
 
 	 <extension point="org.eclipse.ui.propertyPages">
        <page name="General"
-            class="com.ibm.systemz.db2.ide.preferences.Db2RunSqlOptionsPropertyPage"
-            id="com.ibm.systemz.db2.jdbc.properties">
+            class="org.eclipse.mcp.internal.preferences.ToolPropertyPage"
+            id="org.eclipse.mcp.internal.preferences.ToolPropertyPage">
             <enabledWhen>
-                <and>
-                    <instanceof value="org.eclipse.mcp.IMCPElementPropertyInput"/>
-                </and>
+                <instanceof
+                    value="org.eclipse.mcp.IMCPElementPropertyInput">
+                </instanceof>
             </enabledWhen>
       </page>
     </extension>

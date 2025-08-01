@@ -24,6 +24,9 @@
             id="com.ibm.systemz.db2.mcp.tools.RunQuery"
             name="db2-runQuery"
             schema="{&#x0A;  &quot;type&quot;: &quot;object&quot;,&#x0A;  &quot;properties&quot;: {&#x0A;    &quot;query&quot;: {&#x0A;      &quot;type&quot;: &quot;string&quot;&#x0A;    }&#x0A;  },&#x0A;  &quot;required&quot;: [&quot;query&quot;]&#x0A;}">
+         <propertyPage
+               id="com.ibm.systemz.db2.mcp.tools.properties.RunQueryProperties">
+         </propertyPage>
       </tool>
       <tool
             categoryId="com.ibm.systemz.db2.mcp.category"
@@ -43,4 +46,15 @@
       </toolServerBinding>
    </extension>
 
+   	 <extension point="org.eclipse.ui.propertyPages">
+       <page name="Run SQL"
+            class="com.ibm.systemz.db2.mcp.tools.properties.RunQueryProperties"
+            id="com.ibm.systemz.db2.mcp.tools.properties.RunQueryProperties">
+            <enabledWhen>
+                <instanceof
+                    value="org.eclipse.mcp.IMCPElementPropertyInput">
+                </instanceof>
+            </enabledWhen>
+      </page>
+    </extension>
 </plugin>
