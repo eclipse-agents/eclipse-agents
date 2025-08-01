@@ -11,7 +11,9 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.internal.preferences.IPreferencedServer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -76,8 +78,21 @@ public class ManagedServer {
 				public CallToolResult apply(McpSyncServerExchange t, Map<String, Object> u) {
 					CallToolResult result = null;
 					List<Content> content = new ArrayList<Content>();
+					
 					try {
-						String[] rawText = toolExtension.getImplementation().apply(u);
+						
+						List<DialogSettings> settings = new ArrayList<DialogSettings>();
+						PreferenceManager pm = new PreferenceManager();
+						pm.load();
+						for (IPreferencedServer server: pm.getServers()) {
+							if (server.getId().equals(extension.getId()) ) {
+								for (String propertyEditorId: toolExtension.getPropertyEditorIds()) {
+									settings.add(server.getElementSettings(toolExtension.getId(), propertyEditorId));
+								}
+							}
+						}
+						
+						String[] rawText = toolExtension.getImplementation().apply(u, settings.toArray(DialogSettings[]::new));
 						for (String s: rawText) {
 							content.add(new TextContent(s));
 						}

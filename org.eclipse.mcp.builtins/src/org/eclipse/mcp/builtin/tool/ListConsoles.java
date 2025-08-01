@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.mcp.IMCPTool;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -21,7 +22,7 @@ public class ListConsoles implements IMCPTool {
 	
 
 	@Override
-	public String[] apply(Map<String, Object> u) {
+	public String[] apply(Map<String, Object> u, DialogSettings[] settings) {
 		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
 		List<String> result = new ArrayList<String>();
 		for (IConsole console: manager.getConsoles()) {
