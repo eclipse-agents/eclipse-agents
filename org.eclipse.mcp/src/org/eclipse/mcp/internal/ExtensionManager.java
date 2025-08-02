@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.mcp.IMCPResourceFactory;
 import org.eclipse.mcp.IMCPTool;
-import org.eclipse.mcp.Tracer;
 import org.eclipse.mcp.internal.preferences.ServerElement;
 
 /**

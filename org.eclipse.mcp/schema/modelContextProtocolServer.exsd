@@ -7,7 +7,21 @@
       </appinfo>
       <documentation>
          &lt;p&gt;
-The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used to declare model context protocol servers, tools and potentially resource and prompts in the future.  MCP tools are used to expose IDE tooling to Agent assisted development tools
+The &lt;code&gt;org.eclipse.mcp.modelContextProtocolServer&lt;/code&gt; extension point is used to declare and instantiate model context protocol servers that runs within the IDE&apos;s VM and expose IDE functionality for interaction with Agents and/or Developers.
+&lt;/p&gt;&lt;p&gt;
+Declared MCP Servers can be instantiated using modelcontextprotocol/java-sdk, and can be configured to server over HTTP using Jetty
+&lt;/p&gt;&lt;p&gt;
+A &quot;Platform MCP Servers&quot; preference page will let users:
+&lt;ul&gt;
+  &lt;li&gt;Customize Servers&lt;/li&gt;
+  &lt;li&gt;Customize a Server&apos;s Tools and Resource Managers&lt;/li&gt;
+	&lt;ul&gt;
+  		&lt;li&gt;	Add / Remove&lt;/li&gt;
+  		&lt;li&gt;	Enable / Disable&lt;/li&gt;
+  		&lt;li&gt;	Customize name and description to suit an Agentic scenario&lt;/li&gt;
+  		&lt;li&gt;	Custom property pages for specific tools and resource managers&lt;/li&gt;
+  	&lt;/ul&gt;
+&lt;/ul&gt;
 &lt;/p&gt;
       </documentation>
    </annotation>
@@ -349,7 +363,7 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
-                  the identifier of an 'org.eclipse.ui.propertyPages' extension that will enable for input of interface IMCPElementPropertyInput
+                  the identifier of an &apos;org.eclipse.ui.propertyPages&apos; extension that will enable for input of interface IMCPElementPropertyInput
                </documentation>
             </annotation>
          </attribute>
@@ -376,45 +390,37 @@ The &lt;code&gt;org.eclipse.ui.activities&lt;/code&gt; extension point is used t
 &lt;p&gt;
 &lt;pre&gt;
   &lt;extension
-         point=&quot;org.eclipse.mcp.modelContextProtocolServer&quot;&gt;
+         point=&quot;org.eclipse.mcp.modelContextProtocolServer&quot;
+         id=&quot;com.foo.bar&quot;
+         name=&quot;My MCP Contributions&quot;&gt;
+      &lt;category
+            id=&quot;com.foo.bar.category&quot;
+            name=&quot;My Contributions&quot;&gt;
+      &lt;/category&gt;
       &lt;server
-            description=&quot;Set of default tools for enabling Agent-driven development&quot;
-            id=&quot;org.eclipse.mcp.builtins&quot;
-            name=&quot;Built-in Eclipse MCP Server&quot;
-            version=&quot;0.0.1&quot;
-            defaultPort=&quot;12931&quot;&gt;
+            description=&quot;My first MCP server&quot;
+            id=&quot;com.foo.bar.server&quot;
+            name=&quot;My MCP Server&quot;
+            version=&quot;1.0.0&quot;
+            defaultPort=&quot;12932&quot;&gt;
       &lt;/server&gt;
       &lt;tool
-            class=&quot;org.eclipse.mcp.builtin.tool.ListConsoles&quot;
-            id=&quot;org.eclipse.mcp.builtin.tool.ListConsoles&quot;
-            name=&quot;listConsoles&quot;
-            description=&quot;List the open consoles&quot;
-            schema=&quot;{
-    &amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
-    &amp;quot;properties&amp;quot;: {
-    },
-    &amp;quot;required&amp;quot;: []
-   }&quot;&gt;
-      &lt;/tool&gt;
-      &lt;tool
-            class=&quot;org.eclipse.mcp.builtin.tool.ListEditors&quot;
-            id=&quot;org.eclipse.mcp.builtin.tool.ListEditors&quot;
-            name=&quot;listEditors&quot;
-            description=&quot;List the open editors&quot;
-            schema=&quot;{
-    &amp;quot;type&amp;quot;: &amp;quot;object&amp;quot;,
-    &amp;quot;properties&amp;quot;: {
-    },
-    &amp;quot;required&amp;quot;: []
-   }&quot;&gt;
+            categoryId=&quot;com.foo.bar.category&quot;
+            class=&quot;com.foo.bar.tools.MyIMCPTool&quot;
+            description=&quot;LLM Tooling will read this to understand how to invoke my tool&quot;
+            id=&quot;com.foo.bar.tools.MyIMCPToolId&quot;
+            name=&quot;foo-myTool&quot;
+            schema=&quot;my XML escaped JSON schema declaring the inputs into my tool&quot;&quot;&gt;
+         &lt;propertyPage
+               id=&quot;com.foo.bar.tools.myPropertyPageId1&quot;&gt;
+         &lt;/propertyPage&gt;
+         &lt;propertyPage
+               id=&quot;com.foo.bar.tools.myPropertyPageId2&quot;&gt;
+         &lt;/propertyPage&gt;
       &lt;/tool&gt;
       &lt;toolServerBinding
-            serverId=&quot;org.eclipse.mcp.builtins&quot;
-            toolId=&quot;org.eclipse.mcp.builtin.tool.ListConsoles&quot;&gt;
-      &lt;/toolServerBinding&gt;
-      &lt;toolServerBinding
-            serverId=&quot;org.eclipse.mcp.builtins&quot;
-            toolId=&quot;org.eclipse.mcp.builtin.tool.ListEditors&quot;&gt;
+            serverId=&quot;com.foo.bar.server&quot;
+            toolId=&quot;com.foo.bar.tools.MyIMCPToolId&quot;&gt;
       &lt;/toolServerBinding&gt;
    &lt;/extension&gt;
 &lt;/pre&gt;

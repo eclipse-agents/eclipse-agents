@@ -12,7 +12,6 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.IMCPElementPropertyInput;
 import org.eclipse.mcp.internal.preferences.ExtensionServer;
 import org.eclipse.mcp.internal.preferences.IPreferencedServer;

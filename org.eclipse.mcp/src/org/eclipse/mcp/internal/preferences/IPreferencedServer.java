@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.mcp.Activator;
-import org.eclipse.mcp.Tracer;
+import org.eclipse.mcp.internal.Activator;
 import org.eclipse.mcp.internal.ExtensionManager;
+import org.eclipse.mcp.internal.Tracer;
 
 public interface IPreferencedServer {
 	

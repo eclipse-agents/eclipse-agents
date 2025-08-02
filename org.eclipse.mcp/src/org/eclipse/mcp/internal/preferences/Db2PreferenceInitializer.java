@@ -10,7 +10,7 @@ package org.eclipse.mcp.internal.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.mcp.Activator;
+import org.eclipse.mcp.internal.Activator;
 
 public class Db2PreferenceInitializer extends AbstractPreferenceInitializer implements IPreferenceConstants {
 

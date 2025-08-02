@@ -1,23 +1,58 @@
-# WIP: Eclipse MCP Extenion Point
+# Eclipse Model Context Protocol Server Extenion Point
+
+The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html) is used to declare and instantiate model context protocol servers that runs within the IDE's VM and expose IDE functionality for interaction with Agents and/or Developers.
+
+Abstracts away the underlying dependencies on [modelcontextprotocol/java-sdk(https://github.com/modelcontextprotocol/java-sdk)] and Jetty HTTP Serer, providing a simple interfaces to plugin developers.
+
+Adds a "Platform MCP Servers" preference page will let users:
+
+- Customize Servers
+  - Enable / Disable
+  - update HTTP port
+  - Copy server url to clipboard
+- Customize a Server's Tools and Resource Managers
+  - Add / Remove to server
+  - Enable / Disable
+  - <img src="org.eclipse.mcp/docs/images/mcpPreferences.png" alt="drawing" width="500"/>
+- Customize name and description to suit an Agentic scenario
+  - <img src="org.eclipse.mcp/docs/images/editToolProperties.png" alt="drawing" width="500"/>
+- Custom property pages for specific tools and resource managers
+  - <img src="org.eclipse.mcp/docs/images/editToolCustomProperties.png" alt="drawing" width="500"/>
+
+## [Extenion Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html)
+
+## [Java Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
 
 To expose an aspect of your IDE plugin as an MCP tool, do the following:
 
-## Implement your MCP Tool
+## Getting Started:  Lets create an MCP Tool
 
-1. Add plugin `org.eclipse.mcp` as a dependency to your plugin
-2. Create a class that implements `IModelContextProtocolTool`
+1. Create or open an Eclipse Plugin Project
+2. Add plugin `org.eclipse.mcp` as a dependency to your plugin
+3. Create a class that implements [IMCPTool](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPTool.html)
 
 ```java
-public interface IModelContextProtocolTool {
-  /** 
-   * @param The tools input parameters as defined by its declared JSON Schema
+/**
+ * An MCP tool is an exported function that and LLM-powered Agent can invoke
+ * 
+ * MCP Tools are declared in extension point <code>org.eclipse.mcp.modelContextProtocolServer</code>
+ * 
+ * The <code>class<code> attribute of a <code>tool</code> must be an instance of <code>org.eclipse.mcp.IMCPTool</code>
+ */
+public interface IMCPTool {
+  
+  /**
+   * Executes the MCP Tool
+   * @param args A map of input parameters sent to this function matching the tool's declared input JSON schema
+   * @param properties utility to fetch and prompt for user customized preference values
    * @return An array of strings representing the result of the tool execution.
    */
-  public String[] apply(Map<String, Object> args);
+  public String[] apply(Map<String, Object> args, IElementProperties properties);
+
 }
 ```
 
-3. Define a JSON schema that describes the arguments your tool will accept, for example
+4. Define a JSON schema that describes the arguments your tool will accept, for example
 
 ```json
 {
@@ -34,7 +69,7 @@ public interface IModelContextProtocolTool {
 }
 ```
 
-4. Implement the logic for your tool, returning an array of Strings as your result
+5. Implement the logic for your tool, returning an array of Strings as your result
 
 ## Declare your tool as an extension in your plugin.xml
 

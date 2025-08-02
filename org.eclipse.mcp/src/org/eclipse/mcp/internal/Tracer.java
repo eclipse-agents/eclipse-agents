@@ -1,4 +1,4 @@
-package org.eclipse.mcp;
+package org.eclipse.mcp.internal;
 
 /*******************************************************************************
 Licensed Materials - Property of IBM

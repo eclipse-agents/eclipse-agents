@@ -2,7 +2,6 @@ package org.eclipse.mcp.internal;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.IElementProperties;
 import org.eclipse.mcp.IMCPElementPropertyInput;
 import org.eclipse.mcp.internal.preferences.IPreferencedServer;

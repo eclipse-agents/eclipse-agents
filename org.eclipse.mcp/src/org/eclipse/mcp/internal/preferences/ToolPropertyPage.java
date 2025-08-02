@@ -99,7 +99,7 @@ public class ToolPropertyPage extends PropertyPage implements IPreferenceConstan
 
 		createLabel(parent, "description");
 
-		int descFlags= fIsNameModifiable ? SWT.BORDER : SWT.BORDER | SWT.READ_ONLY;
+		int descFlags= fIsNameModifiable ? SWT.BORDER : SWT.BORDER;
 		fDescriptionText= new Text(parent, descFlags );
 		fDescriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -116,6 +116,15 @@ public class ToolPropertyPage extends PropertyPage implements IPreferenceConstan
 		data.heightHint = 40;
 		data.widthHint = 420;
 		patternText.setLayoutData(data);
+		patternText.setText("{\n"
+				+ "  \"type\": \"object\",\n"
+				+ "  \"properties\": {\n"
+				+ "    \"query\": {\n"
+				+ "      \"type\": \"string\"\n"
+				+ "    }\n"
+				+ "  },\n"
+				+ "  \"required\": [\"query\"]\n"
+				+ "}");
 		
 		return parent;
 	}

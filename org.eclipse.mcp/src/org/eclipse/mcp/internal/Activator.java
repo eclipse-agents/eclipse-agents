@@ -1,4 +1,4 @@
-package org.eclipse.mcp;
+package org.eclipse.mcp.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,9 +14,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.ResourceLocator;
-import org.eclipse.mcp.internal.ExtensionManager;
-import org.eclipse.mcp.internal.PreferenceManager;
-import org.eclipse.mcp.internal.ServerManager;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;

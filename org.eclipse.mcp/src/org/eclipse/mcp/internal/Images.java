@@ -6,7 +6,7 @@
  * The source code for this program is not published or otherwise divested of its trade secrets, irrespective of what
  * has been deposited with the U.S. Copyright Office.
  *******************************************************************************/
-package org.eclipse.mcp;
+package org.eclipse.mcp.internal;
 
 public class Images {
 
