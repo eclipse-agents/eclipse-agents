@@ -7,20 +7,20 @@
       </appinfo>
       <documentation>
          &lt;p&gt;
-The &lt;code&gt;org.eclipse.mcp.modelContextProtocolServer&lt;/code&gt; extension point is used to declare and instantiate model context protocol servers that runs within the IDE&apos;s VM and expose IDE functionality for interaction with Agents and/or Developers.
+The &lt;code&gt;org.eclipse.mcp.modelContextProtocolServer&lt;/code&gt; extension point is used to declare and instantiate &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts&quot;&gt;Model Context Protocol Servers&lt;/a&gt; that run within the IDE&apos;s Process and expose IDE functionality for interaction with Agents and/or Developers.
 &lt;/p&gt;&lt;p&gt;
-Declared MCP Servers can be instantiated using modelcontextprotocol/java-sdk, and can be configured to server over HTTP using Jetty
+Behind the scenes, declared MCP Servers will be instantiated using the modelcontextprotocol/java-sdk API and configured to serve over HTTP using  and can be configured to server over HTTP using Jetty.
 &lt;/p&gt;&lt;p&gt;
 A &quot;Platform MCP Servers&quot; preference page will let users:
 &lt;ul&gt;
   &lt;li&gt;Customize Servers&lt;/li&gt;
   &lt;li&gt;Customize a Server&apos;s Tools and Resource Managers&lt;/li&gt;
-	&lt;ul&gt;
-  		&lt;li&gt;	Add / Remove&lt;/li&gt;
-  		&lt;li&gt;	Enable / Disable&lt;/li&gt;
-  		&lt;li&gt;	Customize name and description to suit an Agentic scenario&lt;/li&gt;
-  		&lt;li&gt;	Custom property pages for specific tools and resource managers&lt;/li&gt;
-  	&lt;/ul&gt;
+ &lt;ul&gt;
+    &lt;li&gt; Add / Remove&lt;/li&gt;
+    &lt;li&gt; Enable / Disable&lt;/li&gt;
+    &lt;li&gt; Customize name and description to suit an Agentic scenario&lt;/li&gt;
+    &lt;li&gt; Custom property pages for specific tools and resource managers&lt;/li&gt;
+   &lt;/ul&gt;
 &lt;/ul&gt;
 &lt;/p&gt;
       </documentation>
@@ -35,11 +35,11 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="tool"/>
-            <element ref="resourceFactory"/>
+            <element ref="resourceController"/>
             <element ref="server"/>
             <element ref="category"/>
             <element ref="toolServerBinding"/>
-            <element ref="resourceFactoryServerBinding"/>
+            <element ref="resourceControllerServerBinding"/>
          </sequence>
          <attribute name="id" type="string">
             <annotation>
@@ -71,7 +71,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
    <element name="tool">
       <annotation>
          <documentation>
-            This element is used to define a model context protocol tool. If more than one of these elements exist with the same &lt;code&gt;id&lt;/code&gt; attribute, only the last declared element (in order of reading the registry) is considered valid.
+            This element is used to define a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tool&lt;/a&gt;
          </documentation>
       </annotation>
       <complexType>
@@ -135,10 +135,10 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       </complexType>
    </element>
 
-   <element name="resourceFactory">
+   <element name="resourceController">
       <annotation>
          <documentation>
-            This element is used to define a factory to dynamically create and remove model context protocol resources from the server.  If more than one of these elements exist with the same &lt;code&gt;id&lt;/code&gt; attribute, only the last declared element (in order of reading the registry) is considered valid.
+            This element is used to define a controller that may dynamically create and remove &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data&quot;&gt;Model Context Protocol Resources&lt;/a&gt; from the server.
          </documentation>
       </annotation>
       <complexType>
@@ -148,7 +148,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          <attribute name="description" type="string">
             <annotation>
                <documentation>
-                  The description of this MCP resource factory
+                  The description of this MCP resource controller
                </documentation>
                <appinfo>
                   <meta.attribute translatable="true"/>
@@ -165,7 +165,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
-                  The name of this MCP resource factory
+                  The name of this MCP resource controller
                </documentation>
                <appinfo>
                   <meta.attribute translatable="true"/>
@@ -175,10 +175,10 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  The fully qualified name of the IMCPResourceFactory implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPResourceFactory&lt;/tt&gt; and have an zero-parameter constructor.  Factories are responsible for dynamically adding and removing resources and translating a url to string content
+                  The fully qualified name of the IMCPResourceController implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPResourceController&lt;/tt&gt; and have an zero-parameter constructor.  Resource Controllers are responsible for dynamically adding and removing resources and translating a url to string content
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPResourceFactory"/>
+                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPresourceController"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -198,7 +198,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
    <element name="server">
       <annotation>
          <documentation>
-            This element is used to define an MCP server that hosts a collection of tools and may server content over a localhost endpoint. If more than one of these elements exist with the same &lt;code&gt;id&lt;/code&gt; attribute, only the last declared element (in order of reading the registry) is considered valid.
+            This element declares a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts&quot;&gt;Model Context Protocol Server&lt;/a&gt; that may serve a collection of &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tools&lt;/a&gt;  and  &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data&quot;&gt;Model Context Protocol Resources&lt;/a&gt; and make them available within the the IDE Process or over HTTP.
          </documentation>
       </annotation>
       <complexType>
@@ -309,20 +309,20 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       </complexType>
    </element>
 
-   <element name="resourceFactoryServerBinding">
+   <element name="resourceControllerServerBinding">
       <annotation>
          <documentation>
-            This element allows one to bind tool to a server
+            This element allows one to bind a Resource Controller to a Server
          </documentation>
       </annotation>
       <complexType>
-         <attribute name="resourceFactoryId" type="string" use="required">
+         <attribute name="resourceControllerId" type="string" use="required">
             <annotation>
                <documentation>
                   the unique identifier of the activity to bind
                </documentation>
                <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/resourceFactory/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/resourceController/@id"/>
                </appinfo>
             </annotation>
          </attribute>

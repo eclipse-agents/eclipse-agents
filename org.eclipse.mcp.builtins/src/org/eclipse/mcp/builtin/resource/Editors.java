@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.mcp.IMCPResourceController;
 import org.eclipse.mcp.IMCPResourceFactory;
-import org.eclipse.mcp.IMCPResourceManager;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -17,9 +17,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-public class Editors implements IMCPResourceFactory {
+public class Editors implements IMCPResourceController {
 
-	IMCPResourceManager manager;
+	IMCPResourceFactory manager;
 	
 	IWindowListener windowListener;
 	IPageListener pageListener;
@@ -32,7 +32,7 @@ public class Editors implements IMCPResourceFactory {
 	}
 
 	@Override
-	public void initialize(IMCPResourceManager manager) {
+	public void initialize(IMCPResourceFactory manager) {
 		this.manager = manager;
 		
 		windowListener = new IWindowListener() {

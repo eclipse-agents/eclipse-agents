@@ -16,25 +16,25 @@
 <p></p>
 
 <h6 class="CaptionFigColumn SchemaHeader">Description: </h6><p>
-The <code>org.eclipse.mcp.modelContextProtocolServer</code> extension point is used to declare and instantiate model context protocol servers that runs within the IDE's VM and expose IDE functionality for interaction with Agents and/or Developers.
+The <code>org.eclipse.mcp.modelContextProtocolServer</code> extension point is used to declare and instantiate <a href="https://modelcontextprotocol.io/docs/learn/server-concepts">Model Context Protocol Servers</a> that run within the IDE's Process and expose IDE functionality for interaction with Agents and/or Developers.
 </p><p>
-Declared MCP Servers can be instantiated using modelcontextprotocol/java-sdk, and can be configured to server over HTTP using Jetty
+Behind the scenes, declared MCP Servers will be instantiated using the modelcontextprotocol/java-sdk API and configured to serve over HTTP using  and can be configured to server over HTTP using Jetty.
 </p><p>
 A "Platform MCP Servers" preference page will let users:
 <ul>
   <li>Customize Servers</li>
   <li>Customize a Server's Tools and Resource Managers</li>
-	<ul>
-  		<li>	Add / Remove</li>
-  		<li>	Enable / Disable</li>
-  		<li>	Customize name and description to suit an Agentic scenario</li>
-  		<li>	Custom property pages for specific tools and resource managers</li>
-  	</ul>
+ <ul>
+    <li> Add / Remove</li>
+    <li> Enable / Disable</li>
+    <li> Customize name and description to suit an Agentic scenario</li>
+    <li> Custom property pages for specific tools and resource managers</li>
+   </ul>
 </ul>
 </p><p></p>
 <h6 class="CaptionFigColumn SchemaHeader">Configuration Markup:</h6>
 <p></p>
-<p class="code SchemaDtd">&lt;!ELEMENT <a name="e.extension">extension</a> (<a href="#e.tool">tool</a> , <a href="#e.resourceFactory">resourceFactory</a> , <a href="#e.server">server</a> , <a href="#e.category">category</a> , <a href="#e.toolServerBinding">toolServerBinding</a> , <a href="#e.resourceFactoryServerBinding">resourceFactoryServerBinding</a>)*&gt;</p>
+<p class="code SchemaDtd">&lt;!ELEMENT <a name="e.extension">extension</a> (<a href="#e.tool">tool</a> , <a href="#e.resourceController">resourceController</a> , <a href="#e.server">server</a> , <a href="#e.category">category</a> , <a href="#e.toolServerBinding">toolServerBinding</a> , <a href="#e.resourceControllerServerBinding">resourceControllerServerBinding</a>)*&gt;</p>
 <p class="code SchemaDtd">&lt;!ATTLIST extension</p>
 <p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED</p>
 <p class="code SchemaDtdAttlist">name&nbsp;&nbsp;CDATA #IMPLIED</p>
@@ -55,7 +55,7 @@ A "Platform MCP Servers" preference page will let users:
 <p class="code SchemaDtdAttlist">categoryId&nbsp;&nbsp;IDREF #IMPLIED&gt;</p>
 <p></p>
 <p class="ConfigMarkupElementDesc">
-This element is used to define a model context protocol tool. If more than one of these elements exist with the same <code>id</code> attribute, only the last declared element (in order of reading the registry) is considered valid.</p>
+This element is used to define a <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions">Model Context Protocol Tool</a></p>
 <br>
 <ul class="ConfigMarkupAttlistDesc">
 <li><b>description</b> - The description of this MCP tool that is shared with MCP clients</li>
@@ -65,8 +65,8 @@ This element is used to define a model context protocol tool. If more than one o
 <li><b>class</b> - The fully qualified name of the AbstractTool implemention.  Must implement <tt>org.eclipse.mcp.IMCPTool</tt> and have an zero-parameter constructor.</li>
 <li><b>categoryId</b> - the unique identifier of the category for this tool</li>
 </ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.resourceFactory">resourceFactory</a> (<a href="#e.propertyPage">propertyPage</a>)*&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST resourceFactory</p>
+<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.resourceController">resourceController</a> (<a href="#e.propertyPage">propertyPage</a>)*&gt;</p>
+<p class="code SchemaDtd">&lt;!ATTLIST resourceController</p>
 <p class="code SchemaDtdAttlist">description&nbsp;CDATA #IMPLIED</p>
 <p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
 <p class="code SchemaDtdAttlist">name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
@@ -74,13 +74,13 @@ This element is used to define a model context protocol tool. If more than one o
 <p class="code SchemaDtdAttlist">categoryId&nbsp;&nbsp;IDREF #IMPLIED&gt;</p>
 <p></p>
 <p class="ConfigMarkupElementDesc">
-This element is used to define a factory to dynamically create and remove model context protocol resources from the server.  If more than one of these elements exist with the same <code>id</code> attribute, only the last declared element (in order of reading the registry) is considered valid.</p>
+This element is used to define a controller that may dynamically create and remove <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data">Model Context Protocol Resources</a> from the server.</p>
 <br>
 <ul class="ConfigMarkupAttlistDesc">
-<li><b>description</b> - The description of this MCP resource factory</li>
+<li><b>description</b> - The description of this MCP resource controller</li>
 <li><b>id</b> - the unique identifier of this resource manager</li>
-<li><b>name</b> - The name of this MCP resource factory</li>
-<li><b>class</b> - The fully qualified name of the IMCPResourceFactory implemention.  Must implement <tt>org.eclipse.mcp.IMCPResourceFactory</tt> and have an zero-parameter constructor.  Factories are responsible for dynamically adding and removing resources and translating a url to string content</li>
+<li><b>name</b> - The name of this MCP resource controller</li>
+<li><b>class</b> - The fully qualified name of the IMCPResourceController implemention.  Must implement <tt>org.eclipse.mcp.IMCPResourceController</tt> and have an zero-parameter constructor.  Resource Controllers are responsible for dynamically adding and removing resources and translating a url to string content</li>
 <li><b>categoryId</b> - the unique identifier of the category for this resource factory</li>
 </ul>
 <br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.server">server</a> EMPTY&gt;</p>
@@ -92,7 +92,7 @@ This element is used to define a factory to dynamically create and remove model 
 <p class="code SchemaDtdAttlist">defaultPort&nbsp;CDATA #REQUIRED&gt;</p>
 <p></p>
 <p class="ConfigMarkupElementDesc">
-This element is used to define an MCP server that hosts a collection of tools and may server content over a localhost endpoint. If more than one of these elements exist with the same <code>id</code> attribute, only the last declared element (in order of reading the registry) is considered valid.</p>
+This element declares a <a href="https://modelcontextprotocol.io/docs/learn/server-concepts">Model Context Protocol Server</a> that may serve a collection of <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions">Model Context Protocol Tools</a>  and  <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data">Model Context Protocol Resources</a> and make them available within the the IDE Process or over HTTP.</p>
 <br>
 <ul class="ConfigMarkupAttlistDesc">
 <li><b>description</b> - a translatable short description of this server for display in the UI</li>
@@ -125,16 +125,16 @@ This element allows one to bind tool to a server</p>
 <li><b>toolId</b> - the unique identifier of the activity to bind</li>
 <li><b>serverId</b> - the unique identifier of the server to bind</li>
 </ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.resourceFactoryServerBinding">resourceFactoryServerBinding</a> EMPTY&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST resourceFactoryServerBinding</p>
-<p class="code SchemaDtdAttlist">resourceFactoryId&nbsp;IDREF #REQUIRED</p>
-<p class="code SchemaDtdAttlist">serverId&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IDREF #REQUIRED&gt;</p>
+<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.resourceControllerServerBinding">resourceControllerServerBinding</a> EMPTY&gt;</p>
+<p class="code SchemaDtd">&lt;!ATTLIST resourceControllerServerBinding</p>
+<p class="code SchemaDtdAttlist">resourceControllerId&nbsp;IDREF #REQUIRED</p>
+<p class="code SchemaDtdAttlist">serverId&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IDREF #REQUIRED&gt;</p>
 <p></p>
 <p class="ConfigMarkupElementDesc">
-This element allows one to bind tool to a server</p>
+This element allows one to bind a Resource Controller to a Server</p>
 <br>
 <ul class="ConfigMarkupAttlistDesc">
-<li><b>resourceFactoryId</b> - the unique identifier of the activity to bind</li>
+<li><b>resourceControllerId</b> - the unique identifier of the activity to bind</li>
 <li><b>serverId</b> - the unique identifier of the server to bind</li>
 </ul>
 <br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.propertyPage">propertyPage</a> EMPTY&gt;</p>

@@ -1,22 +1,27 @@
-# Eclipse Model Context Protocol Server Extenion Point
+# Eclipse Plug-In Developer Extension for Model Context Protocol Services
 
-The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html) is used to declare and instantiate model context protocol servers that runs within the IDE's VM and expose IDE functionality for interaction with Agents and/or Developers.
+The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html) can be used to declare and instantiate Model Context Protocol (MCP) servers that run within the Eclipse IDE's VM and that can bridge the divide betwen LLM Agents and Chat Experiences and your plugins functionality and user experiences.
 
-Abstracts away the underlying dependencies on [modelcontextprotocol/java-sdk(https://github.com/modelcontextprotocol/java-sdk)] and Jetty HTTP Serer, providing a simple interfaces to plugin developers.
+It provides a simple mechanism to contribute MCP Tools and Resources to MCP servers running inside Eclipse.
 
-Adds a "Platform MCP Servers" preference page will let users:
+It abstracts away the underlying dependencies such as [modelcontextprotocol/java-sdk(https://github.com/modelcontextprotocol/java-sdk)] and Jetty HTTP Server by providing an extension point and some simple Java Interaces
+
+Update your Eclipse plugin to contribute your own MCP tool and resource controllers to the platform in a few steps
+
+IT also adds a new "Platform MCP" preference page will let users:
 
 - Customize Servers
   - Enable / Disable
+  - Create / Delete servers and manage which Tools and Resource Controllers they serve
   - update HTTP port
   - Copy server url to clipboard
-- Customize a Server's Tools and Resource Managers
+- Customize a Server's Tools and Resource Managers behavior
   - Add / Remove to server
   - Enable / Disable
   - <img src="org.eclipse.mcp/docs/images/mcpPreferences.png" alt="drawing" width="500"/>
-- Customize name and description to suit an Agentic scenario
+  - Customize a Tool's name and description to suit an Agentic scenario
   - <img src="org.eclipse.mcp/docs/images/editToolProperties.png" alt="drawing" width="500"/>
-- Custom property pages for specific tools and resource managers
+  - Customize Tools and Resource Controllers using unique property pages specific to the type of Tool/Resource
   - <img src="org.eclipse.mcp/docs/images/editToolCustomProperties.png" alt="drawing" width="500"/>
 
 ## [Extenion Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html)
@@ -113,7 +118,7 @@ Example:
    </extension>
 ```
 
-Thats all that is required.  Upon startup, MCP servers will start up and serve content over HTTP for the registered tools.  Calls to tools will be delegated to your instances of IModelContextProtocolTool
+Thats all that is required.  Upon startup, MCP servers will start up and serve content over HTTP for the registered tools.  Calls to tools will be delegated to your instances of IMCPTool
 
 ### Future Considerations
 

@@ -1,26 +1,25 @@
 package org.eclipse.mcp;
 
+import java.util.UUID;
+
 /**
- * An MCP resource represents content an LLM agent or user can opt to add to their context window.
- * 
- * MCP resources can be dynamically added/removed to the list of resources available on a server by a <code>resourceFactory</code>
- *
- * Resource factories are declared in extension point <code>org.eclipse.mcp.modelContextProtocolServer</code>
- * 
- * The <code>class<code> attribute of a <code>resourceFactory</code> element must be an instance of <code>org.eclipse.mcp.IMCPResourceFactory</code>
+ * Can be used by a <code>IMCPResourceController</code> to dynamically add or remove resources to the MCP server
  */
 public interface IMCPResourceFactory {
 	
 	/**
-	 * 
-	 * @param manager The manager can be used by your factory to dynamically add and remove resources to its MCP server
+	 * Add a resource to the server
+	 * @param uri
+	 * @param name
+	 * @param description
+	 * @param mimeType
+	 * @return
 	 */
-	public void initialize(IMCPResourceManager manager);
+	public UUID addResource(String uri, String name, String description, String mimeType);
 	
 	/**
-	 * Used to lazily resolve a url to content
-	 * @param url
-	 * @return the resolved content of the url
+	 * Remove a resource from the server
+	 * @param uri
 	 */
-	public String[] readResource(String url);
+	public void removeResource(String uri);
 }

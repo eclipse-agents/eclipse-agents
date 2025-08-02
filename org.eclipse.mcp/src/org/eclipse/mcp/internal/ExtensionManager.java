@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.mcp.IMCPResourceFactory;
+import org.eclipse.mcp.IMCPResourceController;
 import org.eclipse.mcp.IMCPTool;
 import org.eclipse.mcp.internal.preferences.ServerElement;
 
@@ -264,7 +264,7 @@ public class ExtensionManager {
 
 		String id, name, description, categoryId;
 		List<String> propertyPageIds = new ArrayList<String>();
-		IMCPResourceFactory implementation;
+		IMCPResourceController implementation;
 		boolean isValid;
 		
 		public ResourceFactory(IConfigurationElement e) {
@@ -275,8 +275,8 @@ public class ExtensionManager {
 			
 			try {
 				Object impl = e.createExecutableExtension("class");
-				if (impl instanceof IMCPResourceFactory) {
-					implementation = (IMCPResourceFactory)impl;
+				if (impl instanceof IMCPResourceController) {
+					implementation = (IMCPResourceController)impl;
 				} else {
 					Tracer.trace().trace(Tracer.EXTENSION, impl.getClass() + " not instance of ITool; " + toString());
 					isValid = false;
@@ -309,7 +309,7 @@ public class ExtensionManager {
 			return description;
 		}
 
-		public IMCPResourceFactory getImplementation() {
+		public IMCPResourceController getImplementation() {
 			return implementation;
 		}
 
