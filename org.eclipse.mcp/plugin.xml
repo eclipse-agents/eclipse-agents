@@ -30,7 +30,7 @@
 	</extension>
 
 	 <extension point="org.eclipse.ui.propertyPages">
-       <page name="MCP Tool"
+       <page name="General"
             class="org.eclipse.mcp.internal.preferences.ToolPropertyPage"
             id="org.eclipse.mcp.internal.preferences.ToolPropertyPage">
             <enabledWhen>
@@ -42,7 +42,7 @@
     </extension>
 	
 	<extension point="org.eclipse.ui.startup">
-		<startup class="org.eclipse.mcp.Startup" />
+		<startup class="org.eclipse.mcp.internal.Startup" />
 	</extension>
 
 	<extension point="org.eclipse.ui.trace.traceComponents">

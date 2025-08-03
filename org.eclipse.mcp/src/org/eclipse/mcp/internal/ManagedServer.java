@@ -80,9 +80,8 @@ public class ManagedServer {
 					List<Content> content = new ArrayList<Content>();
 					
 					try {
-						
-						
-						ElementProperties elementProperties = new ElementProperties(extension.getId(), toolExtension.getId(), toolExtension.getPropertyEditorIds());
+
+						ElementProperties elementProperties = new ElementProperties(extension.getId(), toolExtension.getId(), toolExtension.getName(), Images.IMG_TOOL, toolExtension.getPropertyEditorIds());
 						
 						String[] rawText = toolExtension.getImplementation().apply(u, elementProperties);
 						for (String s: rawText) {

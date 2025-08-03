@@ -25,6 +25,7 @@ import org.eclipse.mcp.internal.Activator;
 import org.eclipse.mcp.internal.ExtensionManager.ResourceFactory;
 import org.eclipse.mcp.internal.ExtensionManager.Tool;
 import org.eclipse.mcp.internal.Images;
+import org.eclipse.mcp.internal.MCPElementPropertyInput;
 import org.eclipse.mcp.internal.PreferenceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -233,8 +234,7 @@ public class McpGeneralPreferencePage extends PreferencePage
 						IPreferencedServer server = (IPreferencedServer)serverSelection;
 						ServerElement element = (ServerElement)elementSelection;
 						
-						IMCPElementPropertyInput input = preferenceManager.getElementPropertyInput(server.getId(), element.getId());
-							
+						IMCPElementPropertyInput input = new MCPElementPropertyInput(server.getId(), element.getId(), element.getName(), Images.IMG_TOOL, preferenceManager);
 						PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
 									Activator.getDisplay().getActiveShell(), input,
 									"org.eclipse.mcp.internal.preferences.ToolPropertyPage",

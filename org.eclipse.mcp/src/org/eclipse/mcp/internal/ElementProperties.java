@@ -11,12 +11,16 @@ public class ElementProperties implements IElementProperties {
 
 	private String serverId;
 	private String elementId;
+	private String elementName;
+	private String elementImageId;
 	private String[] propertyEditorIds;
 	
-	public ElementProperties(String serverId, String elementId, String[] propertyEditorIds) {
+	public ElementProperties(String serverId, String elementId, String elementName, String elementImageId, String[] propertyEditorIds) {
 		super();
 		this.serverId = serverId;
 		this.elementId = elementId;
+		this.elementName = elementName;
+		this. elementImageId = elementImageId;
 		this.propertyEditorIds = propertyEditorIds;
 	}
 
@@ -40,7 +44,7 @@ public class ElementProperties implements IElementProperties {
 	public void openPropertiesEditor(String selectedPageId) {
 		PreferenceManager preferenceManager = new PreferenceManager();
 		preferenceManager.load();
-		IMCPElementPropertyInput input = preferenceManager.getElementPropertyInput(serverId, elementId);
+		IMCPElementPropertyInput input = new MCPElementPropertyInput(serverId, elementId, elementName, elementImageId, null);
 			
 		PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
 					Activator.getDisplay().getActiveShell(), input,
