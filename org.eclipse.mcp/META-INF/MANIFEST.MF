@@ -28,4 +28,5 @@ Bundle-ClassPath: lib/jackson-annotations-2.17.0.jar,
  lib/slf4j-api-2.0.16.jar,
  .
 Export-Package: org.eclipse.mcp;uses:="org.eclipse.core.runtime,org.eclipse.ui.dialogs,org.eclipse.jface.dialogs",
- org.eclipse.mcp.internal;x-friends:="org.eclipse.mcp.test"
+ org.eclipse.mcp.internal;x-friends:="org.eclipse.mcp.test",
+ org.eclipse.mcp.internal.preferences;x-friends:="org.eclipse.mcp.test"

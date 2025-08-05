@@ -14,7 +14,11 @@ import org.eclipse.mcp.internal.preferences.IPreferencedServer;
 public class PreferenceManager {
 
 	public static final String fileName = "settings.txt";
+
+	// servers declared via extension point
 	public static final String EXTENSION_SERVERS = "extensionServers";
+	
+	//TODO <unimplemented> servers created by user preferences 
 	public static final String USER_SERVERS = "userServers";
 	
 
@@ -52,19 +56,23 @@ public class PreferenceManager {
 
 		for (IDialogSettings section : serversSettings.getSections()) {
 			if (EXTENSION_SERVERS.equals(section.getName())) {
+				for (IDialogSettings extensionServerPreferences : section.getSections()) {
+					ExtensionManager.Server server = Activator.getDefault().getExtensionManager().getServer(extensionServerPreferences.getName());
+					if (server != null) {
+						servers.add(new ExtensionServer(server, (DialogSettings)extensionServerPreferences, (DialogSettings)section));
+					}
+				}
 				for (ExtensionManager.Server server: Activator.getDefault().getExtensionManager().getServers()) {
-					if (server.getId() != null) {
-						DialogSettings matchingPreferences = null;
-						for (IDialogSettings extensionPreferences : section.getSections()) {
-							if (server.getId().equals(extensionPreferences.get(IPreferencedServer.ID))) {
-								matchingPreferences = (DialogSettings)extensionPreferences;
-								break;
-							}
+					boolean found = false;
+					for (IPreferencedServer preferencedServer: servers) {
+						if (server.getId().equals(preferencedServer.getId())) {
+							found = true;
+							break;
 						}
-						if (matchingPreferences == null) {
-							matchingPreferences = (DialogSettings)section.addNewSection(server.getId());
-						}
-						servers.add(new ExtensionServer(server, matchingPreferences, (DialogSettings)section));
+					}
+					if (!found) {
+						IDialogSettings emptyServerSettings = (DialogSettings)section.addNewSection(server.getId());
+						servers.add(new ExtensionServer(server, (DialogSettings)emptyServerSettings, (DialogSettings)section));
 					}
 				}
 			} else if (USER_SERVERS.equals(section.getName())) {

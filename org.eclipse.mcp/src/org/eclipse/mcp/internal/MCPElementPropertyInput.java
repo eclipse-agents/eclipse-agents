@@ -40,7 +40,10 @@ public class MCPElementPropertyInput implements IMCPElementPropertyInput, IWorkb
 
 	@Override
 	public DialogSettings loadCurrentSettings(PropertyPage page) {
-		String propertyEditorId = getPropertyPageId(page);
+		return loadCurrentSettings(getPropertyPageId(page));
+	}
+	
+	public DialogSettings loadCurrentSettings(String propertyEditorId) {
 		PreferenceManager preferenceManager = getPreferenceManager();
 		
 		if (propertyEditorId != null) {
@@ -54,7 +57,11 @@ public class MCPElementPropertyInput implements IMCPElementPropertyInput, IWorkb
 
 	@Override
 	public void applySettings(PropertyPage page, DialogSettings settings) {
-		String propertyEditorId = getPropertyPageId(page);
+		applySettings(getPropertyPageId(page), settings);
+	}
+	
+	public void applySettings(String propertyEditorId, DialogSettings settings) {
+	
 		PreferenceManager preferenceManager = getPreferenceManager();
 		
 		IPreferencedServer server = preferenceManager.getServer(serverId);
