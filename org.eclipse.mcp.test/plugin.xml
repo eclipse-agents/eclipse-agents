@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.mcp.modelContextProtocolServer"
+         id="org.eclipse.mcp.test.junit.plugin.extension"
+         name="Built-Ins">
+      <category
+            id="org.eclipse.mcp.test.junit.plugin.extension.category"
+            name="extension.category">
+      </category>
+      <server
+            description="server.description"
+            id="org.eclipse.mcp.test.junit.plugin.extension.server"
+            name="server.name"
+            version="server.version"
+            defaultPort="server.port">
+      </server>
+      <tool
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool"
+            id="org.eclipse.mcp.test.junit.plugin.extension.tool"
+            name="tool.name"
+            description="tool.description"
+            categoryId="org.eclipse.mcp.test.junit.plugin.extension.category"
+            schema="tool.schema">
+            <propertyPage
+               id=" org.eclipse.mcp.test.junit.plugin.extension.SamplePropertyPage">
+         	</propertyPage>
+      </tool>
+      <toolServerBinding
+            serverId="org.eclipse.mcp.test.junit.plugin.extension.server"
+            toolId="org.eclipse.mcp.test.junit.plugin.extension.tool">
+      </toolServerBinding>
+      <resourceController
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPResourceController"
+            id="org.eclipse.mcp.test.junit.plugin.extension.controller"
+            name="controller.name"
+            description="controller.description"
+            categoryId="org.eclipse.mcp.test.junit.plugin.extension.category">
+            <propertyPage
+               id=" org.eclipse.mcp.test.junit.plugin.extension.SamplePropertyPage">
+         	</propertyPage>
+      </resourceController>
+      <resourceControllerServerBinding
+            serverId="org.eclipse.mcp.test.junit.plugin.extension.server"
+            resourceControllerId="org.eclipse.mcp.test.junit.plugin.extension.controller">
+      </resourceControllerServerBinding>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            id="org.eclipse.mcp.test.junit.plugin.extension.SamplePropertyPage"
+            name="Sample Page"
+            class="org.eclipse.mcp.test.junit.plugin.extension.SamplePropertyPage"
+            nameFilter="*.*">
+      </page>
+   </extension>
+
+</plugin>

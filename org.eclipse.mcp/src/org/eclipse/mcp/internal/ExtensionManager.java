@@ -9,6 +9,7 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class ExtensionManager {
 	Map<String, Server> servers = new HashMap<String, Server>();
 	Map<String, String> categories = new HashMap<String, String>();
 	Map<String, Tool> tools = new HashMap<String, Tool>();
-	Map<String, ResourceFactory> resourceFactories = new HashMap<String, ResourceFactory>();
+	Map<String, ResourceController> resourceControllers = new HashMap<String, ResourceController>();
 	
 	enum ELEMENT { tool, server, category, toolServerBinding, defaultEnablement }
 	
@@ -57,9 +58,9 @@ public class ExtensionManager {
 							//TODO validate id;
 						}
 					}
-				} else if ("resourceFactory".equals(extensionElement.getName())) {
-					ResourceFactory rf = new ResourceFactory(extensionElement);
-					resourceFactories.put(rf.id, rf);
+				} else if ("resourceController".equals(extensionElement.getName())) {
+					ResourceController rf = new ResourceController(extensionElement);
+					resourceControllers.put(rf.id, rf);
 					for (IConfigurationElement child: extensionElement.getChildren()) {
 						if (child.getName().equals("propertyPage")) {
 							rf.addPropertyEditorId(child.getAttribute("id"));
@@ -88,14 +89,14 @@ public class ExtensionManager {
 					} else {
 						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
 					}
-				} if ("resourceFactoryServerBinding".equals(extensionElement.getName())) {
+				} if ("resourceControllerServerBinding".equals(extensionElement.getName())) {
 					String serverId = extensionElement.getAttribute("serverId");
-					String resourceFactoryId = extensionElement.getAttribute("resourceFactoryId");
+					String resourceControllerId = extensionElement.getAttribute("resourceControllerId");
 					if (servers.containsKey(serverId)) {
-						if (resourceFactories.containsKey(resourceFactoryId)) {
-							servers.get(serverId).addResourceFactory(resourceFactories.get(resourceFactoryId));
+						if (resourceControllers.containsKey(resourceControllerId)) {
+							servers.get(serverId).addResourceFactory(resourceControllers.get(resourceControllerId));
 						} else {
-							Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + resourceFactoryId);				
+							Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + resourceControllerId);				
 						}
 					} else {
 						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
@@ -109,12 +110,16 @@ public class ExtensionManager {
 		return servers.values().toArray(new Server[0]);
 	}
 	
+	public ExtensionManager.Server getServer(String id) {
+		return servers.get(id);
+	}
+	
 	public Tool getTool(String id) {
 		return tools.get(id);
 	}
 	
-	public ResourceFactory getResourceFactory(String id) {
-		return resourceFactories.get(id);
+	public ResourceController getResourceController(String id) {
+		return resourceControllers.get(id);
 	}
 	
 	public class Server {
@@ -123,7 +128,7 @@ public class ExtensionManager {
 		boolean serveHttp = true;
 		
 		List<Tool> tools;
-		List<ResourceFactory> resourceFactories;
+		List<ResourceController> resourceController;
 		//TODO
 		String categoryId;
 		
@@ -134,23 +139,23 @@ public class ExtensionManager {
 			this.version = e.getAttribute("version");
 			this.defaultPort = e.getAttribute("defaultPort");
 			tools = new ArrayList<Tool>();
-			resourceFactories = new ArrayList<ResourceFactory>();
+			resourceController = new ArrayList<ResourceController>();
 		}
 		
 		public void addTool(Tool t) {
 			tools.add(t);
 		}
 		
-		public void addResourceFactory(ResourceFactory factory) {
-			resourceFactories.add(factory);
+		public void addResourceFactory(ResourceController factory) {
+			resourceController.add(factory);
 		}
 		
 		public Tool[] getTools() {
 			return tools.toArray(new Tool[0]);
 		}
 		
-		public ResourceFactory[] getResourceFactories() {
-			return resourceFactories.toArray(new ResourceFactory[0]);
+		public ResourceController[] getResourceControllers() {
+			return resourceController.toArray(new ResourceController[0]);
 		}
 		
 		public String getId() {
@@ -260,14 +265,14 @@ public class ExtensionManager {
 	}
 	
 	
-	public class ResourceFactory implements ServerElement {
+	public class ResourceController implements ServerElement {
 
 		String id, name, description, categoryId;
 		List<String> propertyPageIds = new ArrayList<String>();
 		IMCPResourceController implementation;
 		boolean isValid;
 		
-		public ResourceFactory(IConfigurationElement e) {
+		public ResourceController(IConfigurationElement e) {
 			this.id =  e.getAttribute("id"); 
 			this.name = e.getAttribute("name");
 			this.description = e.getAttribute("description");

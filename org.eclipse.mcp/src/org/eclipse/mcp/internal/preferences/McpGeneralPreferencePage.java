@@ -22,7 +22,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.mcp.IMCPElementPropertyInput;
 import org.eclipse.mcp.internal.Activator;
-import org.eclipse.mcp.internal.ExtensionManager.ResourceFactory;
+import org.eclipse.mcp.internal.ExtensionManager.ResourceController;
 import org.eclipse.mcp.internal.ExtensionManager.Tool;
 import org.eclipse.mcp.internal.Images;
 import org.eclipse.mcp.internal.MCPElementPropertyInput;
@@ -105,7 +105,7 @@ public class McpGeneralPreferencePage extends PreferencePage
 			if (columnIndex == 0) {
 				if (element instanceof Tool) {
 					return Activator.getDefault().getImageRegistry().get(Images.IMG_TOOL);
-				} else if (element instanceof ResourceFactory) {
+				} else if (element instanceof ResourceController) {
 					return Activator.getDefault().getImageRegistry().get(Images.IMG_RESOURCEMANAGER);
 				}
 			}

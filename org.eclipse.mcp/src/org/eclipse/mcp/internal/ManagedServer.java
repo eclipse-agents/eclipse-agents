@@ -99,7 +99,7 @@ public class ManagedServer {
 			syncServer.addTool(spec);
 		}
 		
-		for (ExtensionManager.ResourceFactory resourceFactory: extension.getResourceFactories()) {	
+		for (ExtensionManager.ResourceController resourceFactory: extension.getResourceControllers()) {	
 			ResourceManager resourceManager = new ResourceManager(this, resourceFactory.getImplementation());
 			resourceFactory.getImplementation().initialize(resourceManager);
 		}

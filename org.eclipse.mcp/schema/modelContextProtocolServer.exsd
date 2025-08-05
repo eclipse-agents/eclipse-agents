@@ -185,7 +185,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          <attribute name="categoryId" type="string">
             <annotation>
                <documentation>
-                  the unique identifier of the category for this resource factory
+                  the unique identifier of the category for this resource controller
                </documentation>
                <appinfo>
                   <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/category/@id"/>

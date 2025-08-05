@@ -67,17 +67,17 @@ public interface IPreferencedServer {
 		return (ExtensionManager.Tool[])tools.toArray();
 	}
 	
-	public default ExtensionManager.ResourceFactory[] getResourceFactories() {
-		List<ExtensionManager.ResourceFactory> resourceFactories = new ArrayList<ExtensionManager.ResourceFactory>();
+	public default ExtensionManager.ResourceController[] getResourceFactories() {
+		List<ExtensionManager.ResourceController> resourceFactories = new ArrayList<ExtensionManager.ResourceController>();
 		for (String id: getResourceFactoryIds()) {
-			ExtensionManager.ResourceFactory factory = Activator.getDefault().getExtensionManager().getResourceFactory(id);
+			ExtensionManager.ResourceController factory = Activator.getDefault().getExtensionManager().getResourceController(id);
 			if (factory != null) {
 				resourceFactories.add(factory);
 			} else {
 				Tracer.trace().trace(Tracer.EXTENSION, "resource factory id not found:" + id);
 			}
 		}
-		return (ExtensionManager.ResourceFactory[])resourceFactories.toArray();
+		return (ExtensionManager.ResourceController[])resourceFactories.toArray();
 	}
 	
 	public DialogSettings getElementSettings(String elementId, String propertiesId);

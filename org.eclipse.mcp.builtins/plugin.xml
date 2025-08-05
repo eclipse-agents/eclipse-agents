@@ -51,17 +51,17 @@
             serverId="org.eclipse.mcp.builtins"
             toolId="org.eclipse.mcp.builtins.tool.ListEditors">
       </toolServerBinding>
-      <resourceFactory
+      <resourceController
             class="org.eclipse.mcp.builtin.resource.Editors"
             id="org.eclipse.mcp.builtins.resource.Editors"
             name="Open Editors"
             description="Contributes resources for each open editor text editor"
             categoryId="org.eclipse.mcp.builtins.workbench">
-      </resourceFactory>
-      <resourceFactoryServerBinding
+      </resourceController>
+      <resourceControllerServerBinding
             serverId="org.eclipse.mcp.builtins"
-            resourceFactoryId="org.eclipse.mcp.builtins.resource.Editors">
-      </resourceFactoryServerBinding>
+            resourceControllerId="org.eclipse.mcp.builtins.resource.Editors">
+      </resourceControllerServerBinding>
    </extension>
 
 </plugin>

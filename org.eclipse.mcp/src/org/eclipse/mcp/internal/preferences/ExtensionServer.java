@@ -1,9 +1,8 @@
 package org.eclipse.mcp.internal.preferences;
 
 import org.eclipse.jface.dialogs.DialogSettings;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.mcp.internal.ExtensionManager;
-import org.eclipse.mcp.internal.ExtensionManager.ResourceFactory;
+import org.eclipse.mcp.internal.ExtensionManager.ResourceController;
 import org.eclipse.mcp.internal.ExtensionManager.Tool;
 
 public class ExtensionServer implements IPreferencedServer {
@@ -212,8 +211,8 @@ public class ExtensionServer implements IPreferencedServer {
 	}
 	
 	@Override
-	public ResourceFactory[] getResourceFactories() {
-		return extensionServer.getResourceFactories();
+	public ResourceController[] getResourceFactories() {
+		return extensionServer.getResourceControllers();
 	}
 
 	@Override
