@@ -61,7 +61,7 @@ public interface IPreferencedServer {
 			if (tool != null) {
 				tools.add(tool);
 			} else {
-				Tracer.trace().trace(Tracer.EXTENSION, "tool id not found:" + id);
+				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "tool id not found:" + id);
 			}
 		}
 		return (ExtensionManager.Tool[])tools.toArray();
@@ -74,7 +74,7 @@ public interface IPreferencedServer {
 			if (factory != null) {
 				resourceFactories.add(factory);
 			} else {
-				Tracer.trace().trace(Tracer.EXTENSION, "resource factory id not found:" + id);
+				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "resource factory id not found:" + id);
 			}
 		}
 		return (ExtensionManager.ResourceController[])resourceFactories.toArray();

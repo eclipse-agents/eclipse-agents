@@ -21,11 +21,11 @@ public class Tracer implements DebugOptionsListener {
 
 
 	public static final String DEBUG = "/debug";
-	public static final String EXTENSION = "/debug/extension";
+	public static final String IMPLEMENTATIONS = "/debug/implementations";
 	
 	public enum OPTION {
 		DEBUG("/debug"),
-		EXTENSION("/debug/extension");
+		IMPLEMENTATIONS("/debug/implementations");
 		
 		private String location;
 		private String fullPath;

@@ -9,7 +9,6 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +22,10 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.mcp.IMCPResourceController;
 import org.eclipse.mcp.IMCPTool;
 import org.eclipse.mcp.internal.preferences.ServerElement;
+
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
 
 /**
  * 
@@ -43,34 +46,52 @@ public class ExtensionManager {
 		IExtensionRegistry extReg = Platform.getExtensionRegistry();
 		IExtensionPoint point = extReg.getExtensionPoint("org.eclipse.mcp.modelContextProtocolServer"); //$NON-NLS-1$
 		
-		point.getExtensions();
 		for (IExtension extension : point.getExtensions()) {
-			for (IConfigurationElement extensionElement : extension.getConfigurationElements()) {
+			for (IConfigurationElement extensionElement: extension.getConfigurationElements()) {
 				if ("server".equals(extensionElement.getName())) {
 					Server s = new Server(extensionElement);
-					servers.put(s.id, s);
+					if (s.errorMessage == null) {
+						servers.put(s.id, s);
+					} else {
+						trace(extensionElement, s.errorMessage, null);
+					}
 				} else if ("tool".equals(extensionElement.getName())) {
 					Tool t = new Tool(extensionElement);
-					tools.put(t.id, t);
-					for (IConfigurationElement child: extensionElement.getChildren()) {
-						if (child.getName().equals("propertyPage")) {
-							t.addPropertyEditorId(child.getAttribute("id"));
-							//TODO validate id;
+					if (t.errorMessage == null) {
+						tools.put(t.id, t);
+						for (IConfigurationElement child: extensionElement.getChildren()) {
+							if (child.getName().equals("propertyPage")) {
+								t.addPropertyEditorId(child.getAttribute("id"));
+								//TODO validate id;
+							}
 						}
+					} else {
+						trace(extensionElement, t.errorMessage, t.toolThrowable);
 					}
 				} else if ("resourceController".equals(extensionElement.getName())) {
 					ResourceController rf = new ResourceController(extensionElement);
-					resourceControllers.put(rf.id, rf);
-					for (IConfigurationElement child: extensionElement.getChildren()) {
-						if (child.getName().equals("propertyPage")) {
-							rf.addPropertyEditorId(child.getAttribute("id"));
-							//TODO validate id;
+					if (rf.errorMessage == null) {
+						resourceControllers.put(rf.id, rf);
+						for (IConfigurationElement child: extensionElement.getChildren()) {
+							if (child.getName().equals("propertyPage")) {
+								rf.addPropertyEditorId(child.getAttribute("id"));
+								//TODO validate id;
+							}
 						}
+					} else {
+						trace(extensionElement, rf.errorMessage, rf.resourceControllerThrowable);
 					}
 				} else if ("category".equals(extensionElement.getName())) {
 					String id = extensionElement.getAttribute("id");
 					String name = extensionElement.getAttribute("name");
-					categories.put(id, name);
+					
+					if (id == null || id.isBlank()) {
+						trace(extensionElement, "Missing category id", null);
+					} else if (name == null || name.isBlank()) {
+						trace(extensionElement, "Missing category name", null);
+					} else {
+						categories.put(id, name);
+					}
 				}
 			}
 		}
@@ -84,10 +105,10 @@ public class ExtensionManager {
 						if (tools.containsKey(toolId)) {
 							servers.get(serverId).addTool(tools.get(toolId));
 						} else {
-							Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + toolId);				
+							trace(extensionElement, "toolServerBinding toolId not found: " + toolId, null);			
 						}
 					} else {
-						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
+						trace(extensionElement, "toolServerBinding serverId not found: " + serverId, null);
 					}
 				} if ("resourceControllerServerBinding".equals(extensionElement.getName())) {
 					String serverId = extensionElement.getAttribute("serverId");
@@ -96,10 +117,10 @@ public class ExtensionManager {
 						if (resourceControllers.containsKey(resourceControllerId)) {
 							servers.get(serverId).addResourceFactory(resourceControllers.get(resourceControllerId));
 						} else {
-							Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding toolId not found: " + resourceControllerId);				
+							trace(extensionElement, "resourceControllerServerBinding resourceControllerId not found: " + resourceControllerId, null);				
 						}
 					} else {
-						Tracer.trace().trace(Tracer.EXTENSION, "toolServerBinding serverId not found: " + serverId);
+						trace(extensionElement, "resourceControllerServerBinding serverId not found: " + serverId, null);
 					}
 				}
 			}
@@ -129,6 +150,7 @@ public class ExtensionManager {
 		
 		List<Tool> tools;
 		List<ResourceController> resourceController;
+		String errorMessage = null;
 		//TODO
 		String categoryId;
 		
@@ -140,6 +162,22 @@ public class ExtensionManager {
 			this.defaultPort = e.getAttribute("defaultPort");
 			tools = new ArrayList<Tool>();
 			resourceController = new ArrayList<ResourceController>();
+			
+			if (getId() == null || getId().isBlank()) {
+				errorMessage = "Missing Server id";
+			} else if (getName() == null || getName().isBlank()) {
+				errorMessage = "Missing Server name";
+			} else if (getVersion() == null || getVersion().isBlank()) {
+				errorMessage = "Missing Server Version";
+			} else if (getDefaultPort() == null || getDefaultPort().isBlank()) {
+				errorMessage = "Missing Server Default Port";
+			} else {
+				try {
+					Integer.parseInt(getDefaultPort());
+				} catch (NumberFormatException ex) {
+					errorMessage = "Invalid Server Default Port: " + getDefaultPort();
+				}
+			}
 		}
 		
 		public void addTool(Tool t) {
@@ -188,7 +226,8 @@ public class ExtensionManager {
 		String id, name, description, schema, categoryId;
 		IMCPTool implementation;
 		List<String> propertyPageIds = new ArrayList<String>();
-		boolean isValid;
+		String errorMessage = null;
+		Throwable toolThrowable = null;
 		
 		public Tool(IConfigurationElement e) {
 			this.id =  e.getAttribute("id"); 
@@ -197,20 +236,39 @@ public class ExtensionManager {
 			this.schema = e.getAttribute("schema");
 			this.categoryId = e.getAttribute("categoryId");
 			
-			try {
-				Object impl = e.createExecutableExtension("class");
-				if (impl instanceof IMCPTool) {
-					implementation = (IMCPTool)impl;
-				} else {
-					Tracer.trace().trace(Tracer.EXTENSION, impl.getClass() + " not instance of ITool; " + toString());
-					isValid = false;
+			if (getId() == null || getId().isBlank()) {
+				errorMessage = "Missing id";
+			} else if (getName() == null || getName().isBlank()) {
+				errorMessage = "Missing name";
+			} else if (e.getAttribute("class") == null || e.getAttribute("class").isBlank()) {
+				errorMessage = "Missing class";
+			} else if (getSchema() == null || getSchema().isBlank()) {
+				errorMessage = "Missing schema";
+			}
+			
+			if (errorMessage == null) {
+				try {
+					JsonParser.parseString(schema).getAsJsonObject();
+				} catch (Exception ex) {
+					errorMessage = "Schema Parse Failure: \"" + schema + "\"";
+					toolThrowable = ex;
 				}
-			} catch (CoreException e1) {
-				e1.printStackTrace();
+			}
+			
+			if (errorMessage == null) {
+				try {
+					Object impl = e.createExecutableExtension("class");
+					if (impl instanceof IMCPTool) {
+						implementation = (IMCPTool)impl;
+					} else {
+						errorMessage = "class not instanceof IMCPTool: " + e.getAttribute("class");
+					}
+				} catch (CoreException ex) {
+					errorMessage = "Failed to instantiate IMCPTool: " + e.getAttribute("class");
+					toolThrowable = ex;
+				}
 			}
 		}
-		
-		
 
 		@Override
 		public String getId() {
@@ -244,11 +302,6 @@ public class ExtensionManager {
 		}
 
 		@Override
-		public boolean isValid() {
-			return isValid;
-		}
-
-		@Override
 		public <T> T getAdapter(Class<T> arg0) {
 			return null;
 		}
@@ -270,7 +323,9 @@ public class ExtensionManager {
 		String id, name, description, categoryId;
 		List<String> propertyPageIds = new ArrayList<String>();
 		IMCPResourceController implementation;
-		boolean isValid;
+
+		String errorMessage = null;
+		Throwable resourceControllerThrowable = null;
 		
 		public ResourceController(IConfigurationElement e) {
 			this.id =  e.getAttribute("id"); 
@@ -278,17 +333,28 @@ public class ExtensionManager {
 			this.description = e.getAttribute("description");
 			this.categoryId = e.getAttribute("categoryId");
 			
-			try {
-				Object impl = e.createExecutableExtension("class");
-				if (impl instanceof IMCPResourceController) {
-					implementation = (IMCPResourceController)impl;
-				} else {
-					Tracer.trace().trace(Tracer.EXTENSION, impl.getClass() + " not instance of ITool; " + toString());
-					isValid = false;
-				}
-			} catch (CoreException e1) {
-				e1.printStackTrace();
+			if (getId() == null || getId().isBlank()) {
+				errorMessage = "Missing id";
+			} else if (getName() == null || getName().isBlank()) {
+				errorMessage = "Missing name";
+			} else if (e.getAttribute("class") == null || e.getAttribute("class").isBlank()) {
+				errorMessage = "Missing class";
 			}
+			
+			if (errorMessage == null) {
+				try {
+					Object impl = e.createExecutableExtension("class");
+					if (impl instanceof IMCPResourceController) {
+						implementation = (IMCPResourceController)impl;
+					} else {
+						errorMessage = "class not instanceof IMCPResourceController: " + e.getAttribute("class");
+					}
+				} catch (CoreException ex) {
+					errorMessage = "Failed to instantiate IMCPResourceController: " + e.getAttribute("class");
+					resourceControllerThrowable = ex;
+				}
+			}
+			
 		}
 
 		@Override
@@ -318,10 +384,6 @@ public class ExtensionManager {
 			return implementation;
 		}
 
-		public boolean isValid() {
-			return isValid;
-		}
-
 		@Override
 		public <T> T getAdapter(Class<T> arg0) {
 			return null;
@@ -335,6 +397,23 @@ public class ExtensionManager {
 		@Override
 		public void addPropertyEditorId(String id) {
 			propertyPageIds.add(id);
+		}
+	}
+	
+	private void trace(IConfigurationElement extensionElement, String message, Throwable t) {
+		String elementId = extensionElement.getAttribute("id");
+		elementId = (elementId == null) ? "Undefined" : elementId;
+		String namespace = extensionElement.getNamespaceIdentifier();
+		namespace = (namespace == null) ? "Undefined" : namespace;
+		
+		String output = "[" +namespace + "/" + elementId +"] :: " + message;
+		
+		
+		System.err.println(output);
+		if (t != null) {
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output, t);
+		} else {
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output);
 		}
 	}
 }

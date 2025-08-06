@@ -8,6 +8,7 @@ public class MCPResourceController implements IMCPResourceController {
 	@Override
 	public void initialize(IMCPResourceFactory manager) {
 		manager.addResource(MCPResourceController.class.getCanonicalName(), "name", "desc", "mime");
+		manager.removeResource(MCPResourceController.class.getCanonicalName());
 
 	}
 
@@ -18,6 +19,5 @@ public class MCPResourceController implements IMCPResourceController {
 		}
 		return new String[0];
 	}
-
 }
 

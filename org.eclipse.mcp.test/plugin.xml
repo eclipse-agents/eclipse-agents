@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.mcp.modelContextProtocolServer"
          id="org.eclipse.mcp.test.junit.plugin.extension"
-         name="Built-Ins">
+         name="JUnit Test Services">
       <category
             id="org.eclipse.mcp.test.junit.plugin.extension.category"
             name="extension.category">
@@ -17,6 +17,7 @@
             version="server.version"
             defaultPort="server.port">
       </server>
+      <asdf/>
       <tool
             class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool"
             id="org.eclipse.mcp.test.junit.plugin.extension.tool"
@@ -64,6 +65,152 @@
             class="org.eclipse.mcp.test.junit.plugin.extension.SamplePropertyPage"
             nameFilter="*.*">
       </page>
+   </extension>
+   
+   <extension
+         point="org.eclipse.mcp.modelContextProtocolServer"
+         id="org.eclipse.mcp.test.junit.plugin.extension.failures"
+         name="JUnit Test Services Failures">
+      <category
+            id="org.eclipse.mcp.test.junit.plugin.extension.category.failure">
+      </category>
+      <category
+            name="extension.category">
+      </category>
+      <server
+            name="server.name.fail">
+      </server>
+      <server
+            id="org.eclipse.mcp.test.junit.plugin.extension.server.fail"
+            name="server.name.fail"
+            version="1.0.0">
+      </server>
+      <server
+            id="org.eclipse.mcp.test.junit.plugin.extension.server.failtest"
+            name="server.name.fail">
+      </server>
+      <tool
+            id="org.eclipse.mcp.test.junit.plugin.extension.tool.noClass"
+            name="tool.name"
+            schema="{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;name&quot;: {
+      &quot;type&quot;: &quot;string&quot;
+    }
+  },
+  &quot;required&quot;: [&quot;name&quot;]
+}">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool.BadPath"
+            id="org.eclipse.mcp.test.junit.plugin.extension.tool.badClassPath"
+            name="tool.name"
+            schema="{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;name&quot;: {
+      &quot;type&quot;: &quot;string&quot;
+    }
+  },
+  &quot;required&quot;: [&quot;name&quot;]
+}">
+      </tool>
+            <tool
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPResourceController"
+            id="org.eclipse.mcp.test.junit.plugin.extension.tool.classWrongHierarchy"
+            name="tool.name"
+            schema="{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;name&quot;: {
+      &quot;type&quot;: &quot;string&quot;
+    }
+  },
+  &quot;required&quot;: [&quot;name&quot;]
+}">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool.NoID"
+            name="tool.name"
+            schema="{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;name&quot;: {
+      &quot;type&quot;: &quot;string&quot;
+    }
+  },
+  &quot;required&quot;: [&quot;name&quot;]
+}">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool"
+            id="org.eclipse.mcp.test.junit.plugin.extension.tool.noName"
+            schema="{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;name&quot;: {
+      &quot;type&quot;: &quot;string&quot;
+    }
+  },
+  &quot;required&quot;: [&quot;name&quot;]
+}">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool.BadPath"
+            id="org.eclipse.mcp.test.junit.plugin.extension.tool.noSchema"
+            name="tool.name">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool"
+            id="org.eclipse.mcp.test.junit.plugin.extension.tool.badSchema"
+            name="tool.name"
+            schema="not a good schema">
+      </tool>
+
+      <toolServerBinding
+            toolId="org.eclipse.mcp.test.junit.plugin.extension.tool">
+      </toolServerBinding>
+      <toolServerBinding
+            serverId="org.eclipse.mcp.test.junit.plugin.extension.server.failtest">
+      </toolServerBinding>
+      <toolServerBinding
+            serverId="abcd"
+            toolId="xyz">
+      </toolServerBinding>
+      <resourceController
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPResourceController.BadPath"
+            id="org.eclipse.mcp.test.junit.plugin.extension.controller"
+            name="controller.name">
+      </resourceController>
+      <resourceController
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPTool"
+            id="org.eclipse.mcp.test.junit.plugin.extension.controller.wrongHierarchy"
+            name="controller.name">
+      </resourceController>
+      <resourceController
+            id="org.eclipse.mcp.test.junit.plugin.extension.controller.noClass"
+            name="controller.name">
+      </resourceController>
+      <resourceController
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPResourceController.noId"
+            name="controller.name">
+      </resourceController>
+      <resourceController
+            class="org.eclipse.mcp.test.junit.plugin.extension.MCPResourceController"
+            id="org.eclipse.mcp.test.junit.plugin.extension.controller.noName">
+      </resourceController>
+      
+      <resourceControllerServerBinding
+           resourceControllerId="org.eclipse.mcp.test.junit.plugin.extension.controller">
+      </resourceControllerServerBinding>
+      <resourceControllerServerBinding
+            serverId="org.eclipse.mcp.test.junit.plugin.extension.server">
+      </resourceControllerServerBinding>
+      <resourceControllerServerBinding
+            serverId="asdf"
+            resourceControllerId="qwerty">
+      </resourceControllerServerBinding>
    </extension>
 
 </plugin>

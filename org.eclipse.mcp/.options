@@ -1,4 +1,4 @@
 # Main Debug Trace switch
-com.ecliplse.mcp/debug = false
+org.eclipse.mcp/debug = false
 # Trace location for implementations
-com.ecliplse.mcp/debug/extensions = false
+org.eclipse.mcp/debug/implementations = false

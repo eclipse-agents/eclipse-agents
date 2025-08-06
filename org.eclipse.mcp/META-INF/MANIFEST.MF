@@ -6,7 +6,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.eclipse.mcp.internal.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
- org.eclipse.jface
+ org.eclipse.jface,
+ com.google.gson;bundle-version="2.13.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.eclipse.mcp
 Bundle-ActivationPolicy: lazy

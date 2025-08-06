@@ -7,7 +7,6 @@ public interface ServerElement extends IAdaptable {
 	public String getName();
 	public String getCategory();
 	public String getDescription();
-	public boolean isValid();
 	public String[] getPropertyEditorIds();
 	public void addPropertyEditorId(String id);
 }
