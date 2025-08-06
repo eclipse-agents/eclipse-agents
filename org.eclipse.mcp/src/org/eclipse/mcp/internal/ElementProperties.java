@@ -35,7 +35,9 @@ public class ElementProperties implements IElementProperties {
 					return server.getElementSettings(elementId, propertyPageId);
 				}
 			}
-			// TRACE
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Element requesting undeclared property page id: " + propertyPageId + "; " + toString());
+		} else {
+			Tracer.trace().trace(Tracer.DEBUG, "Preference manager could not find server:" + serverId);
 		}
 		
 		return null;
@@ -54,8 +56,14 @@ public class ElementProperties implements IElementProperties {
 		
 		if (dialog != null) {
 			dialog.open();
-		}
-		
+		}	
 	}
+
+	@Override
+	public String toString() {
+		return "ElementProperties [serverId=" + serverId + ", elementId=" + elementId + ", elementName=" + elementName
+				+ "]";
+	}
+	
 	
 }

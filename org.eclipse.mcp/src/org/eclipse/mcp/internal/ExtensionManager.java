@@ -24,7 +24,6 @@ import org.eclipse.mcp.IMCPTool;
 import org.eclipse.mcp.internal.preferences.ServerElement;
 
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 
 /**
@@ -237,20 +236,20 @@ public class ExtensionManager {
 			this.categoryId = e.getAttribute("categoryId");
 			
 			if (getId() == null || getId().isBlank()) {
-				errorMessage = "Missing id";
+				errorMessage = "Missing Tool id";
 			} else if (getName() == null || getName().isBlank()) {
-				errorMessage = "Missing name";
+				errorMessage = "Missing Tool name";
 			} else if (e.getAttribute("class") == null || e.getAttribute("class").isBlank()) {
-				errorMessage = "Missing class";
+				errorMessage = "Missing  Tool class";
 			} else if (getSchema() == null || getSchema().isBlank()) {
-				errorMessage = "Missing schema";
+				errorMessage = "Missing Tool schema";
 			}
 			
 			if (errorMessage == null) {
 				try {
 					JsonParser.parseString(schema).getAsJsonObject();
 				} catch (Exception ex) {
-					errorMessage = "Schema Parse Failure: \"" + schema + "\"";
+					errorMessage = "Tool Schema Parse Failure: \"" + schema + "\"";
 					toolThrowable = ex;
 				}
 			}
@@ -261,10 +260,10 @@ public class ExtensionManager {
 					if (impl instanceof IMCPTool) {
 						implementation = (IMCPTool)impl;
 					} else {
-						errorMessage = "class not instanceof IMCPTool: " + e.getAttribute("class");
+						errorMessage = "Tool class " + e.getAttribute("class") + " not instanceof IMCPTool";
 					}
 				} catch (CoreException ex) {
-					errorMessage = "Failed to instantiate IMCPTool: " + e.getAttribute("class");
+					errorMessage = "Tool class " + e.getAttribute("class") + "failed instantiation";
 					toolThrowable = ex;
 				}
 			}
@@ -334,11 +333,11 @@ public class ExtensionManager {
 			this.categoryId = e.getAttribute("categoryId");
 			
 			if (getId() == null || getId().isBlank()) {
-				errorMessage = "Missing id";
+				errorMessage = "Missing ResourceController id";
 			} else if (getName() == null || getName().isBlank()) {
-				errorMessage = "Missing name";
+				errorMessage = "Missing ResourceController name";
 			} else if (e.getAttribute("class") == null || e.getAttribute("class").isBlank()) {
-				errorMessage = "Missing class";
+				errorMessage = "Missing ResourceController class";
 			}
 			
 			if (errorMessage == null) {
@@ -347,10 +346,10 @@ public class ExtensionManager {
 					if (impl instanceof IMCPResourceController) {
 						implementation = (IMCPResourceController)impl;
 					} else {
-						errorMessage = "class not instanceof IMCPResourceController: " + e.getAttribute("class");
+						errorMessage = "ResourceController class " + e.getAttribute("class") + " not instanceof IMCPResourceController";
 					}
 				} catch (CoreException ex) {
-					errorMessage = "Failed to instantiate IMCPResourceController: " + e.getAttribute("class");
+					errorMessage = "ResourceController class " + e.getAttribute("class") + " failed instantiation";;
 					resourceControllerThrowable = ex;
 				}
 			}
@@ -401,15 +400,18 @@ public class ExtensionManager {
 	}
 	
 	private void trace(IConfigurationElement extensionElement, String message, Throwable t) {
-		String elementId = extensionElement.getAttribute("id");
-		elementId = (elementId == null) ? "Undefined" : elementId;
-		String namespace = extensionElement.getNamespaceIdentifier();
-		namespace = (namespace == null) ? "Undefined" : namespace;
+		String identifier = extensionElement.getAttribute("id");
+		if (identifier == null) {
+			identifier = extensionElement.getNamespaceIdentifier();
+		}
+//		String namespace = extensionElement.getNamespaceIdentifier();
+//		namespace = (namespace == null) ? "Undefined" : namespace;
 		
-		String output = "[" +namespace + "/" + elementId +"] :: " + message;
+		String output = "[" + identifier +"]:: " + message;
 		
 		
-		System.err.println(output);
+//		System.err.println(output);
+
 		if (t != null) {
 			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output, t);
 		} else {

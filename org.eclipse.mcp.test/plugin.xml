@@ -57,7 +57,7 @@
       </resourceControllerServerBinding>
    </extension>
    
-   <extension
+   <!-- uncpmment ttp test Extemsopm<amager [arser extension
          point="org.eclipse.ui.propertyPages">
       <page
             id="org.eclipse.mcp.test.junit.plugin.extension.SamplePropertyPage"
@@ -211,6 +211,6 @@
             serverId="asdf"
             resourceControllerId="qwerty">
       </resourceControllerServerBinding>
-   </extension>
+   </extension-->
 
 </plugin>
