@@ -23,7 +23,15 @@
             name="tool.name"
             description="tool.description"
             categoryId="org.eclipse.mcp.test.junit.plugin.extension.category"
-            schema="tool.schema">
+            schema="{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;name&quot;: {
+      &quot;type&quot;: &quot;string&quot;
+    }
+  },
+  &quot;required&quot;: [&quot;name&quot;]
+}">
             <propertyPage
                id=" org.eclipse.mcp.test.junit.plugin.extension.SamplePropertyPage">
          	</propertyPage>

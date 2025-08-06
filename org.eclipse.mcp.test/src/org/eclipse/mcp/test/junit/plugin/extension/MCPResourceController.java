@@ -7,13 +7,15 @@ public class MCPResourceController implements IMCPResourceController {
 
 	@Override
 	public void initialize(IMCPResourceFactory manager) {
-		System.out.println("initialize");
+		manager.addResource(MCPResourceController.class.getCanonicalName(), "name", "desc", "mime");
 
 	}
 
 	@Override
 	public String[] readResource(String url) {
-		System.out.println("read");
+		if (MCPResourceController.class.getCanonicalName().equals(url)) {
+			return new String[] { "Hello", "World" };
+		}
 		return new String[0];
 	}
 
