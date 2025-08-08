@@ -44,5 +44,4 @@ public class ListConsoles implements IMCPTool {
 			this.type = type;
 		}
 	}
-
 }

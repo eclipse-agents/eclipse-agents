@@ -43,6 +43,19 @@
 				&quot;required&quot;: []
 			}">
       </tool>
+      <tool
+            class="org.eclipse.mcp.builtin.tool.CurrentSelection"
+            id="org.eclipse.mcp.builtin.tool.CurrentSelection"
+            name="getSelection"
+            description="Returns the text selection of the active Eclipse IDE Editor"
+            categoryId="org.eclipse.mcp.builtins.workbench"
+            schema="{
+				&quot;type&quot;: &quot;object&quot;,
+				&quot;properties&quot;: {
+				},
+				&quot;required&quot;: []
+			}">
+      </tool>
       <toolServerBinding
             serverId="org.eclipse.mcp.builtins"
             toolId="org.eclipse.mcp.builtins.tool.ListConsoles">
@@ -50,6 +63,10 @@
       <toolServerBinding
             serverId="org.eclipse.mcp.builtins"
             toolId="org.eclipse.mcp.builtins.tool.ListEditors">
+      </toolServerBinding>
+      <toolServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            toolId="org.eclipse.mcp.builtin.tool.CurrentSelection">
       </toolServerBinding>
       <resourceController
             class="org.eclipse.mcp.builtin.resource.Editors"

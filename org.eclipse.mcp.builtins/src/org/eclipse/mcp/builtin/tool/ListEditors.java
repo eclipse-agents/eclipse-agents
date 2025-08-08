@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.eclipse.mcp.IElementProperties;
 import org.eclipse.mcp.IMCPTool;
+import org.eclipse.mcp.builtins.json.Editor;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -31,20 +32,6 @@ public class ListEditors implements IMCPTool {
 				}
 			}
 		}
-		return (String[]) result.toArray();
-	}
-	
-	public class Editor {
-		String name;
-		String file;
-		boolean isActive;
-		public Editor(IEditorReference ref) {
-			this.name = ref.getName();
-			ref.getContentDescription();
-			ref.getPartName();
-			ref.getTitle();
-			ref.getId();
-			ref.isDirty();
-		}
+		return result.toArray(new String[0]);
 	}
 }
