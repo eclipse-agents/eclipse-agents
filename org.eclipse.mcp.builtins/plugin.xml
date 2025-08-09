@@ -18,10 +18,18 @@
             defaultPort="12931">
       </server>
       <tool
+            categoryId="org.eclipse.mcp.builtins.workbench"
             class="org.eclipse.mcp.builtin.tool.ListConsoles"
+            description="List the open consoles"
             id="org.eclipse.mcp.builtins.tool.ListConsoles"
             name="listConsoles"
-            description="List the open consoles"
+            schema="{&#x0A;  &quot;type&quot;: &quot;object&quot;,&#x0A;  &quot;properties&quot;: {&#x0A;    &quot;query&quot;: {&#x0A;      &quot;type&quot;: &quot;number&quot;&#x0A;    },&#x0A;    &quot;quer1&quot;: {&#x0A;      &quot;type&quot;: &quot;string&quot;&#x0A;    },&#x0A;    &quot;quer3&quot;: {&#x0A;      &quot;type&quot;: &quot;boolean&quot;&#x0A;    },&#x0A;    &quot;query4&quot;: {&#x0A;      &quot;type&quot;: &quot;integer&quot;&#x0A;    }&#x0A;  },&#x0A;  &quot;required&quot;: [&quot;query&quot;]&#x0A;}">
+      </tool>
+      <tool
+            class="org.eclipse.mcp.builtin.tool.ListEditors"
+            id="org.eclipse.mcp.builtins.tool.ListEditors"
+            name="listEditors"
+            description="List the open editors"
             categoryId="org.eclipse.mcp.builtins.workbench"
             schema="{
 				&quot;type&quot;: &quot;object&quot;,
@@ -31,10 +39,10 @@
 			}">
       </tool>
       <tool
-            class="org.eclipse.mcp.builtin.tool.ListEditors"
-            id="org.eclipse.mcp.builtins.tool.ListEditors"
-            name="listEditors"
-            description="List the open editors"
+            class="org.eclipse.mcp.builtin.tool.CurrentSelection"
+            id="org.eclipse.mcp.builtin.tool.CurrentSelection"
+            name="getSelection"
+            description="Returns the text selection of the active Eclipse IDE Editor"
             categoryId="org.eclipse.mcp.builtins.workbench"
             schema="{
 				&quot;type&quot;: &quot;object&quot;,
@@ -50,6 +58,10 @@
       <toolServerBinding
             serverId="org.eclipse.mcp.builtins"
             toolId="org.eclipse.mcp.builtins.tool.ListEditors">
+      </toolServerBinding>
+      <toolServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            toolId="org.eclipse.mcp.builtin.tool.CurrentSelection">
       </toolServerBinding>
       <resourceController
             class="org.eclipse.mcp.builtin.resource.Editors"
