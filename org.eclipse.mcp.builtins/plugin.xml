@@ -18,17 +18,12 @@
             defaultPort="12931">
       </server>
       <tool
+            categoryId="org.eclipse.mcp.builtins.workbench"
             class="org.eclipse.mcp.builtin.tool.ListConsoles"
+            description="List the open consoles"
             id="org.eclipse.mcp.builtins.tool.ListConsoles"
             name="listConsoles"
-            description="List the open consoles"
-            categoryId="org.eclipse.mcp.builtins.workbench"
-            schema="{
-				&quot;type&quot;: &quot;object&quot;,
-				&quot;properties&quot;: {
-				},
-				&quot;required&quot;: []
-			}">
+            schema="{&#x0A;  &quot;type&quot;: &quot;object&quot;,&#x0A;  &quot;properties&quot;: {&#x0A;    &quot;query&quot;: {&#x0A;      &quot;type&quot;: &quot;number&quot;&#x0A;    },&#x0A;    &quot;quer1&quot;: {&#x0A;      &quot;type&quot;: &quot;string&quot;&#x0A;    },&#x0A;    &quot;quer3&quot;: {&#x0A;      &quot;type&quot;: &quot;boolean&quot;&#x0A;    },&#x0A;    &quot;query4&quot;: {&#x0A;      &quot;type&quot;: &quot;integer&quot;&#x0A;    }&#x0A;  },&#x0A;  &quot;required&quot;: [&quot;query&quot;]&#x0A;}">
       </tool>
       <tool
             class="org.eclipse.mcp.builtin.tool.ListEditors"
