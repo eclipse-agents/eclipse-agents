@@ -4,49 +4,139 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.eclipse.mcp.internal.AnnotatedMCPTool;
 
 
 /**
- * Notes: do not use primitive types for non-required parameters as the null value will fail conversion
+ * This interface enables tool contributors to automatically create and register any Annotated Java method as an IMCPTool.
+ * Add this class to an <code>org.eclipse.mcp.modelContextProtocolServer</code> extension using the <code>toolFactory</code> element.
  * 
- * Support for case Boolean, Character,String, Double, Float, Integer, Long, Short and 1-d arrays of these
+ * <ul><li>
+ * Add the annotation <code>org.eclipse.mcp.IMCPToolFactory.Tool</code> to any method you want exposed as an IMCPTool
+ * </li><li>
+ * Add the method argument annotation <code>org.eclipse.mcp.IMCPToolFactory.ToolArg</code> to each argument
+ * </li></ul>
+ *  For example:
+ *  * <pre>
+ * {@code
+ *  @Tool (id = "foo.bar.helloWorld", 
+ *  	description = "Greets user with a hello", 
+ *  	name = "e4-hello-world",
+ *  	categoryId = "foo.bar.categoryId",
+ *  	propertyPageIds = { "foo.bar.propertyPage1", "foo.bar.propertyPage1"})
+ *  public String[] helloWorld(
+ *  	@ToolArg(name = "firstName", description = "First name") String firstName,
+ *  	@ToolArg(name = "age", description = "User's age", required = false) Integer age,
+ *  	@ToolArg(name = "address", description = "User's address", required = false) String[] address) {	
+ *  		return new String[] { "Hello " + firstName };
+ *  }
+ * }
+ * </pre>
+ * 
+ * Notes: 
+ * <ul>
+ * <li>do not use primitive types for non-required parameters as the null value will fail conversion</li>
+ * <li>Support for case Boolean, Character,String, Double, Float, Integer, Long, Short and 1-d arrays of these</li>
+ * <li>You may optionally include an IElementProperties argument in your function without a <code>@ToolArg</code> annotations to retrieve any preferences saved from an associated propertyPageId</li>
+ * <li>To bind tools to a default server, define categories, you will still contribute elements to your <code>org.eclipse.mcp.modelContextProtocolServer</code> extension</li>
+ * </ul>
  */
+
+//TODO see https://github.com/spring-projects-experimental/spring-ai-mcp/blob/main/spring-ai-mcp/src/main/java/org/springframework/ai/mcp/spring/ToolHelper.java
 public interface IMCPToolFactory {
 
-
+	public final static String[] DEFAULT_PROPERTYPAGE_IDS = new String[0];
+	
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
 	public @interface Tool {
+		/**
+		 * Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension
+		 * @return
+		 */
 	    String id();
+	    /**
+	     * Agent-presentable name for this  MCP Tool
+	     * @return
+	     */
+	    String name();
+	    /**
+	     * Agent-presentable description for this MCP Tool
+	     * @return
+	     */
+	    String description();
+	    /**
+	     * Optional reference to a <code>org.eclipse.mcp.modelContextProtocolServer</code> category
+	     * @return
+	     */
+	    String categoryId() default "";
+	    /**
+	     * Optional references to one or more <code>org.eclipse.mcp.modelContextProtocolServer</code> propertyPages, enabling custom user-preference management for this tool
+	     * @return
+	     */
+	    String[] propertyPageIds() default {};
 	}
 	
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.PARAMETER)
 	public @interface ToolArg {
+		/**
+		 * Agent-presentable name for this Tool argument
+		 * @return
+		 */
 	    String name();
+	    /**
+		 * Agent-presentable description for this Tool argument
+		 * @return
+		 */
 	    String description();
 	    boolean required() default true;
 	}
-
-	public interface IMCPTool {
+	
+	/**
+	 * Alternative IMCPTool that is declared programmatically rather than thru a <code>org.eclipse.mcp.modelContextProtocolServer</code>  tool element 
+	 */
+	interface IMCPAnnotatedTool extends IMCPTool {
 		
+		/**
+		 * @return Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension
+		 */
 		public String getId();
-		public String getSchema();
-		public String[] apply(Map<String, Object> args);
-		public void setElementProperties(IElementProperties properties);
+		/**
+		 * @return Agent-presentable description for this MCP Tool
+		 */
+		public String getName();
+		/**
+		 * @return Agent-presentable description for this MCP Tool
+		 */
+		public String getDescription();
+		/**
+		 * @return the JSON input schema for this MCP tool
+		 */
+		public String getInputSchema();
+		/**
+		 * @return Optional reference to a <code>org.eclipse.mcp.modelContextProtocolServer</code> category
+		 */
+		public String getCategoryId();
+		/**
+		 * @return Optional references to one or more <code>org.eclipse.mcp.modelContextProtocolServer</code> propertyPages, enabling custom user-preference management for this tool
+		 */
+	    public String[] getPropertyPageIds();
+		//TODO
+//		public String getOutputSchema();
+
 		
 	}
 	
-	public default IMCPTool[] createTools() {
+	/**
+	 * The default implementation will scan the IMCPToolFactory for any methods annotated with <code>org.eclipse.mcp.IMCPToolFactory.Tool</code> and return IMCPTool implementations for thems
+	 * @return
+	 */
+	public default IMCPAnnotatedTool[] createTools() {
 		List<IMCPTool> tools = new ArrayList<IMCPTool>();
 		for (Method method: getClass().getDeclaredMethods()) {
 			Tool tool = method.getAnnotation(Tool.class);
@@ -57,162 +147,6 @@ public interface IMCPToolFactory {
 				}
 			}
 		}
-		return tools.toArray(IMCPTool[]::new);
-	}
-	
-	public class AnnotatedMCPTool implements IMCPTool {
-
-		Object instance;
-		Method method;
-		String id;
-		JsonObject schema;
-		
-		public AnnotatedMCPTool(Object instance, Method method, Tool tool) {
-			super();
-			this.instance = instance;
-			this.method = method;
-			
-			this.id = tool.id();
-			schema = new JsonObject();
-			JsonObject properties = new JsonObject();
-			JsonArray required = new JsonArray();
-			
-			schema.addProperty("type", "object");
-			schema.add("properties", properties);
-			schema.add("required",  required);
-			
-			if (tool != null) {
-				for (Parameter parameter: method.getParameters()) {
-					ToolArg arg = parameter.getAnnotation(ToolArg.class);
-					if (arg != null) {
-						String name = arg.name();
-						String desc = arg.description();
-						boolean req = arg.required();
-//						Class type = parameter.getType();
-						String type = "string";
-						
-						System.out.println(parameter.getType().getCanonicalName());
-
-						String pType = parameter.getType().getCanonicalName();
-						if (pType.endsWith("[][]")) {
-							throw new IllegalArgumentException("Only 1-d arrays are supported: " + parameter.getType().getCanonicalName());
-						}
-
-						boolean isArray = pType.endsWith("[]");
-						if (isArray) {
-							pType = pType.substring(0, pType.length() - 2);
-						}
-						
-						switch (pType) {
-							case "java.lang.Boolean":
-							case "boolean":
-								type = "boolean";
-								break;
-							case 	"java.lang.Character":	
-							case	"char":
-							case 	"java.lang.String":
-								type = "string";
-								break;
-							case 	"java.lang.Double":
-							case	"double":
-							case 	"java.lang.Float":
-							case	"float":
-								type = "number";
-								break;
-							case 	"java.lang.Integer":
-							case	"int":
-							case 	"java.lang.Long":
-							case	"long":
-							case 	"java.lang.Short":
-							case	"short":
-								type = "integer";
-								break;
-							default:
-								throw new IllegalArgumentException("Unexpected value: " + parameter.getType().getCanonicalName());
-						}
-
-						if (name == null) {
-							name = parameter.getName();
-						}
-
-						JsonObject attributes = new JsonObject();
-						
-						if (isArray) {
-							attributes.addProperty("type", "array");
-							JsonObject items = new JsonObject();
-							items.addProperty("type", type);
-							attributes.add("items",  items);
-						} else {
-							attributes.addProperty("type", type);
-						}
-						
-						if (desc != null) {
-							attributes.addProperty("description", desc);
-						}
-						
-						properties.add(name, attributes);
-						
-						if (req) {
-							required.add(name);
-						}
-					}	
-				}
-			}
-		}
-
-		@Override
-		public String getId() {
-			return id;
-		}
-
-		@Override
-		public String getSchema() {
-			return schema.toString();
-		}
-
-
-
-		@Override
-		public void setElementProperties(IElementProperties properties) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		boolean isValid() {
-			//TODO
-			return true;
-		}
-
-		@Override
-		public String[] apply(Map<String, Object> args) {
-			List<Object> inputs = new ArrayList<Object>();
-			for (Parameter param: method.getParameters()) {
-				if (param.getClass().isInstance(IElementProperties.class)) {
-					System.out.println("is element properties");
-				} else {
-					ToolArg arg = param.getAnnotation(ToolArg.class);
-					String paramName = param.getName();
-					if (arg != null && arg.name() != null) {
-						paramName = arg.name();
-					}
-					inputs.add(args.get(paramName));
-				}
-			}
-			Object result = null;
-			try {
-				result = method.invoke(this.instance, inputs.toArray());
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-			if (result instanceof String[]) {
-				return (String[])result;
-			}
-			return null;
-		}
-		
+		return tools.toArray(IMCPAnnotatedTool[]::new);
 	}
 }

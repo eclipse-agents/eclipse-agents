@@ -23,14 +23,14 @@ public final class ToolFactoryTest {
 
 		MCPToolFactory factory = new MCPToolFactory();
 		
-		IMCPToolFactory.IMCPTool[] tools = factory.createTools();
+		IMCPToolFactory.IMCPAnnotatedTool[] tools = factory.createTools();
 		
 		// Test Server
 //		addTestEquals(suite, "mcp server.getDefaultPort", server.getDefaultPort(), "server.port");
 
-		for (IMCPToolFactory.IMCPTool tool: tools ) {
+		for (IMCPToolFactory.IMCPAnnotatedTool tool: tools ) {
 			System.out.println(tool.getId());
-			System.out.println(tool.getSchema());
+			System.out.println(tool.getInputSchema());
 			
 			Map<String, Object> args = new HashMap<String, Object>();
 			args.put("b1", Boolean.TRUE);
@@ -43,7 +43,7 @@ public final class ToolFactoryTest {
 			args.put("sh1", Short.parseShort("1234"));
 			args.put("as1", new String[] { "jeremy", "flicker" });
 			args.put("ai1", new Integer[] { 1234, 2345 });
-			String[] result = tool.apply(args);
+			String[] result = tool.apply(args, null);
 			for (String s: result) {
 				System.out.println(s);
 			}

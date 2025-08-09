@@ -16,9 +16,9 @@
 <p></p>
 
 <h6 class="CaptionFigColumn SchemaHeader">Description: </h6><p>
-The <code>org.eclipse.mcp.modelContextProtocolServer</code> extension point is used to declare and instantiate <a href="https://modelcontextprotocol.io/docs/learn/server-concepts">Model Context Protocol Servers</a> that run within the IDE's Process and expose IDE functionality for interaction with Agents and/or Developers.
+The <code>org.eclipse.mcp.modelContextProtocolServer</code> extension point is used to declare and instantiate <a href="https://modelcontextprotocol.io/docs/learn/server-concepts">Model Context Protocol Servers, Tools and Resources</a> that run within the IDE's Process and expose IDE functionality for interaction with Agents and/or Developers.
 </p><p>
-Behind the scenes, declared MCP Servers will be instantiated using the modelcontextprotocol/java-sdk API and configured to serve over HTTP using  and can be configured to server over HTTP using Jetty.
+Behind the scenes, declared MCP Servers will be instantiated using the modelcontextprotocol/java-sdk API and may be configured to serve over HTTP using Jetty.
 </p><p>
 A "Platform MCP Servers" preference page will let users:
 <ul>
@@ -34,7 +34,7 @@ A "Platform MCP Servers" preference page will let users:
 </p><p></p>
 <h6 class="CaptionFigColumn SchemaHeader">Configuration Markup:</h6>
 <p></p>
-<p class="code SchemaDtd">&lt;!ELEMENT <a name="e.extension">extension</a> (<a href="#e.tool">tool</a> , <a href="#e.resourceController">resourceController</a> , <a href="#e.server">server</a> , <a href="#e.category">category</a> , <a href="#e.toolServerBinding">toolServerBinding</a> , <a href="#e.resourceControllerServerBinding">resourceControllerServerBinding</a>)*&gt;</p>
+<p class="code SchemaDtd">&lt;!ELEMENT <a name="e.extension">extension</a> (<a href="#e.tool">tool</a> , <a href="#e.toolFactory">toolFactory</a> , <a href="#e.resourceController">resourceController</a> , <a href="#e.server">server</a> , <a href="#e.category">category</a> , <a href="#e.toolServerBinding">toolServerBinding</a> , <a href="#e.resourceControllerServerBinding">resourceControllerServerBinding</a>)*&gt;</p>
 <p class="code SchemaDtd">&lt;!ATTLIST extension</p>
 <p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED</p>
 <p class="code SchemaDtdAttlist">name&nbsp;&nbsp;CDATA #IMPLIED</p>
@@ -65,6 +65,31 @@ This element is used to define a <a href="https://modelcontextprotocol.io/docs/l
 <li><b>class</b> - The fully qualified name of the AbstractTool implemention.  Must implement <tt>org.eclipse.mcp.IMCPTool</tt> and have an zero-parameter constructor.</li>
 <li><b>categoryId</b> - the unique identifier of the category for this tool</li>
 </ul>
+<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.toolFactory">toolFactory</a> EMPTY&gt;</p>
+<p class="code SchemaDtd">&lt;!ATTLIST toolFactory</p>
+<p class="code SchemaDtdAttlist">class&nbsp;CDATA #REQUIRED&gt;</p>
+<p></p>
+<p class="ConfigMarkupElementDesc">
+A convenience/alternative for generating one or more <code>tool<code> elements from a class with Annotated methods.  The factory must implement <code>org.eclipse.mcp.IMCPToolFactory.</code> and use the method annotations <code>org.eclipse.mcp.IMCPToolFactory.Tool</code> and the method argument annoation <code>org.eclipse.mcp.IMCPToolFactory.ToolArg</code> on each method they would like to expose as a  <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions">Model Context Protocol Tools</a>
+
+Example:
+<pre class="Example"><span class="code SchemaTag">
+@Tool (id = "foo.bar.helloWorld", 
+	description = "Greets user with a hello", 
+	name = "e4-hello-world",
+	categoryId = "foo.bar.categoryId",
+	propertyPageIds = { "foo.bar.propertyPage1", "foo.bar.propertyPage1"})
+public String[] helloWorld(
+	@ToolArg(name = "firstName", description = "First name") String firstName,
+	@ToolArg(name = "age", description = "User&apos;s age", required = false) Integer age,
+	@ToolArg(name = "address", description = "User&apos;s address", required = false) String[] address) {	
+		return new String[] { "Hello " + firstName };
+	}
+</span></pre></p>
+<br>
+<ul class="ConfigMarkupAttlistDesc">
+<li><b>class</b> - The fully qualified name of the IMCPToolFactory implemention.  Must implement <tt>org.eclipse.mcp.IMCPTooFactoryl</tt> and have an zero-parameter constructor.</li>
+</ul>
 <br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.resourceController">resourceController</a> (<a href="#e.propertyPage">propertyPage</a>)*&gt;</p>
 <p class="code SchemaDtd">&lt;!ATTLIST resourceController</p>
 <p class="code SchemaDtdAttlist">description&nbsp;CDATA #IMPLIED</p>
@@ -81,7 +106,7 @@ This element is used to define a controller that may dynamically create and remo
 <li><b>id</b> - the unique identifier of this resource manager</li>
 <li><b>name</b> - The name of this MCP resource controller</li>
 <li><b>class</b> - The fully qualified name of the IMCPResourceController implemention.  Must implement <tt>org.eclipse.mcp.IMCPResourceController</tt> and have an zero-parameter constructor.  Resource Controllers are responsible for dynamically adding and removing resources and translating a url to string content</li>
-<li><b>categoryId</b> - the unique identifier of the category for this resource factory</li>
+<li><b>categoryId</b> - the unique identifier of the category for this resource controller</li>
 </ul>
 <br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.server">server</a> EMPTY&gt;</p>
 <p class="code SchemaDtd">&lt;!ATTLIST server</p>
@@ -166,11 +191,11 @@ Specify an optional custom propertyPage to let the user customize the behavior o
 <pre class="Example"><span class="code SchemaTag">
   &lt;extension
          point=</span><span class="code SchemaCstring">&quot;org.eclipse.mcp.modelContextProtocolServer&quot;</span><span class="code SchemaTag">
-         id=</span><span class="code SchemaCstring">&quot;com.foo.bar&quot;</span><span class="code SchemaTag">
+         id=</span><span class="code SchemaCstring">&quot;com.foo.bar.mcp&quot;</span><span class="code SchemaTag">
          name=</span><span class="code SchemaCstring">&quot;My MCP Contributions&quot;</span><span class="code SchemaTag">&gt;
       &lt;category
             id=</span><span class="code SchemaCstring">&quot;com.foo.bar.category&quot;</span><span class="code SchemaTag">
-            name=</span><span class="code SchemaCstring">&quot;My Contributions&quot;</span><span class="code SchemaTag">&gt;
+            name=</span><span class="code SchemaCstring">&quot;My Cateogry&quot;</span><span class="code SchemaTag">&gt;
       &lt;/category&gt;
       &lt;server
             description=</span><span class="code SchemaCstring">&quot;My first MCP server&quot;</span><span class="code SchemaTag">
@@ -181,11 +206,11 @@ Specify an optional custom propertyPage to let the user customize the behavior o
       &lt;/server&gt;
       &lt;tool
             categoryId=</span><span class="code SchemaCstring">&quot;com.foo.bar.category&quot;</span><span class="code SchemaTag">
-            class=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyIMCPTool&quot;</span><span class="code SchemaTag">
+            class=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPTool&quot;</span><span class="code SchemaTag">
             description=</span><span class="code SchemaCstring">&quot;LLM Tooling will read this to understand how to invoke my tool&quot;</span><span class="code SchemaTag">
-            id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyIMCPToolId&quot;</span><span class="code SchemaTag">
+            id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolId&quot;</span><span class="code SchemaTag">
             name=</span><span class="code SchemaCstring">&quot;foo-myTool&quot;</span><span class="code SchemaTag">
-            schema=</span><span class="code SchemaCstring">&quot;my XML escaped JSON schema declaring the inputs into my tool&quot;</span><span class="code SchemaTag"></span><span class="code SchemaCstring">&quot;&gt;
+            schema=</span><span class="code SchemaCstring">&quot;my XML escaped JSON schema declaring the inputs into my tool&quot;</span><span class="code SchemaTag">&gt;
          &lt;propertyPage
                id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.myPropertyPageId1&quot;</span><span class="code SchemaTag">&gt;
          &lt;/propertyPage&gt;
@@ -195,24 +220,53 @@ Specify an optional custom propertyPage to let the user customize the behavior o
       &lt;/tool&gt;
       &lt;toolServerBinding
             serverId=</span><span class="code SchemaCstring">&quot;com.foo.bar.server&quot;</span><span class="code SchemaTag">
-            toolId=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyIMCPToolId&quot;</span><span class="code SchemaTag">&gt;
+            toolId=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolId&quot;</span><span class="code SchemaTag">&gt;
       &lt;/toolServerBinding&gt;
+      &lt;toolFactory
+            class=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolFactory&quot;</span><span class="code SchemaTag">
+      &lt;/toolFactory&gt;
+      &lt;toolServerBinding
+            serverId=</span><span class="code SchemaCstring">&quot;com.foo.bar.server&quot;</span><span class="code SchemaTag">
+            toolId=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolFromFactoryId&quot;</span><span class="code SchemaTag">&gt;
+      &lt;/toolServerBinding&gt;
+      &lt;resourceController
+            class=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPResourceController&quot;</span><span class="code SchemaTag">
+            id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;</span><span class="code SchemaTag">
+            name=</span><span class="code SchemaCstring">&quot;foo-myController&quot;</span><span class="code SchemaTag">
+            description=</span><span class="code SchemaCstring">&quot;Adds and removes resources dynamically to/from server&quot;</span><span class="code SchemaTag">
+            categoryId=</span><span class="code SchemaCstring">&quot;com.foo.bar.category&quot;</span><span class="code SchemaTag">&gt;
+            &lt;propertyPage
+               id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.myPropertyPageId3&quot;</span><span class="code SchemaTag">&gt;
+            &lt;/propertyPage&gt;
+      &lt;/resourceController&gt;
+      &lt;resourceControllerServerBinding
+            serverId=</span><span class="code SchemaCstring">&quot;com.foo.bar.server&quot;</span><span class="code SchemaTag">
+            resourceControllerId=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;</span><span class="code SchemaTag">&gt;
+      &lt;/resourceControllerServerBinding&gt;
    &lt;/extension&gt;
 </span></pre>
 </p>
 <p></p>
 
 <h6 class="CaptionFigColumn SchemaHeader">API Information: </h6><p>
-There is currently no public API for declaring activities or associated elements other than this extension point.  The state of activities in the workbench is accessible via <code>org.eclipse.ui.IWorkbench.getActivitySupport()</code>.  From here you may query and update the set of currently enabled activities.
+See the java docs for <code>org.eclipse.mcp</code> for java interface documentationm
+</p><p>
+Two tracing options are available on the General > Tracing preference page
+<ul>
+<li>
+# Main Debug Trace switch
+<ul><li>org.eclipse.mcp/debug</li></ul>
+</li><li>
+# Trace location for implementations
+<ul><li>org.eclipse.mcp/debug/implementations</li></ul>
+</li>
+</ul>
 </p>
-<p></p>
-
-<h6 class="CaptionFigColumn SchemaHeader">Supplied Implementation: </h6>There are no "default activities" provided by the workbench.  Activities are intended to be defined at the product level, such as the Eclipse SDK, so as to tightly integrate all of the (known) components that product contains.
 <p></p>
 
 <br>
 <p class="note SchemaCopyright">
-Copyright (c) 2000, 2005 IBM Corporation and others.<br>
+Copyright (c) 2025 IBM Corporation and others.<br>
 
 This program and the accompanying materials are made
 available under the terms of the Eclipse Public License 2.0 which accompanies

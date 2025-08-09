@@ -2,7 +2,6 @@ package org.eclipse.mcp.test.junit.plugin.extension;
 
 import java.util.Arrays;
 
-import org.eclipse.mcp.IElementProperties;
 import org.eclipse.mcp.IMCPToolFactory;
 
 
@@ -22,7 +21,7 @@ import org.eclipse.mcp.IMCPToolFactory;
 
 public class MCPToolFactory implements IMCPToolFactory {
 
-	@Tool (id = "junit.MCPToolFactory.helloWorld")
+	@Tool (id = "junit.MCPToolFactory.helloWorld", description = "Greets user with a hello", name = "e4-hello-world")
 	public String[] helloWorld(
 			@ToolArg(name = "b1", description = "example boolean 1")
 			Boolean b,

@@ -7,9 +7,9 @@
       </appinfo>
       <documentation>
          &lt;p&gt;
-The &lt;code&gt;org.eclipse.mcp.modelContextProtocolServer&lt;/code&gt; extension point is used to declare and instantiate &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts&quot;&gt;Model Context Protocol Servers&lt;/a&gt; that run within the IDE&apos;s Process and expose IDE functionality for interaction with Agents and/or Developers.
+The &lt;code&gt;org.eclipse.mcp.modelContextProtocolServer&lt;/code&gt; extension point is used to declare and instantiate &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts&quot;&gt;Model Context Protocol Servers, Tools and Resources&lt;/a&gt; that run within the IDE&apos;s Process and expose IDE functionality for interaction with Agents and/or Developers.
 &lt;/p&gt;&lt;p&gt;
-Behind the scenes, declared MCP Servers will be instantiated using the modelcontextprotocol/java-sdk API and configured to serve over HTTP using  and can be configured to server over HTTP using Jetty.
+Behind the scenes, declared MCP Servers will be instantiated using the modelcontextprotocol/java-sdk API and may be configured to serve over HTTP using Jetty.
 &lt;/p&gt;&lt;p&gt;
 A &quot;Platform MCP Servers&quot; preference page will let users:
 &lt;ul&gt;
@@ -35,6 +35,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="tool"/>
+            <element ref="toolFactory"/>
             <element ref="resourceController"/>
             <element ref="server"/>
             <element ref="category"/>
@@ -129,6 +130,41 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
                </documentation>
                <appinfo>
                   <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/category/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="toolFactory">
+      <annotation>
+         <documentation>
+            A convenience/alternative for generating one or more &lt;code&gt;tool&lt;code&gt; elements from a class with Annotated methods.  The factory must implement &lt;code&gt;org.eclipse.mcp.IMCPToolFactory.&lt;/code&gt; and use the method annotations &lt;code&gt;org.eclipse.mcp.IMCPToolFactory.Tool&lt;/code&gt; and the method argument annoation &lt;code&gt;org.eclipse.mcp.IMCPToolFactory.ToolArg&lt;/code&gt; on each method they would like to expose as a  &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tools&lt;/a&gt;
+
+Example:
+&lt;pre&gt;
+@Tool (id = &quot;foo.bar.helloWorld&quot;, 
+	description = &quot;Greets user with a hello&quot;, 
+	name = &quot;e4-hello-world&quot;,
+	categoryId = &quot;foo.bar.categoryId&quot;,
+	propertyPageIds = { &quot;foo.bar.propertyPage1&quot;, &quot;foo.bar.propertyPage1&quot;})
+public String[] helloWorld(
+	@ToolArg(name = &quot;firstName&quot;, description = &quot;First name&quot;) String firstName,
+	@ToolArg(name = &quot;age&quot;, description = &quot;User&apos;s age&quot;, required = false) Integer age,
+	@ToolArg(name = &quot;address&quot;, description = &quot;User&apos;s address&quot;, required = false) String[] address) {	
+		return new String[] { &quot;Hello &quot; + firstName };
+	}
+&lt;/pre&gt;
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The fully qualified name of the IMCPToolFactory implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPTooFactoryl&lt;/tt&gt; and have an zero-parameter constructor.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPToolFactory"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -391,11 +427,11 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
 &lt;pre&gt;
   &lt;extension
          point=&quot;org.eclipse.mcp.modelContextProtocolServer&quot;
-         id=&quot;com.foo.bar&quot;
+         id=&quot;com.foo.bar.mcp&quot;
          name=&quot;My MCP Contributions&quot;&gt;
       &lt;category
             id=&quot;com.foo.bar.category&quot;
-            name=&quot;My Contributions&quot;&gt;
+            name=&quot;My Cateogry&quot;&gt;
       &lt;/category&gt;
       &lt;server
             description=&quot;My first MCP server&quot;
@@ -406,11 +442,11 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       &lt;/server&gt;
       &lt;tool
             categoryId=&quot;com.foo.bar.category&quot;
-            class=&quot;com.foo.bar.tools.MyIMCPTool&quot;
+            class=&quot;com.foo.bar.tools.MyMCPTool&quot;
             description=&quot;LLM Tooling will read this to understand how to invoke my tool&quot;
-            id=&quot;com.foo.bar.tools.MyIMCPToolId&quot;
+            id=&quot;com.foo.bar.tools.MyMCPToolId&quot;
             name=&quot;foo-myTool&quot;
-            schema=&quot;my XML escaped JSON schema declaring the inputs into my tool&quot;&quot;&gt;
+            schema=&quot;my XML escaped JSON schema declaring the inputs into my tool&quot;&gt;
          &lt;propertyPage
                id=&quot;com.foo.bar.tools.myPropertyPageId1&quot;&gt;
          &lt;/propertyPage&gt;
@@ -420,8 +456,29 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       &lt;/tool&gt;
       &lt;toolServerBinding
             serverId=&quot;com.foo.bar.server&quot;
-            toolId=&quot;com.foo.bar.tools.MyIMCPToolId&quot;&gt;
+            toolId=&quot;com.foo.bar.tools.MyMCPToolId&quot;&gt;
       &lt;/toolServerBinding&gt;
+      &lt;toolFactory
+            class=&quot;com.foo.bar.tools.MyMCPToolFactory&quot;
+      &lt;/toolFactory&gt;
+      &lt;toolServerBinding
+            serverId=&quot;com.foo.bar.server&quot;
+            toolId=&quot;com.foo.bar.tools.MyMCPToolFromFactoryId&quot;&gt;
+      &lt;/toolServerBinding&gt;
+      &lt;resourceController
+            class=&quot;com.foo.bar.tools.MyMCPResourceController&quot;
+            id=&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;
+            name=&quot;foo-myController&quot;
+            description=&quot;Adds and removes resources dynamically to/from server&quot;
+            categoryId=&quot;com.foo.bar.category&quot;&gt;
+            &lt;propertyPage
+               id=&quot;com.foo.bar.tools.myPropertyPageId3&quot;&gt;
+            &lt;/propertyPage&gt;
+      &lt;/resourceController&gt;
+      &lt;resourceControllerServerBinding
+            serverId=&quot;com.foo.bar.server&quot;
+            resourceControllerId=&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;&gt;
+      &lt;/resourceControllerServerBinding&gt;
    &lt;/extension&gt;
 &lt;/pre&gt;
 &lt;/p&gt;
@@ -434,26 +491,29 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       </appinfo>
       <documentation>
          &lt;p&gt;
-There is currently no public API for declaring activities or associated elements other than this extension point.  The state of activities in the workbench is accessible via &lt;code&gt;org.eclipse.ui.IWorkbench.getActivitySupport()&lt;/code&gt;.  From here you may query and update the set of currently enabled activities.
+See the java docs for &lt;code&gt;org.eclipse.mcp&lt;/code&gt; for java interface documentationm
+&lt;/p&gt;&lt;p&gt;
+Two tracing options are available on the General &gt; Tracing preference page
+&lt;ul&gt;
+&lt;li&gt;
+# Main Debug Trace switch
+&lt;ul&gt;&lt;li&gt;org.eclipse.mcp/debug&lt;/li&gt;&lt;/ul&gt;
+&lt;/li&gt;&lt;li&gt;
+# Trace location for implementations
+&lt;ul&gt;&lt;li&gt;org.eclipse.mcp/debug/implementations&lt;/li&gt;&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/p&gt;
       </documentation>
    </annotation>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="implementation"/>
-      </appinfo>
-      <documentation>
-         There are no &quot;default activities&quot; provided by the workbench.  Activities are intended to be defined at the product level, such as the Eclipse SDK, so as to tightly integrate all of the (known) components that product contains.
-      </documentation>
-   </annotation>
 
    <annotation>
       <appinfo>
          <meta.section type="copyright"/>
       </appinfo>
       <documentation>
-         Copyright (c) 2000, 2005 IBM Corporation and others.&lt;br&gt;
+         Copyright (c) 2025 IBM Corporation and others.&lt;br&gt;
 
 This program and the accompanying materials are made
 available under the terms of the Eclipse Public License 2.0 which accompanies
