@@ -4,11 +4,11 @@ The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.g
 
 It provides a simple mechanism to contribute MCP Tools and Resources to MCP servers running inside Eclipse.
 
-It abstracts away the underlying dependencies such as [modelcontextprotocol/java-sdk(https://github.com/modelcontextprotocol/java-sdk)] and Jetty HTTP Server by providing an extension point and some simple Java Interaces, standing up and tearing down MCP and HTTP servers as user preferences are updated.
+It abstracts away the underlying dependencies such as [modelcontextprotocol/java-sdk](https://github.com/modelcontextprotocol/java-sdk) and Jetty HTTP Server by providing an extension point and some simple Java Interaces, standing up and tearing down MCP and HTTP servers as user preferences are updated.
 
 Provides a centralized location for users to organize and customize Eclipse MCP contributions from multiple vendors.
 
-Provides a centralized registry of MCP servers running in the Eclipse process, enabling shell-shared experiences to invoke tools with a Java call rather than an HTTP call
+Provides a centralized registry of MCP servers running in the Eclipse process, enabling shell-shared experiences to locate local MCP server extensions and could enable them to invoke tools with a Java call rather than an HTTP call
 
 ## Documentation
 
@@ -142,6 +142,47 @@ Example:
 ```
 
 Thats all that is required.  Upon startup, MCP servers will start up and serve content over HTTP for the registered tools.  Calls to tools will be delegated to your instances of IMCPTool
+
+### Using Java Annotation to declare MCP Tool name, description and schema
+
+1. An alternative that lets you create multiple tools from a single java class, and that extracts MCP name, description and input JSON schema from Annotations is to implement an instance of [IMCPToolFactory](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPToolFactory.html)
+
+```java
+public class MCPToolFactory implements IMCPToolFactory {
+    @Tool (id = "foo.bar.tools.RunQueryId", description = "Runs a SQL database query", name = "runQuery")
+  public String[] runQuery(
+      @ToolArg(name="query", description="A SQL Query") String query) {
+
+    //TODO run the query and return the results
+    return new String[] {
+      "Result 1",
+      "Result 2"};
+  }
+}
+```
+2. The infrastructure will handle generation of JSON input schema and conversion betwen JSON and basic Java types and 1-dimensional Arrays
+    1. For usage details, see: [IMCPToolFactory](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPToolFactory.html) 
+3. Declare your toolFactory as an org.eclipse.mcp.modelContextProtocolServer extension in your plugin.xml
+    
+```xml
+ <extension
+         point="org.eclipse.mcp.modelContextProtocolServer">
+      <server
+            description="My Example Server"
+            id="foo.bar.MyServer"
+            name="My MCP Server"
+            version="0.0.1"
+            defaultPort="12931">
+      </server>
+      <toolFactory
+            class="foo.bar.RunQuery">
+      </toolFactory>
+      <toolServerBinding
+            serverId="foo.bar.MyServer"
+            toolId="foo.bar.tools.RunQueryId">
+      </toolServerBinding>
+   </extension>
+```
 
 ### Future Considerations
 
