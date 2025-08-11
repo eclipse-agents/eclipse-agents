@@ -1,17 +1,7 @@
 package org.eclipse.mcp.test.junit.plugin;
 
-import org.eclipse.jface.dialogs.DialogSettings;
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.mcp.IMCPResourceController;
-import org.eclipse.mcp.IMCPTool;
 import org.eclipse.mcp.internal.ExtensionManager;
-import org.eclipse.mcp.internal.Images;
-import org.eclipse.mcp.internal.MCPElementPropertyInput;
 import org.eclipse.mcp.internal.ManagedServer;
-import org.eclipse.mcp.internal.PreferenceManager;
-import org.eclipse.mcp.internal.ExtensionManager.ResourceController;
-import org.eclipse.mcp.internal.ExtensionManager.Tool;
-import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
 

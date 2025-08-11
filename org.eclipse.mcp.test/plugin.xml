@@ -15,7 +15,7 @@
             id="org.eclipse.mcp.test.junit.plugin.extension.server"
             name="server.name"
             version="server.version"
-            defaultPort="server.port">
+            defaultPort="10203">
       </server>
       <asdf/>
       <tool

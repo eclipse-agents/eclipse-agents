@@ -52,7 +52,7 @@ public final class ExtensionManagerTest {
 		addTestEquals(suite, "mcp server.getName", server.getName(), "server.name");
 		addTestEquals(suite, "mcp server.getDescription", server.getDescription(), "server.description");
 		addTestEquals(suite, "mcp server.getVersion", server.getVersion(), "server.version");
-		addTestEquals(suite, "mcp server.getDefaultPort", server.getDefaultPort(), "server.port");
+		addTestEquals(suite, "mcp server.getDefaultPort", server.getDefaultPort(), "10203");
 
 
 		// Test Tool

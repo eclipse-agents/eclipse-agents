@@ -1,4 +1,5 @@
-package org.eclipse.mcp.test.junit.plugin;
+package org.eclipse.mcp.test.junit;
+
 
 import java.util.HashMap;
 import java.util.Map;
