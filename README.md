@@ -160,25 +160,26 @@ public class MCPToolFactory implements IMCPToolFactory {
   }
 }
 ```
+
 2. The infrastructure will handle generation of JSON input schema and conversion betwen JSON and basic Java types and 1-dimensional Arrays
     1. For usage details, see: [IMCPToolFactory](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPToolFactory.html) 
 3. Declare your toolFactory as an org.eclipse.mcp.modelContextProtocolServer extension in your plugin.xml
-    
+
 ```xml
  <extension
          point="org.eclipse.mcp.modelContextProtocolServer">
       <server
             description="My Example Server"
-            id="foo.bar.MyServer"
+            id="foo.bar.MyServerId"
             name="My MCP Server"
             version="0.0.1"
             defaultPort="12931">
       </server>
       <toolFactory
-            class="foo.bar.RunQuery">
+            class="foo.bar.MCPToolFactory">
       </toolFactory>
       <toolServerBinding
-            serverId="foo.bar.MyServer"
+            serverId="foo.bar.MyServerId"
             toolId="foo.bar.tools.RunQueryId">
       </toolServerBinding>
    </extension>
