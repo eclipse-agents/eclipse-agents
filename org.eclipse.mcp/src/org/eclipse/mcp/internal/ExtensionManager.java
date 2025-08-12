@@ -75,6 +75,8 @@ public class ExtensionManager {
 							if (child.getName().equals("propertyPage")) {
 								rf.addPropertyEditorId(child.getAttribute("id"));
 								//TODO validate id;
+							} else if (child.getName().equals("resourceTemplate")) {
+								rf.addResourceTemplate(child);
 							}
 						}
 					} else {
@@ -321,6 +323,7 @@ public class ExtensionManager {
 
 		String id, name, description, categoryId;
 		List<String> propertyPageIds = new ArrayList<String>();
+		List<ResourceTemplate> resourceTemplates = new ArrayList<ResourceTemplate>();
 		IMCPResourceController implementation;
 
 		String errorMessage = null;
@@ -396,6 +399,26 @@ public class ExtensionManager {
 		@Override
 		public void addPropertyEditorId(String id) {
 			propertyPageIds.add(id);
+		}
+
+		public void addResourceTemplate(IConfigurationElement child) {
+			resourceTemplates.add(new ResourceTemplate(child));
+		}
+	}
+	
+	public class ResourceTemplate {
+
+		String uriPattern, name, description, mimeType, role;
+
+		String errorMessage = null;
+		
+		
+		public ResourceTemplate(IConfigurationElement e) {
+			this.name = e.getAttribute("name");
+			this.description = e.getAttribute("description");
+			this.uriPattern = e.getAttribute("uriPattern");
+			this.mimeType = e.getAttribute("mimeType");
+			this.role = e.getAttribute("role");
 		}
 	}
 	

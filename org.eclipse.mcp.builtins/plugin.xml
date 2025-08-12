@@ -74,6 +74,24 @@
             serverId="org.eclipse.mcp.builtins"
             resourceControllerId="org.eclipse.mcp.builtins.resource.Editors">
       </resourceControllerServerBinding>
+      <resourceController
+            class="org.eclipse.mcp.builtin.resource.MvsResources"
+            id="org.eclipse.mcp.builtin.resource.MvsResources"
+            name="MVS Resources"
+            description="Contributes resources for each open editor text editor"
+            categoryId="org.eclipse.mcp.builtins.workbench">
+         <resourceTemplate
+         	uriPattern="mvs://{server}/{pds}/{member}"
+         	name="PDS Member"
+            description="Partitioned Data Set Member"
+            mimeType="text/plain"
+            role="USER">   
+         </resourceTemplate>
+      </resourceController>
+      <resourceControllerServerBinding
+            serverId="org.eclipse.mcp.builtins"
+            resourceControllerId="org.eclipse.mcp.builtin.resource.MvsResources">
+      </resourceControllerServerBinding>
    </extension>
 
 </plugin>

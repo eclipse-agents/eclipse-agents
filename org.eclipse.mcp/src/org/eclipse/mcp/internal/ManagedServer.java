@@ -1,6 +1,7 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -11,24 +12,31 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.internal.preferences.IPreferencedServer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.server.McpServer;
+import io.modelcontextprotocol.server.McpServerFeatures;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.CompleteResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
+import io.modelcontextprotocol.spec.McpSchema.Resource;
+import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
+import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 import jakarta.servlet.Servlet;
 
@@ -57,16 +65,55 @@ public class ManagedServer {
 		ServerCapabilities capabilities = ServerCapabilities.builder().resources(false, false) // Enable resource support
 				.tools(extension.getTools().length > 0) // Enable tool support
 				.prompts(false) // Enable prompt support
+				.completions()
 				.logging() // Enable logging support
 				.build();
 	
+		SyncCompletionSpecification testCompletion = new SyncCompletionSpecification(null, null);
+
+		List<McpSchema.ResourceTemplate> templates = new ArrayList<McpSchema.ResourceTemplate>();
+		List<SyncCompletionSpecification> completions = new ArrayList<SyncCompletionSpecification>();
+		for (ExtensionManager.ResourceController resourceController: extension.getResourceControllers()) {	
+			for (ExtensionManager.ResourceTemplate template: resourceController.resourceTemplates) {
+				McpSchema.Annotations annotations = new McpSchema.Annotations(Arrays.asList(McpSchema.Role.valueOf(template.role)), 0.5);
+				templates.add(new McpSchema.ResourceTemplate(template.uriPattern, template.name, template.description, template.mimeType, annotations));
+				
+				var syncCompletionSpecification = new McpServerFeatures.SyncCompletionSpecification(
+						new McpSchema.ResourceReference(template.uriPattern), (exchange, request) -> {
+
+			        // completion implementation ...
+					String identifier = request.ref().identifier();
+					String argumentName = request.argument().name();
+					String argumentValue = request.argument().value();
+					System.out.println(argumentValue);
+					List<String> result = new ArrayList<String>();
+					
+					if (argumentName.equals("server")) {
+						result = List.of("VM30094", "VM30093", "VM30095");
+					} else if (argumentName.equals("pds")) {
+						result = List.of("JFLICKE.COBOL", "JFLICKE.CPY", "JFLICKE.PLI");
+					} else if (argumentName.equals("member")) {
+						result = List.of("CLIARB", "CLIVM2", "CLIFLI");
+					}
+
+			        return new McpSchema.CompleteResult(
+			            new CompleteResult.CompleteCompletion(
+			             result,
+			              10, // total
+			              false // hasMore
+			            ));
+			   });
+				completions.add(syncCompletionSpecification);
+			}
+		}
+		
 		// Create a server with custom configuration
 		this.syncServer = McpServer.sync(transportProvider)
 			    .serverInfo(extension.getName(), extension.getVersion())
 			    .capabilities(capabilities)
-//			    .resourceTemplates(builtins.templates.templates)
+			    .resourceTemplates(templates.toArray(McpSchema.ResourceTemplate[]::new))
+			    .completions(completions)
 			    .build();
-		
 		
 		log(LoggingLevel.INFO, this, url);
 	
@@ -99,9 +146,27 @@ public class ManagedServer {
 			syncServer.addTool(spec);
 		}
 		
-		for (ExtensionManager.ResourceController resourceFactory: extension.getResourceControllers()) {	
-			ResourceManager resourceManager = new ResourceManager(this, resourceFactory.getImplementation());
-			resourceFactory.getImplementation().initialize(resourceManager);
+		for (ExtensionManager.ResourceController resourceController: extension.getResourceControllers()) {	
+			ResourceManager resourceManager = new ResourceManager(this, resourceController.getImplementation());
+			resourceController.getImplementation().initialize(resourceManager);
+			
+			for (ExtensionManager.ResourceTemplate template: resourceController.resourceTemplates) {
+				McpSchema.Annotations annotations = new McpSchema.Annotations(Arrays.asList(McpSchema.Role.valueOf(template.role)), 0.5);
+				Resource resource = new Resource(template.uriPattern, template.name, template.description, template.mimeType, annotations);
+				SyncResourceSpecification spec = new McpServerFeatures.SyncResourceSpecification(resource, 
+						(McpSyncServerExchange exchange, ReadResourceRequest request) -> {
+							List<ResourceContents> contents = new ArrayList<ResourceContents>();
+							for (String s: resourceController.getImplementation().readResource(request.uri())) {
+								contents.add(new TextResourceContents(
+									url,
+									template.mimeType,
+									s));
+							}
+							return new ReadResourceResult(contents);
+						});
+				syncServer.addResource(spec);
+				syncServer.notifyResourcesListChanged();
+			}
 		}
 
 		syncServer.notifyToolsListChanged();

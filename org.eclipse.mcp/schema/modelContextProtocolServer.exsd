@@ -37,6 +37,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
             <element ref="tool"/>
             <element ref="toolFactory"/>
             <element ref="resourceController"/>
+            <element ref="resourceTemplate"/>
             <element ref="server"/>
             <element ref="category"/>
             <element ref="toolServerBinding"/>
@@ -181,6 +182,9 @@ public String[] helloWorld(
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="propertyPage"/>
          </sequence>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="resourceTemplate"/>
+         </sequence>
          <attribute name="description" type="string">
             <annotation>
                <documentation>
@@ -226,6 +230,57 @@ public String[] helloWorld(
                <appinfo>
                   <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/category/@id"/>
                </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+   
+   <element name="resourceTemplate">
+      <annotation>
+         <documentation>
+            This element allows one to define a category for Tools, Resource Managers
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="uriPattern" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the translatable name of this category for display in the UI
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the translatable name of this category for display in the UI
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the translatable name of this category for display in the UI
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="mimeType" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the translatable name of this category for display in the UI
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="role" type="string" use="required">
+            <annotation>
+               <documentation>
+                  One of ASSISTANT or USER
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
