@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Modelcontextprotocol
+Bundle-SymbolicName: io.modelcontextprotocol
+Bundle-Version: 0.11.2
+Export-Package: io.modelcontextprotocol.server,
+ io.modelcontextprotocol.spec
+Bundle-Vendor: modelcontextprotocol/java-sdk
+Automatic-Module-Name: io.modelcontextprotocol
+Bundle-RequiredExecutionEnvironment: JavaSE-21
