@@ -1,15 +1,22 @@
 package org.eclipse.mcp.test.junit;
 
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.mcp.IMCPToolFactory;
-import org.eclipse.mcp.test.junit.plugin.extension.MCPToolFactory;
+import org.eclipse.mcp.MCPToolFactory;
+import org.eclipse.mcp.test.junit.plugin.extension.MCPFactory;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
 
+import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
+import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
+import io.modelcontextprotocol.spec.McpSchema.Tool;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -22,42 +29,134 @@ public final class ToolFactoryTest {
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
 
-		MCPToolFactory factory = new MCPToolFactory();
+		MCPFactory factory = new MCPFactory();
 		
-		IMCPToolFactory.IMCPAnnotatedTool[] tools = factory.createTools();
+		MCPToolFactory[] toolFactories = factory.createTools();
 		
 		// Test Server
 //		addTestEquals(suite, "mcp server.getDefaultPort", server.getDefaultPort(), "server.port");
 
-		for (IMCPToolFactory.IMCPAnnotatedTool tool: tools ) {
-			System.out.println(tool.getId());
-			System.out.println(tool.getInputSchema());
-			
-			Map<String, Object> args = new HashMap<String, Object>();
-			args.put("b1", Boolean.TRUE);
-			args.put("c1", Character.valueOf('a'));
-			args.put("s1", "Hello");
-			args.put("d1", Double.parseDouble("2.3"));
-			args.put("f1", Float.valueOf("3.4"));
-			args.put("i1", Integer.parseInt("1234"));
-			args.put("l1", Long.valueOf(1234));
-			args.put("sh1", Short.parseShort("1234"));
-			args.put("as1", new String[] { "jeremy", "flicker" });
-			args.put("ai1", new Integer[] { 1234, 2345 });
-			String[] result = tool.apply(args, null);
-			for (String s: result) {
-				System.out.println(s);
-			}
-		}
+		addTestEquals(suite, "toolFactory[0].id", toolFactories[0].getId(), "junit.MCPToolFactory.helloWorld");
+		
+		Tool tool = toolFactories[0].createTool();
+		
+		
+		addTestEquals(suite, "tool.name", tool.name(), "test-hello-world");
+		addTestEquals(suite, "tool.description", tool.description(), "Greets user with a hello");
+		
+		addTestEquals(suite, "tool.inputSchema.type", tool.inputSchema().type(), "object");
+		
+		String arg = "b1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "boolean");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "boolean");
+
+		arg = "c1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "string");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "character");
+
+		arg = "s1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "string");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "string");
+
+		arg = "d1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "number");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "double");
+
+		arg = "f1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "number");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "float");
+
+		arg = "i1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "integer");
+
+		arg = "l1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "long");
+
+
+		arg = "sh1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "short");
+
+
+		arg = "as1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "string array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".item.type", ((Map)((Map)tool.inputSchema().properties().get(arg)).get("items")).get("type"), "string");
+
+		
+		arg = "ai1";
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "int array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".item.type", ((Map)((Map)tool.inputSchema().properties().get(arg)).get("items")).get("type"), "integer");
+
+
+//		addTestEquals(suite, "tool.outputSchema", tool.outputSchema(), "junit.MCPToolFactory.helloWorld");
+		
+		addTestEquals(suite, "tool.annotation.title", tool.annotations().title(), "");
+		addTestEquals(suite, "tool.annotation.destructiveHint", tool.annotations().destructiveHint(), false);
+		addTestEquals(suite, "tool.annotation.idempotentHint", tool.annotations().idempotentHint(), false);
+		addTestEquals(suite, "tool.annotation.openWorldHint", tool.annotations().openWorldHint(), false);
+		addTestEquals(suite, "tool.annotation.readOnlyHint", tool.annotations().readOnlyHint(), false);
+		addTestEquals(suite, "tool.annotation.returnDirect", tool.annotations().returnDirect(), false);
+		
+		
+		Map<String, Object> args = new HashMap<String, Object>();
+		args.put("b1", Boolean.TRUE);
+		args.put("c1", Character.valueOf('a'));
+		args.put("s1", "Hello");
+		args.put("d1", Double.parseDouble("2.3"));
+		args.put("f1", Float.valueOf("3.4"));
+		args.put("i1", Integer.parseInt("1234"));
+		args.put("l1", Long.valueOf(1234));
+		args.put("sh1", Short.parseShort("1234"));
+		args.put("as1", new String[] { "jeremy", "flicker" });
+		args.put("ai1", new Integer[] { 1234, 2345 });
+		
+
+		SyncToolSpecification spec = toolFactories[0].createSpec(tool);
+		CallToolRequest request = new CallToolRequest(tool.name(), args);
+		CallToolResult result = spec.callHandler().apply((McpSyncServerExchange)null, request);
+		
+		arg = "b1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(0)).text(), "\n" + args.get(arg));
+		
+		arg = "c1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(1)).text(), "\n" + args.get(arg));
+		
+		arg = "s1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(2)).text(), "\n" + args.get(arg));
+		
+		arg = "d1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(3)).text(), "\n" + args.get(arg));
+		
+		arg = "f1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(4)).text(), "\n" + args.get(arg));
+		
+		arg = "i1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(5)).text(), "\n" + args.get(arg));
+		
+		arg = "l1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(6)).text(), "\n" + args.get(arg));
+		
+		arg = "sh1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(7)).text(), "\n" + args.get(arg));
+		
+		arg = "as1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(8)).text(), "\n" + Arrays.toString((String[])args.get(arg)));
+		
+		arg = "ai1";
+		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(9)).text(), "\n" + Arrays.toString((Integer[])args.get(arg)));
 
 		return suite;
 	}
-
+	
 	public static void addTestEquals(TestSuite suite, String message, Object left, Object right) {
 		suite.addTest(new TestCase(message) {
 			@Override
 			protected void runTest() throws Throwable {
-				System.out.println(left + " == " + right);
+				System.out.println(message + ":: '" + left + "' == '" + right + "'");
 				Assert.assertEquals(message, left, right);
 			}
 		});

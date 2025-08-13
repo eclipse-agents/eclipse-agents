@@ -2,7 +2,7 @@ package org.eclipse.mcp.test.junit.plugin.extension;
 
 import java.util.Arrays;
 
-import org.eclipse.mcp.IMCPToolFactory;
+import org.eclipse.mcp.IMCPFactory;
 
 
 /*
@@ -19,29 +19,31 @@ import org.eclipse.mcp.IMCPToolFactory;
 
 
 
-public class MCPToolFactory implements IMCPToolFactory {
+public class MCPFactory implements IMCPFactory {
 
-	@Tool (id = "junit.MCPToolFactory.helloWorld", description = "Greets user with a hello", name = "e4-hello-world")
+	@Tool (id = "junit.MCPToolFactory.helloWorld", 
+			description = "Greets user with a hello", 
+			name = "test-hello-world")
 	public String[] helloWorld(
-			@ToolArg(name = "b1", description = "example boolean 1")
+			@ToolArg(name = "b1", description = "boolean")
 			Boolean b,
-			@ToolArg(name = "c1", description = "example character 1")
+			@ToolArg(name = "c1", description = "character")
 			Character c,
-			@ToolArg(name = "s1", description = "example String s1")
+			@ToolArg(name = "s1", description = "string")
 			String s,
-			@ToolArg(name = "d1", description = "example double 1")
+			@ToolArg(name = "d1", description = "double")
 			Double d,
-			@ToolArg(name = "f1", description = "example float 1")
+			@ToolArg(name = "f1", description = "float")
 			Float f,
-			@ToolArg(name = "i1", description = "example integer 1")
+			@ToolArg(name = "i1", description = "integer")
 			Integer i,
-			@ToolArg(name = "l1", description = "example long 1")
+			@ToolArg(name = "l1", description = "long")
 			Long l,
-			@ToolArg(name = "sh1", description = "example short 1")
+			@ToolArg(name = "sh1", description = "short")
 			Short sh,
-			@ToolArg(name = "as1", description = "example string array 1")
+			@ToolArg(name = "as1", description = "string array")
 			String[] as,
-			@ToolArg(name = "ai1", description = "example int array 1")
+			@ToolArg(name = "ai1", description = "int array")
 			Integer[] ai
 			
 			) {

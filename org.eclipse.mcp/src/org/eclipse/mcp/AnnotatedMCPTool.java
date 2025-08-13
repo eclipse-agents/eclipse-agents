@@ -112,7 +112,7 @@ public class AnnotatedMCPTool extends MCPToolFactory {
 
 	@Override
 	public String getId() {
-		if (!toolAnnotation.id().isEmpty()) {
+		if (toolAnnotation.id().isEmpty()) {
 			return instance.getClass().getCanonicalName() + "." +  method.getName();
 		}
 		return toolAnnotation.id();
