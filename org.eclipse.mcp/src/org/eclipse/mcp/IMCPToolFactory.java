@@ -7,36 +7,30 @@ import java.util.Map;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 
-import io.modelcontextprotocol.spec.McpSchema.Tool;
-
-public abstract class MCPToolFactory {
-
-	
-	public MCPToolFactory() {
-		super();
-	}
+public interface IMCPToolFactory {	
 
 	/**
 	 * @return Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension
 	 */
-	public String getId() {
+	public default String getId() {
 		return getClass().getCanonicalName();
 	}
 	
-	public abstract String getCategory();
+	public String getCategory();
 
-	public abstract Tool createTool();
+	public McpSchema.Tool createTool();
 	
-	public SyncToolSpecification createSpec(Tool tool) {
+	public default SyncToolSpecification createSpec(McpSchema.Tool tool) {
 		return McpServerFeatures.SyncToolSpecification.builder().tool(tool).callHandler(this::apply).build();
 	}
 	
-	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
+	public default CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
 		CallToolResult result = null;
 		List<Content> content = new ArrayList<Content>();
 		
@@ -54,6 +48,6 @@ public abstract class MCPToolFactory {
 		return result;
 	}
 	
-	public abstract String[] apply(Map<String, Object> args);
+	public String[] apply(Map<String, Object> args);
 
 }

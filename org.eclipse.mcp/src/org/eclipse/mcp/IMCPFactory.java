@@ -8,8 +8,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface IMCPFactory {
+import org.eclipse.mcp.annotated.MCPAnnotatedToolFactory;
 
+public interface IMCPFactory {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
@@ -63,22 +64,22 @@ public interface IMCPFactory {
 	    boolean required() default true;
 	}
 	
-	public default MCPToolFactory[] createTools() {
-		List<MCPToolFactory> tools = new ArrayList<MCPToolFactory>();
+	public default IMCPToolFactory[] createToolFactories() {
+		List<IMCPToolFactory> tools = new ArrayList<IMCPToolFactory>();
 		for (Method method: getClass().getDeclaredMethods()) {
 			Tool tool = method.getAnnotation(Tool.class);
 			if (tool != null) {
-				AnnotatedMCPTool annotatedTool = createAnnotatedMcpTool(this, method, tool);
-				if (annotatedTool.isValid()) {
-					tools.add(annotatedTool);
+				MCPAnnotatedToolFactory toolFactory = createMCPAnnotatedToolFactoryMcpTool(this, method, tool);
+				if (toolFactory.isValid()) {
+					tools.add(toolFactory);
 				}
 			}
 		}
-		return tools.toArray(AnnotatedMCPTool[]::new);
+		return tools.toArray(MCPAnnotatedToolFactory[]::new);
 	}
 	
-	public default AnnotatedMCPTool createAnnotatedMcpTool(IMCPFactory factory, Method method, Tool toolAnnotation) {
-		return new AnnotatedMCPTool(this, method, toolAnnotation);
+	public default MCPAnnotatedToolFactory createMCPAnnotatedToolFactoryMcpTool(IMCPFactory factory, Method method, Tool toolAnnotation) {
+		return new MCPAnnotatedToolFactory(factory, method, toolAnnotation);
 	}
 	
 	public default IMCPResourceFactory[] createResourceFactories() {

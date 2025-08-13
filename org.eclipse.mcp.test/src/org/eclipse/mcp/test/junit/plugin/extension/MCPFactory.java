@@ -1,23 +1,14 @@
 package org.eclipse.mcp.test.junit.plugin.extension;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.mcp.IMCPFactory;
+import org.eclipse.mcp.IMCPResourceTemplateFactory;
+import org.eclipse.mcp.IMCPResourceTemplateFactory.ResourceTemplate;
+import org.eclipse.mcp.annotated.MCPAnnotatedResourceTemplateFactory;
 
-
-/*
-{
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "string"
-    }
-  },
-  "required": ["name"]
-}
-*/
-
-
+import io.modelcontextprotocol.spec.McpSchema;
 
 public class MCPFactory implements IMCPFactory {
 
@@ -60,36 +51,42 @@ public class MCPFactory implements IMCPFactory {
 			"\n" + Arrays.toString(ai),
 		};
 	}
-	
-//	@Tool (id = "junit.MCPToolFactory.helloWorld2")
-//	public String[] helloWorld2(
-//			@ToolArg(name = "b1", description = "example boolean 1")
-//			boolean b,
-//			@ToolArg(name = "c1", description = "example character 1")
-//			char c,
-//			@ToolArg(name = "s1", description = "example String s1")
-//			String s,
-//			@ToolArg(name = "d1", description = "example double 1")
-//			double d,
-//			@ToolArg(name = "f1", description = "example float 1")
-//			float f,
-//			@ToolArg(name = "i1", description = "example integer 1")
-//			int i,
-//			@ToolArg(name = "l1", description = "example long 1")
-//			long l,
-//			@ToolArg(name = "sh1", description = "example short 1")
-//			short sh
-//			) {
-//		return new String[] {
-//			"\n" + b,
-//			"\n" + c,
-//			"\n" + s,
-//			"\n" + d,
-//			"\n" + f,
-//			"\n" + i,
-//			"\n" + l,
-//			"\n" + sh
-//		};
-//	}
 
+
+	@Override
+	public IMCPResourceTemplateFactory[] createResourceTemplateFactories() {
+		return new IMCPResourceTemplateFactory[] {
+			new MyResourceTemplate()
+		};
+	}
+
+
+	@ResourceTemplate (
+			uriTemplate = "db:///{schema}/{table}",
+			name = "Table",
+			title = "A Database Table",
+			description = "A Database Table",
+			mimeType = "application/json",
+			roles = {McpSchema.Role.USER, McpSchema.Role.ASSISTANT},
+			priority  = 0.5)
+	@ResourceTemplate (
+			uriTemplate = "db:///{schema}/{table}/{column}",
+			name = "Table Column",
+			description = "")
+	public class MyResourceTemplate extends MCPAnnotatedResourceTemplateFactory {
+
+		@Override
+		public List<String> completionReq(String argumentName, String argumentValue) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String[] readResource(String url) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
+	
+	
 }

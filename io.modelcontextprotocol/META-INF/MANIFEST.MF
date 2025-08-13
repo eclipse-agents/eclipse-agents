@@ -3,12 +3,19 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Modelcontextprotocol
 Bundle-SymbolicName: io.modelcontextprotocol
 Bundle-Version: 0.11.2
-Export-Package: io.modelcontextprotocol.client,
- io.modelcontextprotocol.client.transport,
- io.modelcontextprotocol.server,
+Export-Package: io.modelcontextprotocol.server,
  io.modelcontextprotocol.server.transport,
- io.modelcontextprotocol.spec,
- io.modelcontextprotocol.util
+ io.modelcontextprotocol.spec
+Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.17.2",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.17.2",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.17.2",
+ jakarta.servlet-api;bundle-version="6.1.0"
 Bundle-Vendor: modelcontextprotocol/java-sdk
 Automatic-Module-Name: io.modelcontextprotocol
+Bundle-ClassPath: lib/json-schema-validator-1.5.7.jar,
+ lib/jsr305-3.0.2.jar,
+ lib/reactive-streams-1.0.4.jar,
+ lib/reactor-core-3.7.0.jar,
+ lib/slf4j-api-2.0.16.jar,
+ .
 Bundle-RequiredExecutionEnvironment: JavaSE-21

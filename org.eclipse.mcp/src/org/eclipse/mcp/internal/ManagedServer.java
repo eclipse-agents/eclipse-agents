@@ -12,8 +12,8 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.mcp.IMCPFactory;
 import org.eclipse.mcp.IMCPResourceFactory;
 import org.eclipse.mcp.IMCPResourceTemplateFactory;
+import org.eclipse.mcp.IMCPToolFactory;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.MCPToolFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,9 +26,7 @@ import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportPro
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
-import io.modelcontextprotocol.spec.McpSchema.ResourceTemplate;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
-import io.modelcontextprotocol.spec.McpSchema.Tool;
 import jakarta.servlet.Servlet;
 
 public class ManagedServer {
@@ -57,13 +55,13 @@ public class ManagedServer {
 			    new HttpServletSseServerTransportProvider(
 			        new ObjectMapper(), "/", "/sse");
 	
-		List<ResourceTemplate> templates = new ArrayList<McpSchema.ResourceTemplate>();
+		List<McpSchema.ResourceTemplate> templates = new ArrayList<McpSchema.ResourceTemplate>();
 		List<SyncCompletionSpecification> completions = new ArrayList<SyncCompletionSpecification>();
 		List<SyncResourceSpecification> templateResourceSpecs = new ArrayList<SyncResourceSpecification>();
 
 		for (IMCPFactory factory: factories) {
 			for (IMCPResourceTemplateFactory templateFactory: factory.createResourceTemplateFactories()) {
-				for (ResourceTemplate template: templateFactory.createResourceTemplates()) {
+				for (McpSchema.ResourceTemplate template: templateFactory.createResourceTemplates()) {
 					templates.add(template);
 					completions.add(templateFactory.createCompletionSpecification(template));
 					templateResourceSpecs.add(templateFactory.getResourceTemplateSpecification(template));
@@ -90,8 +88,8 @@ public class ManagedServer {
 		log(LoggingLevel.INFO, this, url);
 	
 		for (IMCPFactory factory: factories) {
-			for (MCPToolFactory toolFactory: factory.createTools()) {
-				Tool tool = toolFactory.createTool();
+			for (IMCPToolFactory toolFactory: factory.createToolFactories()) {
+				McpSchema.Tool tool = toolFactory.createTool();
 				SyncToolSpecification spec = toolFactory.createSpec(tool);
 				syncServer.addTool(spec);
 			}

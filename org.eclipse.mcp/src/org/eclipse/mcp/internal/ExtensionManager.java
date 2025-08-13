@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.mcp.IMCPFactory;
 import org.eclipse.mcp.IMCPResourceTemplateFactory;
-import org.eclipse.mcp.MCPToolFactory;
+import org.eclipse.mcp.IMCPToolFactory;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
@@ -110,7 +110,7 @@ public class ExtensionManager {
 						}
 					}
 					
-					for (MCPToolFactory toolFactory: implementation.createTools()) {
+					for (IMCPToolFactory toolFactory: implementation.createToolFactories()) {
 						Tool tool = toolFactory.createTool();
 						SyncToolSpecification spec = toolFactory.createSpec(tool);
 						toolSpecifications.put(tool, spec);

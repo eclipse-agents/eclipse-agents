@@ -1,4 +1,4 @@
-package org.eclipse.mcp;
+package org.eclipse.mcp.annotated;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.mcp.IMCPFactory;
 import org.eclipse.mcp.IMCPFactory.Tool;
 import org.eclipse.mcp.IMCPFactory.ToolArg;
+import org.eclipse.mcp.IMCPToolFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -16,15 +18,20 @@ import com.google.gson.JsonObject;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
-public class AnnotatedMCPTool extends MCPToolFactory {
 
+public class MCPAnnotatedToolFactory implements IMCPToolFactory {
+	
+	
 	Object instance;
 	Method method;
 	Tool toolAnnotation;
 	String inputSchema;
 	String outputSchema;
 	
-	public AnnotatedMCPTool(Object instance, Method method, Tool toolAnnotation) {
+
+	public MCPAnnotatedToolFactory() {}
+
+	public MCPAnnotatedToolFactory(IMCPFactory instance, Method method, Tool toolAnnotation) {
 		super();
 		this.instance = instance;
 		this.method = method;
@@ -33,7 +40,7 @@ public class AnnotatedMCPTool extends MCPToolFactory {
 		inputSchema = createInputSchema();
 		outputSchema = createOutputSchema();
 	}
-	
+
 	public String createInputSchema() {
 
 		if (!toolAnnotation.inputSchema().isEmpty()) {

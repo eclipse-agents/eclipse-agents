@@ -70,7 +70,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          </documentation>
       </annotation>
       <complexType>
-          <attribute name="id" type="string" use="required">
+         <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
                   the unique identifier of this factory
@@ -117,18 +117,16 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="capabilityId" type="string" use="required">
+         <attribute name="capabilityId" type="string">
             <annotation>
                <documentation>
                   Id of a capability
                </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPFactory"/>
-               </appinfo>
             </annotation>
          </attribute>
       </complexType>
    </element>
+
    <annotation>
       <appinfo>
          <meta.section type="since"/>
