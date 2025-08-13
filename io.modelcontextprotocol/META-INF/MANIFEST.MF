@@ -3,8 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Modelcontextprotocol
 Bundle-SymbolicName: io.modelcontextprotocol
 Bundle-Version: 0.11.2
-Export-Package: io.modelcontextprotocol.server,
- io.modelcontextprotocol.spec
+Export-Package: io.modelcontextprotocol.client,
+ io.modelcontextprotocol.client.transport,
+ io.modelcontextprotocol.server,
+ io.modelcontextprotocol.server.transport,
+ io.modelcontextprotocol.spec,
+ io.modelcontextprotocol.util
 Bundle-Vendor: modelcontextprotocol/java-sdk
 Automatic-Module-Name: io.modelcontextprotocol
 Bundle-RequiredExecutionEnvironment: JavaSE-21

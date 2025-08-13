@@ -12,6 +12,7 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.mcp.IMCPFactory;
 import org.eclipse.mcp.MCPException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,6 +62,14 @@ public class ManagedServer {
 		HttpServletSseServerTransportProvider transportProvider =
 			    new HttpServletSseServerTransportProvider(
 			        new ObjectMapper(), "/", "/sse");
+		
+		IMCPFactory[] factories;
+		boolean resourcesSubscribe = true;
+		boolean resourcesListChanged = true;
+		boolean tools = true;
+		boolean prompts = false;
+		boolean completions;
+		
 		
 		ServerCapabilities capabilities = ServerCapabilities.builder().resources(false, false) // Enable resource support
 				.tools(extension.getTools().length > 0) // Enable tool support
@@ -118,7 +127,7 @@ public class ManagedServer {
 		log(LoggingLevel.INFO, this, url);
 	
 		for (ExtensionManager.Tool toolExtension: extension.getTools()) {
-			Tool tool = new Tool(toolExtension.getName(), toolExtension.getDescription(), toolExtension.getSchema());				
+			Tool tool = new Tool(toolExtension.getName(), toolExtension.getDescription(), toolExtension.getSchema());
 			
 			SyncToolSpecification spec = new SyncToolSpecification(tool, new BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult>() {
 				@Override

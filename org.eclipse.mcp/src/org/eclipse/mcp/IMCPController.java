@@ -2,11 +2,10 @@ package org.eclipse.mcp;
 
 import java.util.UUID;
 
-/**
- * Can be used by a <code>IMCPResourceController</code> to dynamically add or remove resources to the MCP server
- */
-public interface IMCPResourceFactory {
-	
+import io.modelcontextprotocol.spec.McpSchema.Resource;
+
+public interface IMCPController {
+
 	/**
 	 * Add a resource to the server
 	 * @param uri
@@ -15,7 +14,7 @@ public interface IMCPResourceFactory {
 	 * @param mimeType
 	 * @return
 	 */
-	public UUID addResource(String uri, String name, String description, String mimeType);
+	public UUID addResource(Resource resource);
 	
 	/**
 	 * Remove a resource from the server
