@@ -1,10 +1,8 @@
 package org.eclipse.mcp;
 
-import java.util.UUID;
-
 import io.modelcontextprotocol.spec.McpSchema.Resource;
 
-public interface IMCPController {
+public interface IMCPResourceController {
 
 	/**
 	 * Add a resource to the server
@@ -14,7 +12,7 @@ public interface IMCPController {
 	 * @param mimeType
 	 * @return
 	 */
-	public UUID addResource(Resource resource);
+	public void addResource(Resource resource);
 	
 	/**
 	 * Remove a resource from the server

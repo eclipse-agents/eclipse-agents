@@ -16,13 +16,13 @@ import com.google.gson.JsonObject;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
-public class AnnotatedMCPTool extends MCPTool {
+public class AnnotatedMCPTool extends MCPToolFactory {
 
 	Object instance;
 	Method method;
 	Tool toolAnnotation;
-	JsonObject inputSchema;
-	JsonObject outputSchema;
+	String inputSchema;
+	String outputSchema;
 	
 	public AnnotatedMCPTool(Object instance, Method method, Tool toolAnnotation) {
 		super();
@@ -34,7 +34,11 @@ public class AnnotatedMCPTool extends MCPTool {
 		outputSchema = createOutputSchema();
 	}
 	
-	public JsonObject createInputSchema() {
+	public String createInputSchema() {
+
+		if (!toolAnnotation.inputSchema().isEmpty()) {
+			return toolAnnotation.inputSchema();
+		}
 
 		JsonObject result = new JsonObject();
 		JsonObject properties = new JsonObject();
@@ -88,10 +92,14 @@ public class AnnotatedMCPTool extends MCPTool {
 				}
 			}	
 		}
-		return result;
+		return result.toString();
 	}
 	
-	public JsonObject createOutputSchema() {
+	public String createOutputSchema() {
+		
+		if (!toolAnnotation.outputSchema().isEmpty()) {
+			return toolAnnotation.outputSchema();
+		}
 		
 		JsonObject result = new JsonObject();
 		result.addProperty("type", "array");
@@ -99,7 +107,7 @@ public class AnnotatedMCPTool extends MCPTool {
 		items.addProperty("type", "string");
 		result.add("items",  items);
 		
-		return result;
+		return result.toString();
 	}
 
 	@Override
@@ -176,8 +184,8 @@ public class AnnotatedMCPTool extends MCPTool {
 				.name(getName())
 				.description(getDescription())
 				.title(toolAnnotation.title())
-				.inputSchema(inputSchema.toString())
-				.outputSchema(outputSchema.toString())
+				.inputSchema(createInputSchema())
+				.outputSchema(createOutputSchema())
 				.build();
 				
 	}

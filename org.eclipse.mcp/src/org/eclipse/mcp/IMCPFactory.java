@@ -36,7 +36,8 @@ public interface IMCPFactory {
 	    String category() default "";
 	    
 	    String contributor() default "";
-	    
+	    String inputSchema() default "";
+	    String outputSchema() default "";
 	    String title() default "";
 	    boolean readOnlyHint() default false;
 	    boolean destructiveHint() default false;
@@ -62,23 +63,30 @@ public interface IMCPFactory {
 	    boolean required() default true;
 	}
 	
-	public default MCPTool[] createTools() {
-		List<MCPTool> tools = new ArrayList<MCPTool>();
+	public default MCPToolFactory[] createTools() {
+		List<MCPToolFactory> tools = new ArrayList<MCPToolFactory>();
 		for (Method method: getClass().getDeclaredMethods()) {
 			Tool tool = method.getAnnotation(Tool.class);
 			if (tool != null) {
-				AnnotatedMCPTool annotatedTool = new AnnotatedMCPTool(this, method, tool);
+				AnnotatedMCPTool annotatedTool = createAnnotatedMcpTool(this, method, tool);
 				if (annotatedTool.isValid()) {
 					tools.add(annotatedTool);
 				}
 			}
 		}
 		return tools.toArray(AnnotatedMCPTool[]::new);
-		
 	}
 	
-	public default IMCPResourceContributor[] createResourceContributors() {
-		return new IMCPResourceContributor[0];
+	public default AnnotatedMCPTool createAnnotatedMcpTool(IMCPFactory factory, Method method, Tool toolAnnotation) {
+		return new AnnotatedMCPTool(this, method, toolAnnotation);
+	}
+	
+	public default IMCPResourceFactory[] createResourceFactories() {
+		return new IMCPResourceFactory[0];
+	}
+	
+	public default IMCPResourceTemplateFactory[] createResourceTemplateFactories() {
+		return new IMCPResourceTemplateFactory[0];
 	}
 }
 
