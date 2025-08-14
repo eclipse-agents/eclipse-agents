@@ -1,9 +1,8 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
 
 import javax.swing.JOptionPane;
 
@@ -11,109 +10,135 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.internal.preferences.IPreferencedServer;
+import org.eclipse.mcp.factory.IFactory;
+import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.factory.IResourceFactory;
+import org.eclipse.mcp.factory.IResourceTemplateFactory;
+import org.eclipse.mcp.factory.IToolFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.server.McpServer;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServer;
-import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
-import io.modelcontextprotocol.spec.McpSchema.TextContent;
-import io.modelcontextprotocol.spec.McpSchema.Tool;
 import jakarta.servlet.Servlet;
 
 public class ManagedServer {
 
-	ExtensionManager.Server extension;
+	String name, version;
+	int port;
+	
+	List<IResourceTemplateFactory> resourceTemplateFactories;
+	List<IToolFactory> toolFactories;
+	List<IResourceFactory> resourceFactories;
+			
 	private boolean copyLogsToSysError = true; // Boolean.getBoolean("com.ibm.systemz.db2.mcp.copyLogsToSysError");
 
 	McpSyncServer syncServer;
 	QueuedThreadPool threadPool;
 	String url;
 	
-	public ManagedServer(ExtensionManager.Server extension) {
-		this.extension = extension;
+	public ManagedServer(String name, String version, int port, IFactory[] factories) {
+		this.name = name;
+		this.version = version;
+		this.port = port;
+		
+		resourceTemplateFactories = new ArrayList<IResourceTemplateFactory>();
+		toolFactories = new ArrayList<IToolFactory>();
+		resourceFactories = new ArrayList<IResourceFactory>();
+		
+		for (IFactory factory: factories) {
+			if (factory instanceof IResourceTemplateFactory) {
+				resourceTemplateFactories.add((IResourceTemplateFactory)factory);
+			} else if (factory instanceof IResourceFactory) {
+				resourceFactories.add((IResourceFactory)factory);
+			} else if (factory instanceof IToolFactory) {
+				toolFactories.add((IToolFactory)factory);
+			} else if (factory instanceof IFactoryProvider) {
+				resourceTemplateFactories.addAll(Arrays.asList(
+						((IFactoryProvider)factory).createResourceTemplateFactories()));
+				
+				resourceFactories.addAll(Arrays.asList(
+						((IFactoryProvider)factory).createResourceFactories()));
+				
+				toolFactories.addAll(Arrays.asList(
+						((IFactoryProvider)factory).createToolFactories()));
+			}
+		}
 	}
 	
 	public void start() {
 	
-		this.url = "http://localhost:" + extension.getDefaultPort() + "/sse";
+		this.url = "http://localhost:" + port + "/sse";
 
-		
 		HttpServletSseServerTransportProvider transportProvider =
 			    new HttpServletSseServerTransportProvider(
 			        new ObjectMapper(), "/", "/sse");
+	
+		List<McpSchema.ResourceTemplate> templates = new ArrayList<McpSchema.ResourceTemplate>();
+		List<SyncCompletionSpecification> completions = new ArrayList<SyncCompletionSpecification>();
+		List<SyncResourceSpecification> templateResourceSpecs = new ArrayList<SyncResourceSpecification>();
+
+	
+		for (IResourceTemplateFactory templateFactory: resourceTemplateFactories) {
+			for (McpSchema.ResourceTemplate template: templateFactory.createResourceTemplates()) {
+				templates.add(template);
+				completions.add(templateFactory.createCompletionSpecification(template));
+				templateResourceSpecs.add(templateFactory.getResourceTemplateSpecification(template));
+			}
+		}
 		
-		ServerCapabilities capabilities = ServerCapabilities.builder().resources(false, false) // Enable resource support
-				.tools(extension.getTools().length > 0) // Enable tool support
+
+		ServerCapabilities capabilities = ServerCapabilities.builder().resources(true, true) // Enable resource support
+				.tools(true) // Enable tool support
 				.prompts(false) // Enable prompt support
+				.completions()
 				.logging() // Enable logging support
 				.build();
-	
+		
+		
 		// Create a server with custom configuration
 		this.syncServer = McpServer.sync(transportProvider)
-			    .serverInfo(extension.getName(), extension.getVersion())
+			    .serverInfo(name, version)
 			    .capabilities(capabilities)
-//			    .resourceTemplates(builtins.templates.templates)
+			    .resourceTemplates(templates.toArray(McpSchema.ResourceTemplate[]::new))
+			    .completions(completions)
 			    .build();
-		
 		
 		log(LoggingLevel.INFO, this, url);
 	
-		for (ExtensionManager.Tool toolExtension: extension.getTools()) {
-			Tool tool = new Tool(toolExtension.getName(), toolExtension.getDescription(), toolExtension.getSchema());				
-			
-			SyncToolSpecification spec = new SyncToolSpecification(tool, new BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult>() {
-				@Override
-				public CallToolResult apply(McpSyncServerExchange t, Map<String, Object> u) {
-					CallToolResult result = null;
-					List<Content> content = new ArrayList<Content>();
-					
-					try {
-
-						ElementProperties elementProperties = new ElementProperties(extension.getId(), toolExtension.getId(), toolExtension.getName(), Images.IMG_TOOL, toolExtension.getPropertyEditorIds());
-						
-						String[] rawText = toolExtension.getImplementation().apply(u, elementProperties);
-						for (String s: rawText) {
-							content.add(new TextContent(s));
-						}
-						result = new CallToolResult(content, false);
-					} catch (Exception e) {
-						content.add(new TextContent(e.getLocalizedMessage()));
-						e.printStackTrace();
-						result = new CallToolResult(content, true);
-					}
-					return result;
-				}
-			});
+		
+		for (IToolFactory toolFactory: toolFactories) {
+			McpSchema.Tool tool = toolFactory.createTool();
+			SyncToolSpecification spec = toolFactory.createSpec(tool);
 			syncServer.addTool(spec);
 		}
 		
-		for (ExtensionManager.ResourceController resourceFactory: extension.getResourceControllers()) {	
-			ResourceManager resourceManager = new ResourceManager(this, resourceFactory.getImplementation());
-			resourceFactory.getImplementation().initialize(resourceManager);
+		for (IResourceFactory resourceFactory: resourceFactories) {
+			resourceFactory.initialize(new ResourceManager(this, resourceFactory));
 		}
-
-		syncServer.notifyToolsListChanged();
+		
+		
+		for (SyncResourceSpecification spec: templateResourceSpecs) {
+			syncServer.addResource(spec);
+		}
 		syncServer.notifyResourcesListChanged();
 	
 		threadPool = new QueuedThreadPool();
-		threadPool.setName(extension.getName() + "-Thread");
+		threadPool.setName(name + "-Thread");
 
 		org.eclipse.jetty.server.Server jettyServer = new org.eclipse.jetty.server.Server(threadPool);
 	
 		ServerConnector connector = new ServerConnector(jettyServer);
-		connector.setPort(Integer.parseInt(extension.getDefaultPort()));
+		connector.setPort(port);
 		jettyServer.addConnector(connector);
 
 		try {

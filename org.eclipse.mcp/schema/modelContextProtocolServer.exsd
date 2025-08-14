@@ -34,13 +34,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       </annotation>
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="tool"/>
-            <element ref="toolFactory"/>
-            <element ref="resourceController"/>
-            <element ref="server"/>
-            <element ref="category"/>
-            <element ref="toolServerBinding"/>
-            <element ref="resourceControllerServerBinding"/>
+            <element ref="factory"/>
          </sequence>
          <attribute name="id" type="string">
             <annotation>
@@ -69,338 +63,77 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       </complexType>
    </element>
 
-   <element name="tool">
+   <element name="contributor">
       <annotation>
          <documentation>
             This element is used to define a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tool&lt;/a&gt;
          </documentation>
       </annotation>
       <complexType>
-         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="propertyPage"/>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="factory"/>
          </sequence>
-         <attribute name="description" type="string">
-            <annotation>
-               <documentation>
-                  The description of this MCP tool that is shared with MCP clients
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
-                  the unique identifier of this tool
+                  the unique identifier of this factory
                </documentation>
             </annotation>
          </attribute>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
-                  The name of this MCP tool that is shared with MCP clients
+                  The name of this MCP factory that is shared with MCP clients
                </documentation>
                <appinfo>
                   <meta.attribute translatable="true"/>
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="schema" type="string" use="required">
+         <attribute name="description" type="string" use="required">
             <annotation>
                <documentation>
-                  The JSON schema this tool takes as input argument
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="class" type="string" use="required">
-            <annotation>
-               <documentation>
-                  The fully qualified name of the AbstractTool implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPTool&lt;/tt&gt; and have an zero-parameter constructor.
+                  A description of the tools, resources and prompts this factory contributes
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPTool"/>
+                  <meta.attribute translatable="true"/>
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="categoryId" type="string">
+         <attribute name="provider" type="string" use="required">
             <annotation>
                <documentation>
-                  the unique identifier of the category for this tool
+                  The name of product contributing this factory
                </documentation>
                <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/category/@id"/>
+                  <meta.attribute translatable="true"/>
                </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="capabilityId" type="string">
+            <annotation>
+               <documentation>
+                  Id of a capability
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
    </element>
-
-   <element name="toolFactory">
+   <element name="factory">
       <annotation>
          <documentation>
-            A convenience/alternative for generating one or more &lt;code&gt;tool&lt;code&gt; elements from a class with Annotated methods.  The factory must implement &lt;code&gt;org.eclipse.mcp.IMCPToolFactory.&lt;/code&gt; and use the method annotations &lt;code&gt;org.eclipse.mcp.IMCPToolFactory.Tool&lt;/code&gt; and the method argument annoation &lt;code&gt;org.eclipse.mcp.IMCPToolFactory.ToolArg&lt;/code&gt; on each method they would like to expose as a  &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tools&lt;/a&gt;
-
-Example:
-&lt;pre&gt;
-@Tool (id = &quot;foo.bar.helloWorld&quot;, 
-	description = &quot;Greets user with a hello&quot;, 
-	name = &quot;e4-hello-world&quot;,
-	categoryId = &quot;foo.bar.categoryId&quot;,
-	propertyPageIds = { &quot;foo.bar.propertyPage1&quot;, &quot;foo.bar.propertyPage1&quot;})
-public String[] helloWorld(
-	@ToolArg(name = &quot;firstName&quot;, description = &quot;First name&quot;) String firstName,
-	@ToolArg(name = &quot;age&quot;, description = &quot;User&apos;s age&quot;, required = false) Integer age,
-	@ToolArg(name = &quot;address&quot;, description = &quot;User&apos;s address&quot;, required = false) String[] address) {	
-		return new String[] { &quot;Hello &quot; + firstName };
-	}
-&lt;/pre&gt;
+            This element is used to define a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tool&lt;/a&gt;
          </documentation>
       </annotation>
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  The fully qualified name of the IMCPToolFactory implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPTooFactoryl&lt;/tt&gt; and have an zero-parameter constructor.
+                  The fully qualified name of an IMCPFactory implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPFactory&lt;/tt&gt; and have an zero-parameter constructor.
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPToolFactory"/>
+                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPFactory"/>
                </appinfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="resourceController">
-      <annotation>
-         <documentation>
-            This element is used to define a controller that may dynamically create and remove &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data&quot;&gt;Model Context Protocol Resources&lt;/a&gt; from the server.
-         </documentation>
-      </annotation>
-      <complexType>
-         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="propertyPage"/>
-         </sequence>
-         <attribute name="description" type="string">
-            <annotation>
-               <documentation>
-                  The description of this MCP resource controller
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the unique identifier of this resource manager
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  The name of this MCP resource controller
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="class" type="string" use="required">
-            <annotation>
-               <documentation>
-                  The fully qualified name of the IMCPResourceController implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPResourceController&lt;/tt&gt; and have an zero-parameter constructor.  Resource Controllers are responsible for dynamically adding and removing resources and translating a url to string content
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPresourceController"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="categoryId" type="string">
-            <annotation>
-               <documentation>
-                  the unique identifier of the category for this resource controller
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/category/@id"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="server">
-      <annotation>
-         <documentation>
-            This element declares a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts&quot;&gt;Model Context Protocol Server&lt;/a&gt; that may serve a collection of &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tools&lt;/a&gt;  and  &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data&quot;&gt;Model Context Protocol Resources&lt;/a&gt; and make them available within the the IDE Process or over HTTP.
-         </documentation>
-      </annotation>
-      <complexType>
-         <attribute name="description" type="string">
-            <annotation>
-               <documentation>
-                  a translatable short description of this server for display in the UI
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the unique identifier of this server
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the translatable name of this server for display in the UI
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="version" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the version of this server for display in the logs
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="defaultPort" type="string" use="required">
-            <annotation>
-               <documentation>
-                  The default port to be used if this server exposes its tools on a localhost http server
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="category">
-      <annotation>
-         <documentation>
-            This element allows one to define a category for Tools, Resource Managers
-         </documentation>
-      </annotation>
-      <complexType>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the unique identifier of this category
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the translatable name of this category for display in the UI
-               </documentation>
-               <appinfo>
-                  <meta.attribute translatable="true"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="toolServerBinding">
-      <annotation>
-         <documentation>
-            This element allows one to bind tool to a server
-         </documentation>
-      </annotation>
-      <complexType>
-         <attribute name="toolId" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the unique identifier of the activity to bind
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/tool/@id"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="serverId" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the unique identifier of the server to bind
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/server/@id"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="resourceControllerServerBinding">
-      <annotation>
-         <documentation>
-            This element allows one to bind a Resource Controller to a Server
-         </documentation>
-      </annotation>
-      <complexType>
-         <attribute name="resourceControllerId" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the unique identifier of the activity to bind
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/resourceController/@id"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="serverId" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the unique identifier of the server to bind
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.mcp/server/@id"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="propertyPage">
-      <annotation>
-         <documentation>
-            Specify an optional custom propertyPage to let the user customize the behavior of a tool or resource.
-    your class should implement org.eclipse.ui.dialogs.PropertyPage
-    you can load and save preferences from the input object, which is an instance of org.eclipse.mcp.IMCPElementPropertyInput
- 
- &lt;extension point=&quot;org.eclipse.ui.propertyPages&quot;&gt;
-    &lt;page name=&quot;My Page Name&quot;
-         class=&quot;com.foo.bar.MyPropertyPage&quot;
-         id=&quot;com.foo.bar.MyPropertyPage.ID&quot;&gt;
-         &lt;enabledWhen&gt;
-             &lt;instanceof
-                 value=&quot;org.eclipse.mcp.IMCPElementPropertyInput&quot;&gt;
-             &lt;/instanceof&gt;
-         &lt;/enabledWhen&gt;
-   &lt;/page&gt;
- &lt;/extension&gt;
-         </documentation>
-      </annotation>
-      <complexType>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  the identifier of an &apos;org.eclipse.ui.propertyPages&apos; extension that will enable for input of interface IMCPElementPropertyInput
-               </documentation>
             </annotation>
          </attribute>
       </complexType>

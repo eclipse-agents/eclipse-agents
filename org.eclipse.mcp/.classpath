@@ -7,10 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="lib/jackson-annotations-2.17.0.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.17.0.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-databind-2.17.0.jar"/>
-	<classpathentry kind="lib" path="lib/jakarta.servlet-api-6.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-ee10-servlet-12.0.18.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-http-12.0.18.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-io-12.0.18.jar"/>
@@ -18,10 +14,6 @@
 	<classpathentry kind="lib" path="lib/jetty-server-12.0.18.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-session-12.0.18.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-12.0.18.jar"/>
-	<classpathentry kind="lib" path="lib/jsr305-3.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/mcp-0.10.0.jar"/>
-	<classpathentry kind="lib" path="lib/reactive-streams-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/reactor-core-3.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-2.0.16.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

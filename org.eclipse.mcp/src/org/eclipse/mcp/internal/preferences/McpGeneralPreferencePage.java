@@ -14,19 +14,15 @@ import java.util.stream.Stream;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.mcp.IMCPElementPropertyInput;
 import org.eclipse.mcp.internal.Activator;
-import org.eclipse.mcp.internal.ExtensionManager.ResourceController;
-import org.eclipse.mcp.internal.ExtensionManager.Tool;
 import org.eclipse.mcp.internal.Images;
-import org.eclipse.mcp.internal.MCPElementPropertyInput;
-import org.eclipse.mcp.internal.PreferenceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -56,7 +52,7 @@ public class McpGeneralPreferencePage extends PreferencePage
 		super();
 
 		preferenceManager = new PreferenceManager();
-		preferenceManager.load();
+//		preferenceManager.load();
 
 		integerListener = (VerifyEvent e) -> {
 			String string = e.text;
@@ -80,18 +76,18 @@ public class McpGeneralPreferencePage extends PreferencePage
 		@Override
 		public String getColumnText(Object element, int columnIndex) {
 			System.out.println(element);
-			if (element instanceof IPreferencedServer) {
-				switch (columnIndex) {
-				case 0:
-					return ((IPreferencedServer) element).getName();
-				case 1:
-					return ((IPreferencedServer) element).getDescription();
-				case 2:
-					return ((IPreferencedServer) element).getHttpPort();
-				default:
-					return "e"; //$NON-NLS-1$
-				}
-			}
+//			if (element instanceof IPreferencedServer) {
+//				switch (columnIndex) {
+//				case 0:
+//					return ((IPreferencedServer) element).getName();
+//				case 1:
+//					return ((IPreferencedServer) element).getDescription();
+//				case 2:
+//					return ((IPreferencedServer) element).getHttpPort();
+//				default:
+//					return "e"; //$NON-NLS-1$
+//				}
+//			}
 			return "?";
 		}
 	}
@@ -102,32 +98,32 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
-			if (columnIndex == 0) {
-				if (element instanceof Tool) {
-					return Activator.getDefault().getImageRegistry().get(Images.IMG_TOOL);
-				} else if (element instanceof ResourceController) {
-					return Activator.getDefault().getImageRegistry().get(Images.IMG_RESOURCEMANAGER);
-				}
-			}
+//			if (columnIndex == 0) {
+//				if (element instanceof Tool) {
+//					return Activator.getDefault().getImageRegistry().get(Images.IMG_TOOL);
+//				} else if (element instanceof ResourceController) {
+//					return Activator.getDefault().getImageRegistry().get(Images.IMG_RESOURCEMANAGER);
+//				}
+//			}
 			return null;
 		}
 
 		@Override
 		public String getColumnText(Object element, int columnIndex) {
-			if (element instanceof ServerElement) {
-				switch (columnIndex) {
-				case 0:
-					return ((ServerElement) element).getName();
-				case 1:
-					return (element instanceof Tool) ? "Tool" : "Resources";
-				case 2:
-					return ((ServerElement) element).getCategory();
-				case 3:
-					return ((ServerElement) element).getDescription();
-				default:
-					return "e"; //$NON-NLS-1$
-				}
-			}
+//			if (element instanceof ServerElement) {
+//				switch (columnIndex) {
+//				case 0:
+//					return ((ServerElement) element).getName();
+//				case 1:
+//					return (element instanceof Tool) ? "Tool" : "Resources";
+//				case 2:
+//					return ((ServerElement) element).getCategory();
+//				case 3:
+//					return ((ServerElement) element).getDescription();
+//				default:
+//					return "e"; //$NON-NLS-1$
+//				}
+//			}
 			return "?";
 		}
 	}
@@ -186,7 +182,8 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 			@Override
 			public Object[] getElements(Object parent) {
-				return preferenceManager.getServers();
+				return new Object[0];
+//				return preferenceManager.getServers();
 			}
 
 		};
@@ -230,32 +227,32 @@ public class McpGeneralPreferencePage extends PreferencePage
 					Object serverSelection = serverComposite.getSelection();
 					Object elementSelection = toolsComposite.getSelection();
 					
-					if (serverSelection != null && elementSelection != null) {
-						IPreferencedServer server = (IPreferencedServer)serverSelection;
-						ServerElement element = (ServerElement)elementSelection;
-						
-						IMCPElementPropertyInput input = new MCPElementPropertyInput(server.getId(), element.getId(), element.getName(), Images.IMG_TOOL, preferenceManager);
-						PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
-									Activator.getDisplay().getActiveShell(), input,
-									"org.eclipse.mcp.internal.preferences.ToolPropertyPage",
-									Stream.concat(Arrays.stream(new String[] { "org.eclipse.mcp.internal.preferences.ToolPropertyPage" }),
-											Arrays.stream( element.getPropertyEditorIds()))
-											.toArray(String[]::new),
-									input);
-						
-						if (dialog != null) {
-							dialog.open();
-						}
-					}
+//					if (serverSelection != null && elementSelection != null) {
+//						IPreferencedServer server = (IPreferencedServer)serverSelection;
+//						ServerElement element = (ServerElement)elementSelection;
+//						
+//						IMCPElementPropertyInput input = new MCPElementPropertyInput(server.getId(), element.getId(), element.getName(), Images.IMG_TOOL, preferenceManager);
+//						PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
+//									Activator.getDisplay().getActiveShell(), input,
+//									"org.eclipse.mcp.internal.preferences.ToolPropertyPage",
+//									Stream.concat(Arrays.stream(new String[] { "org.eclipse.mcp.internal.preferences.ToolPropertyPage" }),
+//											Arrays.stream( element.getPropertyEditorIds()))
+//											.toArray(String[]::new),
+//									input);
+//						
+//						if (dialog != null) {
+//							dialog.open();
+//						}
+//					}
 				}
 			}
 
 			@Override
 			public Object[] getElements(Object parent) {
-				if (parent instanceof IPreferencedServer) {
-					return Stream.concat(Arrays.stream(((IPreferencedServer) parent).getTools()),
-							Arrays.stream(((IPreferencedServer) parent).getResourceFactories())).toArray();
-				}
+//				if (parent instanceof IPreferencedServer) {
+//					return Stream.concat(Arrays.stream(((IPreferencedServer) parent).getTools()),
+//							Arrays.stream(((IPreferencedServer) parent).getResourceFactories())).toArray();
+//				}
 				return new Object[0];
 			}
 

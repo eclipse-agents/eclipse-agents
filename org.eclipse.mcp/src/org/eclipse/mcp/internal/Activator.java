@@ -37,7 +37,6 @@ public class Activator extends AbstractUIPlugin {
 	private ScopedPreferenceStore preferenceStore = null;
 	private ExtensionManager extensionManager = null;
 	private ServerManager serverManager = null;
-	private PreferenceManager preferenceManager = null;
 
 	/**
 	 * The constructor
@@ -57,7 +56,6 @@ public class Activator extends AbstractUIPlugin {
 				if (event.getBundle() == getBundle() && event.getType() == BundleEvent.STARTED) {
 					Tracer.trace().trace(Tracer.DEBUG, event.getBundle().getBundleId() + " STARTED"); //$NON-NLS-1$
 					extensionManager = new ExtensionManager();
-					preferenceManager = new PreferenceManager();
 					serverManager = new ServerManager(extensionManager);
 				}
 			}
@@ -93,10 +91,6 @@ public class Activator extends AbstractUIPlugin {
 
 	public ServerManager getServerManager() {
 		return serverManager;
-	}
-	
-	public PreferenceManager getPreferenceManager() {
-		return preferenceManager;
 	}
 
 	@Override
