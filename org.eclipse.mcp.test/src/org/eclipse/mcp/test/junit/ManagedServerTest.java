@@ -1,0 +1,190 @@
+package org.eclipse.mcp.test.junit;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.mcp.IMCPFactory;
+import org.eclipse.mcp.internal.ManagedServer;
+import org.eclipse.mcp.test.junit.plugin.extension.MCPFactory;
+import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.junit.runners.AllTests;
+
+import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
+import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.ClientCapabilities;
+import io.modelcontextprotocol.spec.McpSchema.InitializeResult;
+import io.modelcontextprotocol.spec.McpSchema.ListResourceTemplatesResult;
+import io.modelcontextprotocol.spec.McpSchema.ListToolsResult;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+@RunWith(AllTests.class)
+public final class ManagedServerTest {
+
+	/**
+	 * 
+	 */
+	public static TestSuite suite() {
+		TestSuite suite = new TestSuite();
+
+		ManagedServer server = new ManagedServer("junit", "junit", 1834, new IMCPFactory[] { new MCPFactory() });
+		
+		// Create a sync client with custom configuration
+		HttpClientSseClientTransport transport = new HttpClientSseClientTransport("http://localhost:1834/sse");
+		final McpSyncClient client = McpClient.sync(transport)
+		    .requestTimeout(Duration.ofSeconds(10))
+		    .capabilities(ClientCapabilities.builder()
+//		        .roots(true)      // Enable roots capability
+//		        .sampling()       // Enable sampling capability
+//		        .elicitation()
+		        .build())
+//		    .sampling(request -> new CreateMessageResult(response))
+//		    .elicitation(null)
+		    .build();
+		
+		// Test Tool
+		suite.addTest(new TestCase("Start Server") {
+			@Override
+			protected void runTest() throws Throwable {
+				server.start();
+			}
+		});
+		
+		suite.addTest(new TestCase("Initialize Client") {
+			@Override
+			protected void runTest() throws Throwable {
+				InitializeResult result = client.initialize();
+				
+				System.out.println(result.toString());
+				System.out.println();
+			}
+		});
+		
+		suite.addTest(new TestCase("List Templates") {
+			@Override
+			protected void runTest() throws Throwable {
+				ListResourceTemplatesResult templates = client.listResourceTemplates();
+				
+				System.out.println(templates);
+				System.out.println();
+			}
+		});
+		
+		suite.addTest(new TestCase("List Tools") {
+			@Override
+			protected void runTest() throws Throwable {
+				ListToolsResult tools = client.listTools();
+				
+				System.out.println(tools);
+				System.out.println();
+			}
+		});
+		
+		CallToolResult[] toolResult = new CallToolResult[] { null };
+		
+		suite.addTest(new TestCase("Call Tool") {
+			@Override
+			protected void runTest() throws Throwable {
+				
+				Map<String, Object> args = new HashMap<String, Object>();
+				args.put("b1", Boolean.TRUE);
+				args.put("c1", Character.valueOf('a'));
+				args.put("s1", "Hello");
+				args.put("d1", Double.parseDouble("2.3"));
+				args.put("f1", Float.valueOf("3.4"));
+				args.put("i1", Integer.parseInt("1234"));
+				args.put("l1", Long.valueOf(1234));
+				args.put("sh1", Short.parseShort("1234"));
+				args.put("as1", new String[] { "jeremy", "flicker" });
+				args.put("ai1", new Integer[] { 1234, 2345 });
+				
+				toolResult[0] = client.callTool(
+					    new CallToolRequest("test-hello-world",
+					        args));
+			}
+		});
+		
+		Map<String, Object> args = new HashMap<String, Object>();
+		args.put("b1", Boolean.TRUE);
+		args.put("c1", Character.valueOf('a'));
+		args.put("s1", "Hello");
+		args.put("d1", Double.parseDouble("2.3"));
+		args.put("f1", Float.valueOf("3.4"));
+		args.put("i1", Integer.parseInt("1234"));
+		args.put("l1", Long.valueOf(1234));
+		args.put("sh1", Short.parseShort("1234"));
+		args.put("as1", new String[] { "jeremy", "flicker" });
+		args.put("ai1", new Integer[] { 1234, 2345 });
+		
+		suite.addTest(new TestCase("Call Tool") {
+			@Override
+			protected void runTest() throws Throwable {
+				toolResult[0] = client.callTool(
+					    new CallToolRequest("test-hello-world",
+					        args));
+			}
+		});
+		
+		addTestMapEquals(suite, toolResult, 0, args, "b1");
+		addTestMapEquals(suite, toolResult, 1, args, "c1");
+		addTestMapEquals(suite, toolResult, 2, args, "s1");
+		addTestMapEquals(suite, toolResult, 3, args, "d1");
+		addTestMapEquals(suite, toolResult, 4, args, "f1");
+		addTestMapEquals(suite, toolResult, 5, args, "i1");
+		addTestMapEquals(suite, toolResult, 6, args, "l1");
+		addTestMapEquals(suite, toolResult, 7, args, "sh1");
+		addTestMapEquals(suite, toolResult, 8, args, "as1");
+		addTestMapEquals(suite, toolResult, 9, args, "ai1");
+		
+		
+		
+		suite.addTest(new TestCase("Client Disconnect") {
+			@Override
+			protected void runTest() throws Throwable {
+//				Thread.sleep(90000);
+				boolean close = client.closeGracefully();
+				System.out.println(close);
+			}
+		});
+		
+		
+		suite.addTest(new TestCase("Stop Server") {
+			@Override
+			protected void runTest() throws Throwable {
+				server.stop();
+			}
+		});
+		
+
+		return suite;
+	}
+	
+	public static void addTestMapEquals(TestSuite suite, CallToolResult[] toolResult, int i, Map<String, Object> args, String var) {
+		suite.addTest(new TestCase("Test Call Tool Result: " + var) {
+			@Override
+			protected void runTest() throws Throwable {
+
+				Object expected = args.get(var);
+				String received = ((TextContent)toolResult[0].content().get(i)).text();
+				
+				if (expected instanceof String[]) {
+					expected = Arrays.toString((String[])expected);
+				} else if (expected instanceof Integer[]) {
+					expected = Arrays.toString((Integer[])expected);
+				}
+
+				System.out.print("'" + received + "' == '" + expected + "' :: for " + var);
+
+				
+				Assert.assertEquals(var, "\n" + expected.toString(), received.toString());
+			}
+		});
+	}
+}

@@ -12,10 +12,13 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
 
+import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.ResourceTemplate;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 import junit.framework.TestCase;
@@ -26,11 +29,16 @@ public final class MCPFactoryTest {
 
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
-
 		MCPFactory factory = new MCPFactory();
-
-		IMCPToolFactory[] toolFactories = factory.createToolFactories();
+		addFactoryTests(suite, factory);
+		addResourceTemplateTests(suite, factory);
+		return suite;
 		
+	}
+	
+	public static void addFactoryTests(TestSuite suite, MCPFactory factory) {
+		
+		IMCPToolFactory[] toolFactories = factory.createToolFactories();
 		addTestEquals(suite, "toolFactory[0].id", toolFactories[0].getId(), "junit.MCPToolFactory.helloWorld");
 		
 		Tool tool = toolFactories[0].createTool();
@@ -143,12 +151,34 @@ public final class MCPFactoryTest {
 		
 		arg = "ai1";
 		addTestEquals(suite, "result." + arg, ((TextContent)result.content().get(9)).text(), "\n" + Arrays.toString((Integer[])args.get(arg)));
-
-
-		IMCPResourceTemplateFactory[] templateFactories = factory.createResourceTemplateFactories();
-		
-		return suite;
+	
 	}
+	
+	public static void addResourceTemplateTests(TestSuite suite, MCPFactory factory) {
+		
+		IMCPResourceTemplateFactory templateFactory = factory.createResourceTemplateFactories()[0];
+		
+		ResourceTemplate[] templates = templateFactory.createResourceTemplates();
+		addTestTrue(suite, "2 templates", templates.length == 2);
+		
+		ResourceTemplate template1 = templates[0];
+
+		SyncCompletionSpecification completion = templateFactory.createCompletionSpecification(template1);
+		addTestEquals(suite, completion.getClass().getSimpleName(), template1.uriTemplate(), completion.referenceKey().identifier());
+
+		SyncResourceSpecification resource = templateFactory.getResourceTemplateSpecification(template1);	
+		addTestEquals(suite, resource.getClass().getSimpleName(), template1.uriTemplate(), resource.resource().uri());
+		
+		ResourceTemplate template2 = templates[1];
+		
+		completion = templateFactory.createCompletionSpecification(template2);
+		addTestEquals(suite, completion.getClass().getSimpleName(), template2.uriTemplate(), completion.referenceKey().identifier());
+		
+		resource = templateFactory.getResourceTemplateSpecification(template2);	
+		addTestEquals(suite, resource.getClass().getSimpleName(), template2.uriTemplate(), resource.resource().uri());
+
+	}
+		
 	
 	public static void addTestEquals(TestSuite suite, String message, Object left, Object right) {
 		suite.addTest(new TestCase(message) {

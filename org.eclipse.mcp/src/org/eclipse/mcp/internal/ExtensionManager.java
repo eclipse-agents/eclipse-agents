@@ -62,6 +62,10 @@ public class ExtensionManager {
 		return factories.values().toArray(Factory[]::new);
 	}
 	
+	public ExtensionManager.Factory getFactories(String factoryId) {
+		return factories.get(factoryId);
+	}
+	
 	public class Factory {
 
 		String id, name, description, provider;

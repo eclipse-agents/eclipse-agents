@@ -18,7 +18,6 @@ public abstract class MCPAnnotatedResourceTemplateFactory implements IMCPResourc
 	List<McpSchema.ResourceTemplate> templates = new ArrayList<McpSchema.ResourceTemplate>(); 
 	
 	public MCPAnnotatedResourceTemplateFactory() {
-		List<ResourceTemplate> annotations = new ArrayList<ResourceTemplate>();
 		for (Annotation annotation: getClass().getAnnotations()) {
 			if (annotation instanceof ResourceTemplates) {
 				for (ResourceTemplate t: ((ResourceTemplates)annotation).value()) {

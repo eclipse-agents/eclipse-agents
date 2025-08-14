@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.mcp.internal.Tracer;
+
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
@@ -36,8 +38,13 @@ public interface IMCPToolFactory {
 		
 		try {
 			String[] rawText = apply(req.arguments());
-			for (String s: rawText) {
-				content.add(new TextContent(s));
+			if (rawText != null) {
+				for (String s: rawText) {
+					content.add(new TextContent(s));
+				}
+			} else {
+				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
+						"org.eclipse.mcp.IMCPToolFactory.apply(Map<String, Object>) returned null");
 			}
 			result = new CallToolResult(content, false);
 		} catch (Exception e) {
@@ -48,6 +55,6 @@ public interface IMCPToolFactory {
 		return result;
 	}
 	
-	public String[] apply(Map<String, Object> args);
+	public String[] apply(Map<String, Object> args) throws MCPException;
 
 }

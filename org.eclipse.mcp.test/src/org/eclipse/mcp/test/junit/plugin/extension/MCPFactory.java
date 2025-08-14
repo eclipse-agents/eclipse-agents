@@ -52,7 +52,6 @@ public class MCPFactory implements IMCPFactory {
 		};
 	}
 
-
 	@Override
 	public IMCPResourceTemplateFactory[] createResourceTemplateFactories() {
 		return new IMCPResourceTemplateFactory[] {

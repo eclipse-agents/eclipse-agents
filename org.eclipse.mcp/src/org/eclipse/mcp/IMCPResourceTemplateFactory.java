@@ -55,8 +55,7 @@ public interface IMCPResourceTemplateFactory {
 	public McpSchema.ResourceTemplate[] createResourceTemplates();
 	
 	public default SyncResourceSpecification getResourceTemplateSpecification(McpSchema.ResourceTemplate template) {
-		McpSchema.Annotations annotations = new McpSchema.Annotations(Arrays.asList(McpSchema.Role.valueOf("")), 0.5);
-		Resource resource = new Resource(template.uriTemplate(), template.name(), template.description(), template.mimeType(), annotations);
+		Resource resource = new Resource(template.uriTemplate(), template.name(), template.description(), template.mimeType(), template.annotations());
 		return new McpServerFeatures.SyncResourceSpecification(resource, this::readResource);
 	}
 	

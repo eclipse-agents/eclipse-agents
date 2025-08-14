@@ -11,6 +11,7 @@ import org.eclipse.mcp.IMCPFactory;
 import org.eclipse.mcp.IMCPFactory.Tool;
 import org.eclipse.mcp.IMCPFactory.ToolArg;
 import org.eclipse.mcp.IMCPToolFactory;
+import org.eclipse.mcp.MCPException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -36,7 +37,7 @@ public class MCPAnnotatedToolFactory implements IMCPToolFactory {
 		this.instance = instance;
 		this.method = method;
 		this.toolAnnotation = toolAnnotation;
-
+		
 		inputSchema = createInputSchema();
 		outputSchema = createOutputSchema();
 	}
@@ -192,7 +193,7 @@ public class MCPAnnotatedToolFactory implements IMCPToolFactory {
 				.description(getDescription())
 				.title(toolAnnotation.title())
 				.inputSchema(createInputSchema())
-				.outputSchema(createOutputSchema())
+//				.outputSchema(createOutputSchema())
 				.build();
 				
 	}
@@ -206,21 +207,57 @@ public class MCPAnnotatedToolFactory implements IMCPToolFactory {
 			if (arg != null && arg.name() != null) {
 				paramName = arg.name();
 			}
-			inputs.add(args.get(paramName));
+			
+			String cannonicalType = param.getType().getCanonicalName();
+			if (cannonicalType.endsWith("[][]")) {
+				throw new IllegalArgumentException("Only 1-d arrays are supported: " + param.getType().getCanonicalName());
+			}
+
+			Object casted = cast(args.get(paramName), cannonicalType);
+			inputs.add(casted);
 		}
 		Object result = null;
 		try {
-			result = method.invoke(this.instance, inputs.toArray());
+			result = method.invoke(instance, inputs.toArray());
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			throw new MCPException(e);
 		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+			throw new MCPException(e);
 		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+			throw new MCPException(e);
 		}
 		if (result instanceof String[]) {
 			return (String[])result;
 		}
 		return null;
+	}
+	
+	public Object cast(Object value, String javaType) {
+		switch (javaType) {
+		case 	"java.lang.Character":	
+		case	"char":
+			return (char)value.toString().charAt(0);
+		case 	"java.lang.Float":
+		case	"float":
+			return Float.valueOf(value.toString());
+		case 	"java.lang.Long":
+		case	"long":
+			return Long.valueOf(value.toString());
+		case 	"java.lang.Short":
+		case	"short":
+			return Short.valueOf(value.toString());
+		case 	"java.lang.String[]":
+			if (value instanceof List) {
+				return ((List<?>)value).toArray(new String[0]);
+			}
+		case	"java.lang.Integer[]":
+		case	"int[]":
+			if (value instanceof List) {
+				return ((List<?>)value).toArray(new Integer[0]);
+			}
+		
+		default:
+			return value;
+		}
 	}
 }

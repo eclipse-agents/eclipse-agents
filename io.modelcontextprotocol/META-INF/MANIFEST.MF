@@ -3,9 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Modelcontextprotocol
 Bundle-SymbolicName: io.modelcontextprotocol
 Bundle-Version: 0.11.2
-Export-Package: io.modelcontextprotocol.server,
+Export-Package: io.modelcontextprotocol.client,
+ io.modelcontextprotocol.client.transport,
+ io.modelcontextprotocol.server,
  io.modelcontextprotocol.server.transport,
- io.modelcontextprotocol.spec
+ io.modelcontextprotocol.spec,
+ io.modelcontextprotocol.util
 Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.17.2",
  com.fasterxml.jackson.core.jackson-core;bundle-version="2.17.2",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="2.17.2",
