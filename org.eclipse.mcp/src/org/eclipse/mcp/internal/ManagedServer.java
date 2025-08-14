@@ -1,6 +1,7 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -9,11 +10,12 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.mcp.IMCPFactory;
-import org.eclipse.mcp.IMCPResourceFactory;
-import org.eclipse.mcp.IMCPResourceTemplateFactory;
-import org.eclipse.mcp.IMCPToolFactory;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.factory.IFactory;
+import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.factory.IResourceFactory;
+import org.eclipse.mcp.factory.IResourceTemplateFactory;
+import org.eclipse.mcp.factory.IToolFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,18 +35,44 @@ public class ManagedServer {
 
 	String name, version;
 	int port;
-	IMCPFactory[] factories;
+	
+	List<IResourceTemplateFactory> resourceTemplateFactories;
+	List<IToolFactory> toolFactories;
+	List<IResourceFactory> resourceFactories;
+			
 	private boolean copyLogsToSysError = true; // Boolean.getBoolean("com.ibm.systemz.db2.mcp.copyLogsToSysError");
 
 	McpSyncServer syncServer;
 	QueuedThreadPool threadPool;
 	String url;
 	
-	public ManagedServer(String name, String version, int port, IMCPFactory[] factories) {
+	public ManagedServer(String name, String version, int port, IFactory[] factories) {
 		this.name = name;
 		this.version = version;
 		this.port = port;
-		this.factories = factories;
+		
+		resourceTemplateFactories = new ArrayList<IResourceTemplateFactory>();
+		toolFactories = new ArrayList<IToolFactory>();
+		resourceFactories = new ArrayList<IResourceFactory>();
+		
+		for (IFactory factory: factories) {
+			if (factory instanceof IResourceTemplateFactory) {
+				resourceTemplateFactories.add((IResourceTemplateFactory)factory);
+			} else if (factory instanceof IResourceFactory) {
+				resourceFactories.add((IResourceFactory)factory);
+			} else if (factory instanceof IToolFactory) {
+				toolFactories.add((IToolFactory)factory);
+			} else if (factory instanceof IFactoryProvider) {
+				resourceTemplateFactories.addAll(Arrays.asList(
+						((IFactoryProvider)factory).createResourceTemplateFactories()));
+				
+				resourceFactories.addAll(Arrays.asList(
+						((IFactoryProvider)factory).createResourceFactories()));
+				
+				toolFactories.addAll(Arrays.asList(
+						((IFactoryProvider)factory).createToolFactories()));
+			}
+		}
 	}
 	
 	public void start() {
@@ -59,15 +87,15 @@ public class ManagedServer {
 		List<SyncCompletionSpecification> completions = new ArrayList<SyncCompletionSpecification>();
 		List<SyncResourceSpecification> templateResourceSpecs = new ArrayList<SyncResourceSpecification>();
 
-		for (IMCPFactory factory: factories) {
-			for (IMCPResourceTemplateFactory templateFactory: factory.createResourceTemplateFactories()) {
-				for (McpSchema.ResourceTemplate template: templateFactory.createResourceTemplates()) {
-					templates.add(template);
-					completions.add(templateFactory.createCompletionSpecification(template));
-					templateResourceSpecs.add(templateFactory.getResourceTemplateSpecification(template));
-				}
+	
+		for (IResourceTemplateFactory templateFactory: resourceTemplateFactories) {
+			for (McpSchema.ResourceTemplate template: templateFactory.createResourceTemplates()) {
+				templates.add(template);
+				completions.add(templateFactory.createCompletionSpecification(template));
+				templateResourceSpecs.add(templateFactory.getResourceTemplateSpecification(template));
 			}
 		}
+		
 
 		ServerCapabilities capabilities = ServerCapabilities.builder().resources(true, true) // Enable resource support
 				.tools(true) // Enable tool support
@@ -87,17 +115,17 @@ public class ManagedServer {
 		
 		log(LoggingLevel.INFO, this, url);
 	
-		for (IMCPFactory factory: factories) {
-			for (IMCPToolFactory toolFactory: factory.createToolFactories()) {
-				McpSchema.Tool tool = toolFactory.createTool();
-				SyncToolSpecification spec = toolFactory.createSpec(tool);
-				syncServer.addTool(spec);
-			}
-			
-			for (IMCPResourceFactory resourceFactory: factory.createResourceFactories()) {
-				resourceFactory.initialize(new ResourceManager(this, resourceFactory));
-			}
+		
+		for (IToolFactory toolFactory: toolFactories) {
+			McpSchema.Tool tool = toolFactory.createTool();
+			SyncToolSpecification spec = toolFactory.createSpec(tool);
+			syncServer.addTool(spec);
 		}
+		
+		for (IResourceFactory resourceFactory: resourceFactories) {
+			resourceFactory.initialize(new ResourceManager(this, resourceFactory));
+		}
+		
 		
 		for (SyncResourceSpecification spec: templateResourceSpecs) {
 			syncServer.addResource(spec);

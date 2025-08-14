@@ -1,17 +1,17 @@
 package org.eclipse.mcp.internal;
 
-import org.eclipse.mcp.IMCPResourceController;
-import org.eclipse.mcp.IMCPResourceFactory;
+import org.eclipse.mcp.IResourceController;
+import org.eclipse.mcp.factory.IResourceFactory;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 import io.modelcontextprotocol.spec.McpSchema.Resource;
 
-public class ResourceManager implements IMCPResourceController {
+public class ResourceManager implements IResourceController {
 
 	ManagedServer server;
-	IMCPResourceFactory factory;
+	IResourceFactory factory;
 	
-	public ResourceManager(ManagedServer server, IMCPResourceFactory factory) {
+	public ResourceManager(ManagedServer server, IResourceFactory factory) {
 		this.server = server;
 		this.factory = factory;
 		factory.initialize(this);

@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.mcp.IMCPResourceController;
-import org.eclipse.mcp.IMCPResourceFactory;
+import org.eclipse.mcp.IResourceController;
+import org.eclipse.mcp.factory.IResourceFactory;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -17,9 +17,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-public class Editors implements IMCPResourceController {
+import io.modelcontextprotocol.spec.McpSchema;
 
-	IMCPResourceFactory manager;
+public class Editors implements IResourceFactory {
+
+	IResourceController controller;
 	
 	IWindowListener windowListener;
 	IPageListener pageListener;
@@ -32,8 +34,8 @@ public class Editors implements IMCPResourceController {
 	}
 
 	@Override
-	public void initialize(IMCPResourceFactory manager) {
-		this.manager = manager;
+	public void initialize(IResourceController controller) {
+		this.controller = controller;
 		
 		windowListener = new IWindowListener() {
 			@Override
@@ -99,7 +101,13 @@ public class Editors implements IMCPResourceController {
 				IFile file = ((IFileEditorInput) input).getFile();
 				String uri = file.getLocationURI().toString();
 				if (!openURIs.contains(uri)) {
-					manager.addResource(uri, part.getTitle(), part.getTitleToolTip(), "text/plain");
+				
+					controller.addResource(McpSchema.Resource.builder()
+							.name(part.getTitle())
+							.uri("editors:///" + part.getTitle())
+							.description(part.getTitleToolTip())
+							.mimeType("text/plain")
+							.build());
 					openURIs.add(uri);
 				}
 			}
@@ -113,7 +121,7 @@ public class Editors implements IMCPResourceController {
 				IFile file = ((IFileEditorInput) input).getFile();
 				String uri = file.getLocationURI().toString();
 				if (openURIs.contains(uri)) {
-					manager.removeResource(uri);
+					controller.removeResource(uri);
 					openURIs.remove(uri);
 				}
 			}
@@ -133,4 +141,5 @@ public class Editors implements IMCPResourceController {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

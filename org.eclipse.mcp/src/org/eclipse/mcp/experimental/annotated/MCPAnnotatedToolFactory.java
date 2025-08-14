@@ -1,5 +1,10 @@
-package org.eclipse.mcp.annotated;
+package org.eclipse.mcp.experimental.annotated;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -7,11 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.mcp.IMCPFactory;
-import org.eclipse.mcp.IMCPFactory.Tool;
-import org.eclipse.mcp.IMCPFactory.ToolArg;
-import org.eclipse.mcp.IMCPToolFactory;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.factory.IToolFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,21 +22,88 @@ import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
 
-public class MCPAnnotatedToolFactory implements IMCPToolFactory {
+public class MCPAnnotatedToolFactory implements IToolFactory {
 	
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
+	public @interface Tool {
+		/**
+		 * Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension
+		 * @return
+		 */
+	    String id() default "";
+	    /**
+	     * Agent-presentable name for this  MCP Tool
+	     * @return
+	     */
+	    String name() default "";
+	    /**
+	     * Agent-presentable description for this MCP Tool
+	     * @return
+	     */
+	    String description();
+	    /**
+	     * Optional reference to a <code>org.eclipse.mcp.modelContextProtocolServer</code> category
+	     * @return
+	     */
+	    String category() default "";
+	    
+	    String contributor() default "";
+	    String inputSchema() default "";
+	    String outputSchema() default "";
+	    String title() default "";
+	    boolean readOnlyHint() default false;
+	    boolean destructiveHint() default false;
+	    boolean idempotentHint() default false;
+	    boolean openWorldHint() default false;
+	    boolean returnDirect() default false;
+
+	}
 	
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.PARAMETER)
+	public @interface ToolArg {
+		/**
+		 * Agent-presentable name for this Tool argument
+		 * @return
+		 */
+	    String name();
+	    /**
+		 * Agent-presentable description for this Tool argument
+		 * @return
+		 */
+	    String description();
+	    boolean required() default true;
+	}
+	
+	public static IToolFactory[] createToolFactories(Class<?> c) throws MCPException {
+		List<IToolFactory> tools = new ArrayList<IToolFactory>();
+		for (Method method: c.getDeclaredMethods()) {
+			Tool tool = method.getAnnotation(Tool.class);
+			if (tool != null) {
+				try {
+					Constructor co = c.getConstructor(Method.class, Tool.class);
+					MCPAnnotatedToolFactory toolFactory = (MCPAnnotatedToolFactory)co.newInstance(method, tool);
+					if (toolFactory.isValid()) {
+						tools.add(toolFactory);
+					}
+				} catch(Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+		return tools.toArray(new IToolFactory[0]);
+	}
+
 	Object instance;
 	Method method;
 	Tool toolAnnotation;
 	String inputSchema;
 	String outputSchema;
-	
 
-	public MCPAnnotatedToolFactory() {}
-
-	public MCPAnnotatedToolFactory(IMCPFactory instance, Method method, Tool toolAnnotation) {
+	public MCPAnnotatedToolFactory(Method method, Tool toolAnnotation) {
 		super();
-		this.instance = instance;
+		this.instance = this;
 		this.method = method;
 		this.toolAnnotation = toolAnnotation;
 		
@@ -136,16 +205,15 @@ public class MCPAnnotatedToolFactory implements IMCPToolFactory {
 	public String getDescription() {
 		return toolAnnotation.description();
 	}
-
-	public String getInputSchema() {
-		return inputSchema.toString();
-	}
-
+	
 	@Override
 	public String getCategory() {
 		return toolAnnotation.category();
 	}
 
+	public String getInputSchema() {
+		return inputSchema.toString();
+	}
 	
 	public boolean isValid() {
 		return true;

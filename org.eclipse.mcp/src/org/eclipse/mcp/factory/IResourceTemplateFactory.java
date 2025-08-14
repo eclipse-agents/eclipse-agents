@@ -1,12 +1,6 @@
-package org.eclipse.mcp;
+package org.eclipse.mcp.factory;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -22,32 +16,8 @@ import io.modelcontextprotocol.spec.McpSchema.Resource;
 import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 
-public interface IMCPResourceTemplateFactory {
-
-	public enum ResourceTemplateRole {
-		 USER,
-		ASSISTANT
-	}
-	
-	@Retention(RetentionPolicy.RUNTIME) // Match the retention of the repeatable annotation
-	@Target(ElementType.TYPE)
-	public @interface ResourceTemplates {
-		ResourceTemplate[] value(); // Array of the repeatable annotation
-	}
-	
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target(ElementType.TYPE)
-	@Repeatable(ResourceTemplates.class)
-	public @interface ResourceTemplate {
-		String uriTemplate();
-		String name();
-		String title() default "";
-		String description();
-		String mimeType() default "text/plain";
-		McpSchema.Role[] roles() default { };
-		double priority() default -10;
-	}
-	
+public interface IResourceTemplateFactory extends IFactory{
+		
 	public default String getId() {
 		return getClass().getCanonicalName();
 	}

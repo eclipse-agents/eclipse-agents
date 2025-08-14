@@ -4,13 +4,14 @@
 
 package io.modelcontextprotocol.server;
 
-import io.modelcontextprotocol.spec.McpError;
-import io.modelcontextprotocol.spec.McpSchema;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 
-import java.util.Map;
+import io.modelcontextprotocol.spec.McpError;
+import io.modelcontextprotocol.spec.McpSchema;
+import reactor.core.publisher.Mono;
 
 class DefaultMcpStatelessServerHandler implements McpStatelessServerHandler {
 

@@ -6,6 +6,7 @@ package io.modelcontextprotocol.client.transport;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
+
 import reactor.util.annotation.Nullable;
 
 /**

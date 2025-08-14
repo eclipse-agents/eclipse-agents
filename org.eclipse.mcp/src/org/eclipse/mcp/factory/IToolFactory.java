@@ -1,9 +1,10 @@
-package org.eclipse.mcp;
+package org.eclipse.mcp.factory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.internal.Tracer;
 
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -15,7 +16,7 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 
-public interface IMCPToolFactory {	
+public interface IToolFactory extends IFactory{	
 
 	/**
 	 * @return Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension

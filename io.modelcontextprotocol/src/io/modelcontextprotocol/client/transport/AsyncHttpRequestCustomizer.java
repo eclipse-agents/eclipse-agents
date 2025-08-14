@@ -6,7 +6,9 @@ package io.modelcontextprotocol.client.transport;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
+
 import org.reactivestreams.Publisher;
+
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.annotation.Nullable;

@@ -2,7 +2,7 @@ package org.eclipse.mcp;
 
 import io.modelcontextprotocol.spec.McpSchema.Resource;
 
-public interface IMCPResourceController {
+public interface IResourceController {
 
 	/**
 	 * Add a resource to the server

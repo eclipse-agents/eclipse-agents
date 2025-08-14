@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.mcp.IMCPResourceTemplateFactory;
-import org.eclipse.mcp.IMCPToolFactory;
-import org.eclipse.mcp.test.junit.plugin.extension.MCPFactory;
+import org.eclipse.mcp.factory.IResourceTemplateFactory;
+import org.eclipse.mcp.factory.IToolFactory;
+import org.eclipse.mcp.test.junit.plugin.extension.FactoryProvider;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
@@ -29,19 +29,18 @@ public final class MCPFactoryTest {
 
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
-		MCPFactory factory = new MCPFactory();
-		addFactoryTests(suite, factory);
-		addResourceTemplateTests(suite, factory);
+		FactoryProvider factory = new FactoryProvider();
+		addFactoryTests(suite, factory.createToolFactories()[0]);
+		addResourceTemplateTests(suite, factory.createResourceTemplateFactories()[0]);
 		return suite;
 		
 	}
 	
-	public static void addFactoryTests(TestSuite suite, MCPFactory factory) {
+	public static void addFactoryTests(TestSuite suite, IToolFactory toolFactory) {
 		
-		IMCPToolFactory[] toolFactories = factory.createToolFactories();
-		addTestEquals(suite, "toolFactory[0].id", toolFactories[0].getId(), "junit.MCPToolFactory.helloWorld");
+		addTestEquals(suite, "toolFactory[0].id", toolFactory.getId(), "junit.MCPToolFactory.helloWorld");
 		
-		Tool tool = toolFactories[0].createTool();
+		Tool tool = toolFactory.createTool();
 		
 		
 		addTestEquals(suite, "tool.name", tool.name(), "test-hello-world");
@@ -50,49 +49,49 @@ public final class MCPFactoryTest {
 		addTestEquals(suite, "tool.inputSchema.type", tool.inputSchema().type(), "object");
 		
 		String arg = "b1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "boolean");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "boolean");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "boolean");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "boolean");
 
 		arg = "c1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "string");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "character");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "string");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "character");
 
 		arg = "s1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "string");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "string");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "string");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "string");
 
 		arg = "d1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "number");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "double");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "number");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "double");
 
 		arg = "f1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "number");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "float");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "number");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "float");
 
 		arg = "i1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "integer");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "integer");
 
 		arg = "l1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "integer");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "long");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "long");
 
 
 		arg = "sh1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "integer");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "short");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "short");
 
 
 		arg = "as1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "array");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "string array");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".item.type", ((Map)((Map)tool.inputSchema().properties().get(arg)).get("items")).get("type"), "string");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "string array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".item.type", ((Map<?,?>)((Map<?,?>)tool.inputSchema().properties().get(arg)).get("items")).get("type"), "string");
 
 		
 		arg = "ai1";
-		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map)tool.inputSchema().properties().get(arg)).get("type"), "array");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map)tool.inputSchema().properties().get(arg)).get("description"), "int array");
-		addTestEquals(suite, "tool.inputSchema." + arg + ".item.type", ((Map)((Map)tool.inputSchema().properties().get(arg)).get("items")).get("type"), "integer");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".type", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("type"), "array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".description", ((Map<?,?>)tool.inputSchema().properties().get(arg)).get("description"), "int array");
+		addTestEquals(suite, "tool.inputSchema." + arg + ".item.type", ((Map<?,?>)((Map<?,?>)tool.inputSchema().properties().get(arg)).get("items")).get("type"), "integer");
 
 
 //		addTestEquals(suite, "tool.outputSchema", tool.outputSchema(), "junit.MCPToolFactory.helloWorld");
@@ -118,7 +117,7 @@ public final class MCPFactoryTest {
 		args.put("ai1", new Integer[] { 1234, 2345 });
 		
 
-		SyncToolSpecification spec = toolFactories[0].createSpec(tool);
+		SyncToolSpecification spec = toolFactory.createSpec(tool);
 		CallToolRequest request = new CallToolRequest(tool.name(), args);
 		CallToolResult result = spec.callHandler().apply((McpSyncServerExchange)null, request);
 		
@@ -154,9 +153,7 @@ public final class MCPFactoryTest {
 	
 	}
 	
-	public static void addResourceTemplateTests(TestSuite suite, MCPFactory factory) {
-		
-		IMCPResourceTemplateFactory templateFactory = factory.createResourceTemplateFactories()[0];
+	public static void addResourceTemplateTests(TestSuite suite, IResourceTemplateFactory templateFactory) {
 		
 		ResourceTemplate[] templates = templateFactory.createResourceTemplates();
 		addTestTrue(suite, "2 templates", templates.length == 2);

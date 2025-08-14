@@ -1,18 +1,41 @@
-package org.eclipse.mcp.annotated;
+package org.eclipse.mcp.experimental.annotated;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.mcp.IMCPResourceTemplateFactory;
+import org.eclipse.mcp.factory.IResourceTemplateFactory;
 
 import io.modelcontextprotocol.spec.McpSchema;
 
 
 
-public abstract class MCPAnnotatedResourceTemplateFactory implements IMCPResourceTemplateFactory {
+public abstract class MCPAnnotatedResourceTemplateFactory implements IResourceTemplateFactory {
 	
+	@Retention(RetentionPolicy.RUNTIME) // Match the retention of the repeatable annotation
+	@Target(ElementType.TYPE)
+	public @interface ResourceTemplates {
+		ResourceTemplate[] value(); // Array of the repeatable annotation
+	}
+	
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.TYPE)
+	@Repeatable(ResourceTemplates.class)
+	public @interface ResourceTemplate {
+		String uriTemplate();
+		String name();
+		String title() default "";
+		String description();
+		String mimeType() default "text/plain";
+		McpSchema.Role[] roles() default { };
+		double priority() default -10;
+	}
 	
 	List<ResourceTemplate> annotations = new ArrayList<ResourceTemplate>();
 	List<McpSchema.ResourceTemplate> templates = new ArrayList<McpSchema.ResourceTemplate>(); 

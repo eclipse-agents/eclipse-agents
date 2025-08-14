@@ -63,13 +63,16 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
       </complexType>
    </element>
 
-   <element name="factory">
+   <element name="contributor">
       <annotation>
          <documentation>
             This element is used to define a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tool&lt;/a&gt;
          </documentation>
       </annotation>
       <complexType>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="factory"/>
+         </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
@@ -107,6 +110,22 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="capabilityId" type="string">
+            <annotation>
+               <documentation>
+                  Id of a capability
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+   <element name="factory">
+      <annotation>
+         <documentation>
+            This element is used to define a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tool&lt;/a&gt;
+         </documentation>
+      </annotation>
+      <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
@@ -115,13 +134,6 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
                <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPFactory"/>
                </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="capabilityId" type="string">
-            <annotation>
-               <documentation>
-                  Id of a capability
-               </documentation>
             </annotation>
          </attribute>
       </complexType>

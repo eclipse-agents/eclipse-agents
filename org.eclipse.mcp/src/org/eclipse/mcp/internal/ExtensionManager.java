@@ -8,7 +8,9 @@
 *******************************************************************************/
 package org.eclipse.mcp.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -17,9 +19,10 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.mcp.IMCPFactory;
-import org.eclipse.mcp.IMCPResourceTemplateFactory;
-import org.eclipse.mcp.IMCPToolFactory;
+import org.eclipse.mcp.factory.IFactory;
+import org.eclipse.mcp.factory.IResourceFactory;
+import org.eclipse.mcp.factory.IResourceTemplateFactory;
+import org.eclipse.mcp.factory.IToolFactory;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
@@ -33,7 +36,7 @@ import io.modelcontextprotocol.spec.McpSchema.Tool;
  */
 public class ExtensionManager {
 	
-	Map<String, Factory> factories = new HashMap<String, Factory>();
+	Map<String, Contributor> contributors = new HashMap<String, Contributor>();
 	
 	enum ELEMENT { factory }
 	
@@ -46,82 +49,87 @@ public class ExtensionManager {
 		
 		for (IExtension extension : point.getExtensions()) {
 			for (IConfigurationElement extensionElement: extension.getConfigurationElements()) {
-				if ("factory".equals(extensionElement.getName())) {
-					Factory f = new Factory(extensionElement);
-					if (f.errorMessage == null) {
-						factories.put(f.id, f);
+				if ("contributor".equals(extensionElement.getName())) {
+					Contributor c = new Contributor(extensionElement);
+					if (c.errorMessage == null) {
+						contributors.put(c.id, c);
 					} else {
-						trace(extensionElement, f.errorMessage, null);
+						trace(extensionElement, c.errorMessage, c.contributorThrowable);
 					}
 				}
 			}
 		}
 	}
 	
-	public ExtensionManager.Factory[] getFactories() {
-		return factories.values().toArray(Factory[]::new);
+	public Contributor[] getContributors() {
+		return contributors.values().toArray(Contributor[]::new);
 	}
 	
-	public ExtensionManager.Factory getFactories(String factoryId) {
-		return factories.get(factoryId);
+	public Contributor getContributor(String contributorId) {
+		return contributors.get(contributorId);
 	}
 	
-	public class Factory {
+	public class Contributor {
 
 		String id, name, description, provider;
-		IMCPFactory implementation;
+		List<IFactory> factories;
 		String errorMessage = null;
-		Throwable toolThrowable = null;
+		Throwable contributorThrowable = null;
 
 		Map<ResourceTemplate, SyncCompletionSpecification> templateCompletions = new HashMap<ResourceTemplate, SyncCompletionSpecification>();
 		Map<ResourceTemplate, SyncResourceSpecification> templateSpecifications = new HashMap<ResourceTemplate, SyncResourceSpecification>();
 		Map<Tool, SyncToolSpecification> toolSpecifications = new HashMap<Tool, SyncToolSpecification>();
 		
-		public Factory(IConfigurationElement e) {
+		public Contributor(IConfigurationElement e) {
 			this.id =  e.getAttribute("id"); 
 			this.name = e.getAttribute("name");
 			this.description = e.getAttribute("description");
 			this.provider = e.getAttribute("provider");
+			factories = new ArrayList<IFactory>();
 			
 			if (getId() == null || getId().isBlank()) {
 				errorMessage = "Missing Tool id";
 			} else if (getName() == null || getName().isBlank()) {
 				errorMessage = "Missing Tool name";
-			} else if (e.getAttribute("class") == null || e.getAttribute("class").isBlank()) {
-				errorMessage = "Missing  Tool class";
 			}
 			
 			if (errorMessage == null) {
-				try {
-					Object impl = e.createExecutableExtension("class");
-					if (impl instanceof IMCPFactory) {
-						implementation = (IMCPFactory)impl;
-					} else {
-						errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactory";
+				for (IConfigurationElement childElement: e.getChildren("factory")) {
+					try {
+						Object impl = childElement.createExecutableExtension("class");
+						if (impl instanceof IFactory) {
+							factories.add((IFactory)impl);
+						} else {
+							errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactory";
+						}
+					} catch (CoreException ex) {
+						errorMessage = "Factory class " + e.getAttribute("class") + "failed instantiation";
+						contributorThrowable = ex;
 					}
-				} catch (CoreException ex) {
-					errorMessage = "Factory class " + e.getAttribute("class") + "failed instantiation";
-					toolThrowable = ex;
 				}
 			}
 			
 			if (errorMessage == null) {
 				try {
-					for (IMCPResourceTemplateFactory templateFactory: implementation.createResourceTemplateFactories()) {
-						for (ResourceTemplate template: templateFactory.createResourceTemplates()) {
-							templateCompletions.put(template, templateFactory.createCompletionSpecification(template));
-							templateSpecifications.put(template, templateFactory.getResourceTemplateSpecification(template));
+					for (IFactory factory: factories) {
+						if (factory instanceof IResourceFactory) {
+							//TODO ?
+						} else if (factory instanceof IResourceTemplateFactory) {
+							IResourceTemplateFactory templateFactory = (IResourceTemplateFactory)factory;
+							for (ResourceTemplate template: templateFactory.createResourceTemplates()) {
+								templateCompletions.put(template, templateFactory.createCompletionSpecification(template));
+								templateSpecifications.put(template, templateFactory.getResourceTemplateSpecification(template));
+							}
+						} else if (factory instanceof IToolFactory) {
+							IToolFactory toolFactory = (IToolFactory)factory;
+							Tool tool = toolFactory.createTool();
+							SyncToolSpecification spec = toolFactory.createSpec(tool);
+							toolSpecifications.put(tool, spec);
 						}
 					}
-					
-					for (IMCPToolFactory toolFactory: implementation.createToolFactories()) {
-						Tool tool = toolFactory.createTool();
-						SyncToolSpecification spec = toolFactory.createSpec(tool);
-						toolSpecifications.put(tool, spec);
-					}
 				} catch (Exception ex) {
-					errorMessage = "Factory class " + e.getAttribute("class") + "failed construction";
-					toolThrowable = ex;
+					errorMessage = "Factory class " + e.getAttribute("class") + "failed setup";
+					contributorThrowable = ex;
 				}
 			}
 		}
@@ -142,8 +150,8 @@ public class ExtensionManager {
 			return description;
 		}
 
-		public IMCPFactory getImplementation() {
-			return implementation;
+		public IFactory[] getFactories() {
+			return factories.toArray(IFactory[]::new);
 		}
 	}
 	

@@ -1,20 +1,22 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.mcp.IMCPFactory;
+import org.eclipse.mcp.factory.IFactory;
 
 public class ServerManager {
 
 	public ServerManager(ExtensionManager extensionManager) {
 		
-		List<IMCPFactory> enabledFactories = new ArrayList<IMCPFactory>();
-		for (ExtensionManager.Factory f: extensionManager.getFactories()) {
-			enabledFactories.add(f.implementation);
-		}
+		List<IFactory> factories = new ArrayList<IFactory>();
 		
-		new ManagedServer("Eclipse MCP Server", "Default Eclipse MCP Server", 2834, enabledFactories.toArray(new IMCPFactory[0])).start();
+		for (ExtensionManager.Contributor contributor: extensionManager.getContributors()) {
+			factories.addAll(Arrays.asList(contributor.getFactories()));
+		}
+
+		new ManagedServer("Eclipse MCP Server", "Default Eclipse MCP Server", 2834, factories.toArray(IFactory[]::new)).start();
 
 	}
 }

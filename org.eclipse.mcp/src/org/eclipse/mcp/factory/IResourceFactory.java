@@ -1,7 +1,9 @@
-package org.eclipse.mcp;
+package org.eclipse.mcp.factory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.eclipse.mcp.IResourceController;
 
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
@@ -12,23 +14,23 @@ import io.modelcontextprotocol.spec.McpSchema.Resource;
 import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 
-public abstract class IMCPResourceFactory {
+public interface IResourceFactory extends IFactory{
 	
-	public String getId() {
+	public default String getId() {
 		return getClass().getCanonicalName();
 	}
 	
-	public abstract void initialize(IMCPResourceController controller);
+	public abstract void initialize(IResourceController controller);
 
-	public SyncResourceSpecification createResourceSpec(Resource resource) {
+	public default SyncResourceSpecification createResourceSpec(Resource resource) {
 		return new McpServerFeatures.SyncResourceSpecification(resource, this::readResource); 
 	}
 	
-	public String getResourceMimeType(String uri) {
+	public default String getResourceMimeType(String uri) {
 		return "text/plain";
 	}
 	
-	public ReadResourceResult readResource(McpSyncServerExchange exchange, ReadResourceRequest request) {
+	public default ReadResourceResult readResource(McpSyncServerExchange exchange, ReadResourceRequest request) {
 		List<ResourceContents> contents = new ArrayList<ResourceContents>();
 		for (String s: readResource(request.uri())) {
 			contents.add(new TextResourceContents(
@@ -39,6 +41,6 @@ public abstract class IMCPResourceFactory {
 		return new ReadResourceResult(contents);
 	}
 	
-	public abstract String[] readResource(String url);
+	public String[] readResource(String url);
 
 }

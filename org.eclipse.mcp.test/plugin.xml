@@ -7,14 +7,14 @@
          id="org.eclipse.mcp.test.junit.plugin.extension"
          name="JUnit Test Services">
 
-      <factory
-         id="junit.mcp.factory"
-         name="JUnit Factory"
-         description="JUnit Factory Description"
+      <contributor
+         id="junit.mcp.contributor"
+         name="JUnit Contributor"
+         description="JUnit Contributor Description"
          provider="IBM"
-         class="org.eclipse.mcp.test.junit.plugin.extension.MCPFactory"
          capabilityId="IBM">
-      </factory>
+         <factory class = "org.eclipse.mcp.test.junit.plugin.extension.FactoryProvider"/>
+      </contributor>
       
    </extension>
  	

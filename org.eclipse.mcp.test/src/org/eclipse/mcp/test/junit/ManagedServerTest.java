@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.mcp.IMCPFactory;
+import org.eclipse.mcp.factory.IFactory;
 import org.eclipse.mcp.internal.ManagedServer;
-import org.eclipse.mcp.test.junit.plugin.extension.MCPFactory;
+import org.eclipse.mcp.test.junit.plugin.extension.FactoryProvider;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
@@ -34,7 +34,7 @@ public final class ManagedServerTest {
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
 
-		ManagedServer server = new ManagedServer("junit", "junit", 1834, new IMCPFactory[] { new MCPFactory() });
+		ManagedServer server = new ManagedServer("junit", "junit", 1834, new IFactory[] { new FactoryProvider() });
 		
 		// Create a sync client with custom configuration
 		HttpClientSseClientTransport transport = new HttpClientSseClientTransport("http://localhost:1834/sse");
