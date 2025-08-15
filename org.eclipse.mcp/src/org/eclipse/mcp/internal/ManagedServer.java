@@ -2,7 +2,11 @@ package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
@@ -15,7 +19,9 @@ import org.eclipse.mcp.factory.IFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceFactory;
 import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.IToolFactory;
+import org.eclipse.mcp.factory.ToolFactory;
+import org.eclipse.mcp.factory.ToolFactory.ToolVisibilityListener;
+import org.eclipse.ui.PlatformUI;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -31,13 +37,21 @@ import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import jakarta.servlet.Servlet;
 
-public class ManagedServer {
+public class ManagedServer implements ToolVisibilityListener {
 
 	String name, version;
 	int port;
 	
+	// For dynamically adding/removing tools
+	boolean running = false;
+	Map<ToolFactory, McpSchema.Tool > toolMap = new HashMap<ToolFactory, McpSchema.Tool >();
+	Map<ToolFactory, SyncToolSpecification> toolSpecMap = new HashMap<ToolFactory, SyncToolSpecification>();
+	Map<ToolFactory, String> servedToolNamesMap = new HashMap<ToolFactory, String>();
+	
+	
+	
 	List<IResourceTemplateFactory> resourceTemplateFactories;
-	List<IToolFactory> toolFactories;
+	List<ToolFactory> toolFactories;
 	List<IResourceFactory> resourceFactories;
 			
 	private boolean copyLogsToSysError = true; // Boolean.getBoolean("com.ibm.systemz.db2.mcp.copyLogsToSysError");
@@ -46,13 +60,15 @@ public class ManagedServer {
 	QueuedThreadPool threadPool;
 	String url;
 	
+	org.eclipse.jetty.server.Server jettyServer = null;
+	
 	public ManagedServer(String name, String version, int port, IFactory[] factories) {
 		this.name = name;
 		this.version = version;
 		this.port = port;
 		
 		resourceTemplateFactories = new ArrayList<IResourceTemplateFactory>();
-		toolFactories = new ArrayList<IToolFactory>();
+		toolFactories = new ArrayList<ToolFactory>();
 		resourceFactories = new ArrayList<IResourceFactory>();
 		
 		for (IFactory factory: factories) {
@@ -60,8 +76,8 @@ public class ManagedServer {
 				resourceTemplateFactories.add((IResourceTemplateFactory)factory);
 			} else if (factory instanceof IResourceFactory) {
 				resourceFactories.add((IResourceFactory)factory);
-			} else if (factory instanceof IToolFactory) {
-				toolFactories.add((IToolFactory)factory);
+			} else if (factory instanceof ToolFactory) {
+				toolFactories.add((ToolFactory)factory);
 			} else if (factory instanceof IFactoryProvider) {
 				resourceTemplateFactories.addAll(Arrays.asList(
 						((IFactoryProvider)factory).createResourceTemplateFactories()));
@@ -72,6 +88,10 @@ public class ManagedServer {
 				toolFactories.addAll(Arrays.asList(
 						((IFactoryProvider)factory).createToolFactories()));
 			}
+		}
+		
+		for (ToolFactory toolFactory: toolFactories) {
+			toolFactory.addVisibilityListener(this);
 		}
 	}
 	
@@ -115,27 +135,35 @@ public class ManagedServer {
 		
 		log(LoggingLevel.INFO, this, url);
 	
-		
-		for (IToolFactory toolFactory: toolFactories) {
+		running = true;
+		for (ToolFactory toolFactory: toolFactories) {
+			
 			McpSchema.Tool tool = toolFactory.createTool();
+			toolMap.put(toolFactory, tool);
+			
 			SyncToolSpecification spec = toolFactory.createSpec(tool);
-			syncServer.addTool(spec);
+			toolSpecMap.put(toolFactory, spec);
+			
+			if (toolFactory.isVisible()) {
+				syncServer.addTool(spec);
+				servedToolNamesMap.put(toolFactory, tool.name());
+			}
 		}
 		
 		for (IResourceFactory resourceFactory: resourceFactories) {
 			resourceFactory.initialize(new ResourceManager(this, resourceFactory));
 		}
 		
-		
 		for (SyncResourceSpecification spec: templateResourceSpecs) {
 			syncServer.addResource(spec);
 		}
+
 		syncServer.notifyResourcesListChanged();
 	
 		threadPool = new QueuedThreadPool();
 		threadPool.setName(name + "-Thread");
 
-		org.eclipse.jetty.server.Server jettyServer = new org.eclipse.jetty.server.Server(threadPool);
+		jettyServer = new org.eclipse.jetty.server.Server(threadPool);
 	
 		ServerConnector connector = new ServerConnector(jettyServer);
 		connector.setPort(port);
@@ -147,6 +175,7 @@ public class ManagedServer {
 			context.addServlet(new ServletHolder((Servlet)transportProvider), "/*");
 			jettyServer.setHandler(context);
 			jettyServer.start();
+			jettyServer.setStopAtShutdown(true);
 			
 			syncServer.notifyToolsListChanged();
 	
@@ -164,7 +193,22 @@ public class ManagedServer {
 	}
 	
 	public void stop() {
+		running = false;
+		for (ToolFactory toolFactory: toolSpecMap.keySet()) {
+			toolFactory.removeVisibilityListener(this);
+		}
+
+		if (syncServer != null) {
+			syncServer.closeGracefully();
+		}
 		
+		if (jettyServer != null) {
+			try {
+				jettyServer.stop();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void log(McpSchema.LoggingLevel level, Object source, String message) {
@@ -191,5 +235,34 @@ public class ManagedServer {
 			log(LoggingLevel.ERROR, source, ex.getLocalizedMessage());
 //			ex = ex.getNextException(); // For drivers that support chained exceptions
 		}
+	}
+
+	@Override
+	public void visibilityChanged(ToolFactory toolFactory) {
+		if (running) {
+			
+			McpSchema.Tool tool = toolMap.get(toolFactory);
+			SyncToolSpecification toolSpec = toolSpecMap.get(toolFactory);
+			
+			if (tool != null && toolSpec != null) {
+				// the tool factory was not activity disabled at server start time
+				
+				if (toolFactory.isVisible() &&
+						!servedToolNamesMap.containsKey(toolFactory)) {
+					
+					// factory wishes to be visible but is not currently served
+					syncServer.addTool(toolSpec);
+					servedToolNamesMap.put(toolFactory, tool.name());
+
+				} else if (!toolFactory.isVisible() &&
+						servedToolNamesMap.containsKey(toolFactory)) {
+					
+					// factory wishes to be invisible but is currently served
+					syncServer.removeTool(tool.name());
+					servedToolNamesMap.remove(toolFactory);
+				}
+			}
+		}
+		
 	}
 }

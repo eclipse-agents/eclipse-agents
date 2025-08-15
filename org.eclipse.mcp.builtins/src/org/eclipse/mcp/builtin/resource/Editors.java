@@ -141,5 +141,4 @@ public class Editors implements IResourceFactory {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

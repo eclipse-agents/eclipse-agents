@@ -7,12 +7,12 @@ import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceFactory;
 import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.IToolFactory;
+import org.eclipse.mcp.factory.ToolFactory;
 
 public class BuiltinFactoryProvider implements IFactoryProvider {
 
 	@Override
-	public IToolFactory[] createToolFactories() {
+	public ToolFactory[] createToolFactories() {
 		return MCPAnnotatedToolFactory.createToolFactories(BuiltinAnnotatedToolsFactory.class);
 	}
 

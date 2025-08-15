@@ -12,13 +12,13 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.mcp.internal.Activator;
 
-public class Db2PreferenceInitializer extends AbstractPreferenceInitializer implements IPreferenceConstants {
+public class PreferenceInitializer extends AbstractPreferenceInitializer implements IPreferenceConstants {
 
 	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-//		store.setDefault(P_CONNECTIONKEEPALIVE, 300);
-
+		store.setDefault(P_SERVER_ENABLED, false);
+		store.setDefault(P_SERVER_HTTP_PORT, 8673);
 	}
 }

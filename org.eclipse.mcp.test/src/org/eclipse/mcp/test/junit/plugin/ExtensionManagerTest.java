@@ -30,7 +30,7 @@ public final class ExtensionManagerTest {
 		String name="JUnit Contributor";
 		String description="JUnit Contributor Description";
 		String provider="IBM";
-		String capabilityId="IBM";
+		String activityId ="IBM";
 
 		// Test Factory
 		addTestTrue(suite, "mcp factory", contributor != null);

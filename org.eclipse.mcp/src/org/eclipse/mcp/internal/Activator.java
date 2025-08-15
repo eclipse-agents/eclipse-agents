@@ -56,7 +56,7 @@ public class Activator extends AbstractUIPlugin {
 				if (event.getBundle() == getBundle() && event.getType() == BundleEvent.STARTED) {
 					Tracer.trace().trace(Tracer.DEBUG, event.getBundle().getBundleId() + " STARTED"); //$NON-NLS-1$
 					extensionManager = new ExtensionManager();
-					serverManager = new ServerManager(extensionManager);
+					serverManager = new ServerManager();
 				}
 			}
 		});
@@ -73,6 +73,11 @@ public class Activator extends AbstractUIPlugin {
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
+	}
+	
+	public void requestServerRestart() {
+		Tracer.trace().trace(Tracer.DEBUG, "MCP Server Restart Requested"); //$NON-NLS-1$
+		serverManager.forceRestart();
 	}
 
 	/**

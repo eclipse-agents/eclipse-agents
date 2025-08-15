@@ -9,6 +9,7 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,13 +21,15 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.mcp.factory.IFactory;
+import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceFactory;
 import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.IToolFactory;
+import org.eclipse.mcp.factory.ToolFactory;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceTemplate;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 
@@ -71,11 +74,17 @@ public class ExtensionManager {
 	
 	public class Contributor {
 
-		String id, name, description, provider;
+		String id, name, description, provider, activityId;
 		List<IFactory> factories;
 		String errorMessage = null;
 		Throwable contributorThrowable = null;
 
+		List<IResourceTemplateFactory> resourceTemplateFactories = new ArrayList<IResourceTemplateFactory>();
+		List<ToolFactory> toolFactories = new ArrayList<ToolFactory>();
+		List<IResourceFactory> resourceFactories = new ArrayList<IResourceFactory>();
+		
+		
+		List<ResourceTemplate> templates = new ArrayList<ResourceTemplate>();
 		Map<ResourceTemplate, SyncCompletionSpecification> templateCompletions = new HashMap<ResourceTemplate, SyncCompletionSpecification>();
 		Map<ResourceTemplate, SyncResourceSpecification> templateSpecifications = new HashMap<ResourceTemplate, SyncResourceSpecification>();
 		Map<Tool, SyncToolSpecification> toolSpecifications = new HashMap<Tool, SyncToolSpecification>();
@@ -85,6 +94,7 @@ public class ExtensionManager {
 			this.name = e.getAttribute("name");
 			this.description = e.getAttribute("description");
 			this.provider = e.getAttribute("provider");
+			this.activityId = e.getAttribute("activityId");
 			factories = new ArrayList<IFactory>();
 			
 			if (getId() == null || getId().isBlank()) {
@@ -110,8 +120,35 @@ public class ExtensionManager {
 			}
 			
 			if (errorMessage == null) {
+				for (IFactory factory: factories) {
+					if (factory instanceof IResourceTemplateFactory) {
+						resourceTemplateFactories.add((IResourceTemplateFactory)factory);
+					} else if (factory instanceof IResourceFactory) {
+						resourceFactories.add((IResourceFactory)factory);
+					} else if (factory instanceof ToolFactory) {
+						toolFactories.add((ToolFactory)factory);
+					} else if (factory instanceof IFactoryProvider) {
+						resourceTemplateFactories.addAll(Arrays.asList(
+								((IFactoryProvider)factory).createResourceTemplateFactories()));
+						
+						resourceFactories.addAll(Arrays.asList(
+								((IFactoryProvider)factory).createResourceFactories()));
+						
+						toolFactories.addAll(Arrays.asList(
+								((IFactoryProvider)factory).createToolFactories()));
+					}
+				}
+				
 				try {
 					for (IFactory factory: factories) {
+						for (IResourceTemplateFactory templateFactory: resourceTemplateFactories) {
+							for (McpSchema.ResourceTemplate template: templateFactory.createResourceTemplates()) {
+								templates.add(template);
+								templateCompletions.put(template, templateFactory.createCompletionSpecification(template));
+								templateSpecifications.put(template, templateFactory.getResourceTemplateSpecification(template));
+							}
+						}
+						
 						if (factory instanceof IResourceFactory) {
 							//TODO ?
 						} else if (factory instanceof IResourceTemplateFactory) {
@@ -120,11 +157,13 @@ public class ExtensionManager {
 								templateCompletions.put(template, templateFactory.createCompletionSpecification(template));
 								templateSpecifications.put(template, templateFactory.getResourceTemplateSpecification(template));
 							}
-						} else if (factory instanceof IToolFactory) {
-							IToolFactory toolFactory = (IToolFactory)factory;
+						} else if (factory instanceof ToolFactory) {
+							ToolFactory toolFactory = (ToolFactory)factory;
 							Tool tool = toolFactory.createTool();
 							SyncToolSpecification spec = toolFactory.createSpec(tool);
 							toolSpecifications.put(tool, spec);
+						} else if (factory instanceof IFactoryProvider) {
+							
 						}
 					}
 				} catch (Exception ex) {
@@ -149,6 +188,10 @@ public class ExtensionManager {
 		public String getDescription() {
 			return description;
 		}
+		
+		public String getActivityId() {
+			return activityId;
+		}
 
 		public IFactory[] getFactories() {
 			return factories.toArray(IFactory[]::new);
@@ -160,14 +203,9 @@ public class ExtensionManager {
 		if (identifier == null) {
 			identifier = extensionElement.getNamespaceIdentifier();
 		}
-//		String namespace = extensionElement.getNamespaceIdentifier();
-//		namespace = (namespace == null) ? "Undefined" : namespace;
 		
 		String output = "[" + identifier +"]:: " + message;
 		
-		
-//		System.err.println(output);
-
 		if (t != null) {
 			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output, t);
 		} else {

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.IToolFactory;
+import org.eclipse.mcp.factory.ToolFactory;
 import org.eclipse.mcp.test.junit.plugin.extension.FactoryProvider;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -36,7 +36,7 @@ public final class MCPFactoryTest {
 		
 	}
 	
-	public static void addFactoryTests(TestSuite suite, IToolFactory toolFactory) {
+	public static void addFactoryTests(TestSuite suite, ToolFactory toolFactory) {
 		
 		addTestEquals(suite, "toolFactory[0].id", toolFactory.getId(), "junit.MCPToolFactory.helloWorld");
 		

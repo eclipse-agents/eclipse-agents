@@ -17,6 +17,12 @@
 			id="org.eclipse.mcp.keyword.protocol" />
 	</extension>
 
+	<extension point="org.eclipse.ui.activities">
+		<category id="org.eclipse.mcp.activity"
+			description="Connect Agentic clients to Model Context Protocol servers contributed by Eclipse plugins"
+			name="Agentic Tools" />
+	</extension>
+
 	<extension point="org.eclipse.ui.preferencePages">
 		<page
 			id="org.eclipse.mcp.preferences.general"
@@ -29,18 +35,23 @@
 		</page>
 	</extension>
 
-	 <extension point="org.eclipse.ui.propertyPages">
-       <page name="General"
-            class="org.eclipse.mcp.internal.preferences.ToolPropertyPage"
-            id="org.eclipse.mcp.internal.preferences.ToolPropertyPage">
-            <enabledWhen>
-                <instanceof
-                    value="org.eclipse.mcp.IMCPElementPropertyInput">
-                </instanceof>
-            </enabledWhen>
-      </page>
-    </extension>
-	
+	<extension point="org.eclipse.core.runtime.preferences">
+		<initializer
+			class="org.eclipse.mcp.internal.preferences.PreferenceInitializer" />
+	</extension>
+
+	<extension point="org.eclipse.ui.propertyPages">
+		<page name="General"
+			class="org.eclipse.mcp.internal.preferences.ToolPropertyPage"
+			id="org.eclipse.mcp.internal.preferences.ToolPropertyPage">
+			<enabledWhen>
+				<instanceof
+					value="org.eclipse.mcp.IMCPElementPropertyInput">
+				</instanceof>
+			</enabledWhen>
+		</page>
+	</extension>
+
 	<extension point="org.eclipse.ui.startup">
 		<startup class="org.eclipse.mcp.internal.Startup" />
 	</extension>

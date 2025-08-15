@@ -12,17 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.factory.IToolFactory;
+import org.eclipse.mcp.factory.ToolFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
 
-public class MCPAnnotatedToolFactory implements IToolFactory {
+public class MCPAnnotatedToolFactory extends ToolFactory {
 	
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
@@ -46,8 +48,6 @@ public class MCPAnnotatedToolFactory implements IToolFactory {
 	     * Optional reference to a <code>org.eclipse.mcp.modelContextProtocolServer</code> category
 	     * @return
 	     */
-	    String category() default "";
-	    
 	    String contributor() default "";
 	    String inputSchema() default "";
 	    String outputSchema() default "";
@@ -76,8 +76,8 @@ public class MCPAnnotatedToolFactory implements IToolFactory {
 	    boolean required() default true;
 	}
 	
-	public static IToolFactory[] createToolFactories(Class<?> c) throws MCPException {
-		List<IToolFactory> tools = new ArrayList<IToolFactory>();
+	public static ToolFactory[] createToolFactories(Class<?> c) throws MCPException {
+		List<ToolFactory> tools = new ArrayList<ToolFactory>();
 		for (Method method: c.getDeclaredMethods()) {
 			Tool tool = method.getAnnotation(Tool.class);
 			if (tool != null) {
@@ -92,7 +92,7 @@ public class MCPAnnotatedToolFactory implements IToolFactory {
 				}
 			}
 		}
-		return tools.toArray(new IToolFactory[0]);
+		return tools.toArray(new ToolFactory[0]);
 	}
 
 	Object instance;
@@ -100,6 +100,7 @@ public class MCPAnnotatedToolFactory implements IToolFactory {
 	Tool toolAnnotation;
 	String inputSchema;
 	String outputSchema;
+	ListenerList listeners = new ListenerList();
 
 	public MCPAnnotatedToolFactory(Method method, Tool toolAnnotation) {
 		super();
@@ -205,11 +206,6 @@ public class MCPAnnotatedToolFactory implements IToolFactory {
 	public String getDescription() {
 		return toolAnnotation.description();
 	}
-	
-	@Override
-	public String getCategory() {
-		return toolAnnotation.category();
-	}
 
 	public String getInputSchema() {
 		return inputSchema.toString();
@@ -246,7 +242,7 @@ public class MCPAnnotatedToolFactory implements IToolFactory {
 	}
 
 	@Override
-	public io.modelcontextprotocol.spec.McpSchema.Tool createTool() {
+	public McpSchema.Tool createTool() {
 		ToolAnnotations annotations = new ToolAnnotations(
 				toolAnnotation.title(),
 				toolAnnotation.readOnlyHint(),

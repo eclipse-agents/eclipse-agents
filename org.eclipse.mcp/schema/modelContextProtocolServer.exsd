@@ -33,7 +33,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          </appinfo>
       </annotation>
       <complexType>
-         <sequence minOccurs="0" maxOccurs="unbounded">
+         <sequence minOccurs="1" maxOccurs="unbounded">
             <element ref="factory"/>
          </sequence>
          <attribute name="id" type="string">
@@ -110,10 +110,10 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="capabilityId" type="string">
+         <attribute name="activityId" type="string">
             <annotation>
                <documentation>
-                  Id of a capability
+                  Id of a capability activity which can be used to toggle enablement of this contributor.
                </documentation>
             </annotation>
          </attribute>
