@@ -23,7 +23,12 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
-
+/**
+ * Conveniences for creating one or more ToolFactories from annotated Java methods.
+ * A JSON Input schema for your method's arguments will be constructed and basic mappings to/from JSON
+ * will be handled.  Arguments may be of types Boolean,Character, Double, Float, Integer, Long, Short, String[] Integer[]
+ * No JSON Output Schema is generated at this time
+ */
 public class MCPAnnotatedToolFactory extends ToolFactory {
 	
 	@Retention(RetentionPolicy.RUNTIME)

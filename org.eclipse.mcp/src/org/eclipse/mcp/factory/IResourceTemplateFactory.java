@@ -16,6 +16,10 @@ import io.modelcontextprotocol.spec.McpSchema.Resource;
 import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 
+/**
+ * Interface for contributing MCP Resource Templates containing uri's with substitution variables
+ * and support for completion assistance of variable values
+ */
 public interface IResourceTemplateFactory extends IFactory{
 		
 	public McpSchema.ResourceTemplate[] createResourceTemplates();
@@ -51,7 +55,26 @@ public interface IResourceTemplateFactory extends IFactory{
 		return new ReadResourceResult(contents);
 	}
 	
+	/**
+	 * Simplistic handler for fulfilling template variable completion requests.
+	 * Override the other completionReq for more advanced features 
+	 * @param argumentName
+	 * @param argumentValue
+	 * @return
+	 */
 	public List<String> completionReq(String argumentName, String argumentValue);
+	
+	/**
+	 * Simplistic helper method for turning a URI to an String[] of content
+	 * For advanced operations, see the other <code>readResource<code> method
+	 * @param url
+	 * @return
+	 */
 	public String[] readResource(String url);
+	
+	/**
+	 * @param uri
+	 * @return mime type of this uri
+	 */
 	public String getMimeType(String uri);
 }

@@ -17,11 +17,20 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 
+/**
+ * Factory for contributing a single MCP tool
+ * See MCPAnnotatedToolFactory for a convenience way to create multiple tools in a file using annotations
+ */
 public abstract class ToolFactory implements IFactory{	
 
 	private ListenerList<ToolVisibilityListener> listeners = new ListenerList<ToolVisibilityListener>();
 	private boolean visible = true;
 
+	/**
+	 * Create the definition for your tool.
+	 * see MCPAnnotatedToolFactory to automatically create tools from annotated Java methods
+	 * @return
+	 */
 	public abstract McpSchema.Tool createTool();
 	
 	public SyncToolSpecification createSpec(McpSchema.Tool tool) {
@@ -51,8 +60,19 @@ public abstract class ToolFactory implements IFactory{
 		return result;
 	}
 	
+	/**
+	 * Simplistic method to transform a map of input arguments to a String[] response
+	 * @param args
+	 * @return
+	 * @throws MCPException
+	 */
 	public abstract String[] apply(Map<String, Object> args) throws MCPException;
 
+	/**
+	 * May be used to dynamically add/remove this tool to the server.
+	 * May be used in conjunction with some custom preference pages for your contributions
+	 * @param visibility
+	 */
 	public void setVisibility(boolean visibility) {
 		if (visible != visibility) {
 			visible = visibility;

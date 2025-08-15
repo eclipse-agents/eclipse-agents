@@ -2,13 +2,11 @@
 
 The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html) can be used to declare and instantiate Model Context Protocol (MCP) servers that run within the Eclipse IDE's VM enable interactivity between Eclipse based experiences and LLM Chat or Agents experience running within or outside of the Eclipse IDE.
 
-It provides a simple mechanism to contribute MCP Tools and Resources to MCP servers running inside Eclipse.
+It provides a simple mechanism to contribute MCP Tools and Resources to an MCP server running inside Eclipse.
 
-It abstracts away the underlying dependencies such as [modelcontextprotocol/java-sdk](https://github.com/modelcontextprotocol/java-sdk) and Jetty HTTP Server by providing an extension point and some simple Java Interaces, standing up and tearing down MCP and HTTP servers as user preferences are updated.
+Optional access to the underlying [modelcontextprotocol/java-sdk](https://github.com/modelcontextprotocol/java-sdk) elements are available
 
-Provides a centralized location for users to organize and customize Eclipse MCP contributions from multiple vendors.
-
-Provides a centralized registry of MCP servers running in the Eclipse process, enabling shell-shared experiences to locate local MCP server extensions and could enable them to invoke tools with a Java call rather than an HTTP call
+Provides a centralized location for users customize Eclipse MCP capabilities and preferences
 
 ## Documentation
 
@@ -25,19 +23,11 @@ Update your Eclipse plugin to contribute your own MCP tool and resource controll
 
 IT also adds a new "Platform MCP" preference page will let users:
 
-- Customize Servers
-  - Enable / Disable
-  - Create / Delete servers and manage which Tools and Resource Controllers they serve
-  - update HTTP port
-  - Copy server url to clipboard
-- Customize a Server's Tools and Resource Managers behavior
-  - Add / Remove to server
-  - Enable / Disable
-  - <img src="org.eclipse.mcp/docs/images/mcpPreferences.png" alt="drawing" width="500"/>
-  - Customize a Tool's name and description to suit an Agentic scenario
-  - <img src="org.eclipse.mcp/docs/images/editToolProperties.png" alt="drawing" width="500"/>
-  - Customize Tools and Resource Controllers using unique property pages specific to the type of Tool/Resource
-  - <img src="org.eclipse.mcp/docs/images/editToolCustomProperties.png" alt="drawing" width="500"/>
+- Enable / Disable Platform MCP Server
+- Set the HTTP Port
+- Copy the URL to clipboard
+- Turn on/off capabilities/activities for different categories of MCP tools, resources and prompts
+- Add custom preference pages under the MCP preference page to toggle your plugin's behavior and contributions
 
 ## [Extenion Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html)
 
@@ -53,152 +43,68 @@ IT also adds a new "Platform MCP" preference page will let users:
 
 To expose an aspect of your IDE plugin as an MCP tool, do the following:
 
-## Getting Started:  Lets create an MCP Tool
+## Getting Started:  Lets create an MCP Tool using an Annotated method
 
 1. Create or open an Eclipse Plugin Project
-2. Add plugin `org.eclipse.mcp` as a dependency to your plugin
-3. Create a class that implements [IMCPTool](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPTool.html)
+2. Add plugins `org.eclipse.mcp` and `io.modelcontextprotocol` as dependencies to your plugin
+3. Create a class that implements [MCPAnnotatedToolFactory.java](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp)
 
 ```java
-/**
- * An MCP tool is an exported function that and LLM-powered Agent can invoke
- * 
- * MCP Tools are declared in extension point <code>org.eclipse.mcp.modelContextProtocolServer</code>
- * 
- * The <code>class<code> attribute of a <code>tool</code> must be an instance of <code>org.eclipse.mcp.IMCPTool</code>
- */
-public interface IMCPTool {
-  
-  /**
-   * Executes the MCP Tool
-   * @param args A map of input parameters sent to this function matching the tool's declared input JSON schema
-   * @param properties utility to fetch and prompt for user customized preference values
-   * @return An array of strings representing the result of the tool execution.
-   */
-  public String[] apply(Map<String, Object> args, IElementProperties properties);
+public class MyToolFactory extends MCPAnnotatedToolFactory {
 
+	@Tool (description = "Return the compilation issues for a file")
+	public String[] getProblems(
+		@ToolArg(description="The full path to the file to return prblems for")	String filePath) {
+		
+		List<String> result = new ArrayList<String>();
+		
+		/** Populate results with problems **/
+
+		return result.toArray(String[]::new);
+	}
 }
 ```
 
-4. Define a JSON schema that describes the arguments your tool will accept, for example
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "connection-uuid": {
-      "type": "string"
-    },
-    "query": {
-      "type": "string"
-    }
-  },
-  "required": ["connection-uuid", "query"]
-}
-```
-
-5. Implement the logic for your tool, returning an array of Strings as your result
+4. Implement the logic for your tool, returning an array of Strings as your result
 
 ## Declare your tool as an extension in your plugin.xml
 
 1. Using the Plugin Manifest Editor, add to your plugin.xml
     1. Add the 'org.eclipse.mcp.modelContextProtocolServer' extension
-    2. Add to the extension an MCP Server with a name, id, description and default http port
-    3. Add the the extension 1 or more tools, each with a name, id, description and JSON Schema input, and implementaton class.
-        1. Agents will use the descirption and input schema to determine how and when to call your tool
-        2. The JSON schema must be XML Escaped.
-            1. Enter the value in the Plugin Editor, it will automatically escape the JSON schema for you.
-    4. Add a binding between your tools and a server
+    2. Add the the extension a contributor
+    3. Add to the contributor a factory
 
 Example:
 
 ```xml
- <extension
-         point="org.eclipse.mcp.modelContextProtocolServer">
-      <server
-            description="Set of default tools for enabling Agent-driven development"
-            id="org.eclipse.mcp.builtins"
-            name="Built-in Eclipse MCP Server"
-            version="0.0.1"
-            defaultPort="12931">
-      </server>
-      <tool
-            class="org.eclipse.mcp.builtin.tool.ListConsoles"
-            id="org.eclipse.mcp.builtin.tool.ListConsoles"
-            name="listConsoles"
-            description="List the open Eclipse consoles"
-            schema="{
-				&quot;type&quot;: &quot;object&quot;,
-				&quot;properties&quot;: {
-				},
-				&quot;required&quot;: []
-			}">
-      </tool>
-      <toolServerBinding
-            serverId="org.eclipse.mcp.builtins"
-            toolId="org.eclipse.mcp.builtin.tool.ListConsoles">
-      </toolServerBinding>
+  <extension
+         point="org.eclipse.mcp.modelContextProtocolServer"
+         id="foo.com.my.extension.id"
+         name="My MCP Extension">
+
+      <contributor
+         activityId="foo.com.my.activity.id">
+         <factory class = "foo.com.MyToolFactory"/>
+      </contributor>
    </extension>
 ```
 
 Thats all that is required.  Upon startup, MCP servers will start up and serve content over HTTP for the registered tools.  Calls to tools will be delegated to your instances of IMCPTool
 
-### Using Java Annotation to declare MCP Tool name, description and schema
-
-1. An alternative that lets you create multiple tools from a single java class, and that extracts MCP name, description and input JSON schema from Annotations is to implement an instance of [IMCPToolFactory](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPToolFactory.html)
-
-```java
-public class MCPToolFactory implements IMCPToolFactory {
-    @Tool (id = "foo.bar.tools.RunQueryId", description = "Runs a SQL database query", name = "runQuery")
-  public String[] runQuery(
-      @ToolArg(name="query", description="A SQL Query") String query) {
-
-    //TODO run the query and return the results
-    return new String[] {
-      "Result 1",
-      "Result 2"};
-  }
-}
-```
-
 2. The infrastructure will handle generation of JSON input schema and conversion betwen JSON and basic Java types and 1-dimensional Arrays
     1. For usage details, see: [IMCPToolFactory](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPToolFactory.html) 
 3. Declare your toolFactory as an org.eclipse.mcp.modelContextProtocolServer extension in your plugin.xml
 
-```xml
- <extension
-         point="org.eclipse.mcp.modelContextProtocolServer">
-      <server
-            description="My Example Server"
-            id="foo.bar.MyServerId"
-            name="My MCP Server"
-            version="0.0.1"
-            defaultPort="12931">
-      </server>
-      <toolFactory
-            class="foo.bar.MCPToolFactory">
-      </toolFactory>
-      <toolServerBinding
-            serverId="foo.bar.MyServerId"
-            toolId="foo.bar.tools.RunQueryId">
-      </toolServerBinding>
-   </extension>
-```
 
 ### Future Considerations
 
 1. Mechanism for shell-shared MCP Clients to invoke MCP tools as Java calls rather than HTTP calls, removing the need for HTTP endpoints when consumed internally and hand registration of MCP endpoints into co-installed MCP clients.
 2. Preferences to  
-    1. Enable/Disable MCP Servers and Tools
-    2. Override the default HTTP port
-    3. Option to enable/disable exposing server over HTTP
-    4. Button to copy Server URL to clip-board
-    5. Button for opening Tool-specific property editors
+    1. Button to copy Server URL to clip-board
+    2. Button for opening Tool-specific property editors
         1. For example, set the default Db2 Connection to use when running a SQL query.
-    6. ?Option to customize a Tools name/prompt
-3. Support for Resource Management extension point
-    1. Templating support
-4. Set of Built-in Tools, such as
+    3. ?Option to customize a Tools name/prompt
+3. Set of Built-in Tools and Examples, such as
     1. Access to Problems
     2. Access to Consoles
     3. Access to Editors
