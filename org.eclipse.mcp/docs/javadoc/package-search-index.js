@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.eclipse.mcp"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.eclipse.mcp"},{"l":"org.eclipse.mcp.experimental.annotated"},{"l":"org.eclipse.mcp.factory"}];updateSearchResults();

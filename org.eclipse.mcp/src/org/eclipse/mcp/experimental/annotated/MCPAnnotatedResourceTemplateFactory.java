@@ -15,7 +15,9 @@ import org.eclipse.mcp.factory.IResourceTemplateFactory;
 import io.modelcontextprotocol.spec.McpSchema;
 
 
-
+/**
+ * Conveniences for creating multiple resource templates using annotations on a class extending MCPAnnotatedResourceTemplateFactory
+ */
 public abstract class MCPAnnotatedResourceTemplateFactory implements IResourceTemplateFactory {
 	
 	@Retention(RetentionPolicy.RUNTIME) // Match the retention of the repeatable annotation

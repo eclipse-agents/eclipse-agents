@@ -1,1 +1,3 @@
 org.eclipse.mcp
+org.eclipse.mcp.experimental.annotated
+org.eclipse.mcp.factory

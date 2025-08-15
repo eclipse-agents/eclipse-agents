@@ -13,15 +13,14 @@ Behind the scenes, declared MCP Servers will be instantiated using the modelcont
 &lt;/p&gt;&lt;p&gt;
 A &quot;Platform MCP Servers&quot; preference page will let users:
 &lt;ul&gt;
-  &lt;li&gt;Customize Servers&lt;/li&gt;
-  &lt;li&gt;Customize a Server&apos;s Tools and Resource Managers&lt;/li&gt;
- &lt;ul&gt;
-    &lt;li&gt; Add / Remove&lt;/li&gt;
-    &lt;li&gt; Enable / Disable&lt;/li&gt;
-    &lt;li&gt; Customize name and description to suit an Agentic scenario&lt;/li&gt;
-    &lt;li&gt; Custom property pages for specific tools and resource managers&lt;/li&gt;
-   &lt;/ul&gt;
+  &lt;li&gt;Enable/Disable the Server&lt;/li&gt;
+  &lt;li&gt;Customize the HTTP port&lt;/li&gt;
 &lt;/ul&gt;
+Contributors may be associated with an Activity/Capability to toggle their contributions to the server
+You may bind your own activities to categoryId &quot;org.eclipse.mcp.activity&quot;
+You may add your preference pages under parent 
+You may add your own preference pages under the page &quot;org.eclipse.mcp.preferences.general&quot;
+You may use your own preferences to remove/add your tools to the server dynamically using &lt;code&gt;ToolFactory.setVisibility&lt;/code&gt;
 &lt;/p&gt;
       </documentation>
    </annotation>
@@ -83,7 +82,7 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
-                  The name of this MCP factory that is shared with MCP clients
+                  The name of this MCP factory
                </documentation>
                <appinfo>
                   <meta.attribute translatable="true"/>
@@ -113,23 +112,26 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
          <attribute name="activityId" type="string">
             <annotation>
                <documentation>
-                  Id of a capability activity which can be used to toggle enablement of this contributor.
+                  Contributors may be associated with an Activity/Capability to toggle the presence of their contributions on the server
+You may bind your own activities to categoryId &quot;org.eclipse.mcp.activity&quot;
+Enabling / Disabling an activity that has contributors assocated with it will trigger the server to restart
                </documentation>
             </annotation>
          </attribute>
       </complexType>
    </element>
+
    <element name="factory">
       <annotation>
          <documentation>
-            This element is used to define a &lt;a href=&quot;https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions&quot;&gt;Model Context Protocol Tool&lt;/a&gt;
+            Add one or more IFactories to this contributor.  There are different descendants of IFactory tailored for tool creation, annotated tool creation, dynamic resource addition/subtraction, and resource templating with substitution variables w/ content assist
          </documentation>
       </annotation>
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  The fully qualified name of an IMCPFactory implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.IMCPFactory&lt;/tt&gt; and have an zero-parameter constructor.
+                  The fully qualified name of an IFactory implemention.  Must implement &lt;tt&gt;org.eclipse.mcp.factory.IFactory&lt;/tt&gt; and have an zero-parameter constructor.
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.mcp.IMCPFactory"/>
@@ -160,58 +162,17 @@ A &quot;Platform MCP Servers&quot; preference page will let users:
 &lt;pre&gt;
   &lt;extension
          point=&quot;org.eclipse.mcp.modelContextProtocolServer&quot;
-         id=&quot;com.foo.bar.mcp&quot;
-         name=&quot;My MCP Contributions&quot;&gt;
-      &lt;category
-            id=&quot;com.foo.bar.category&quot;
-            name=&quot;My Cateogry&quot;&gt;
-      &lt;/category&gt;
-      &lt;server
-            description=&quot;My first MCP server&quot;
-            id=&quot;com.foo.bar.server&quot;
-            name=&quot;My MCP Server&quot;
-            version=&quot;1.0.0&quot;
-            defaultPort=&quot;12932&quot;&gt;
-      &lt;/server&gt;
-      &lt;tool
-            categoryId=&quot;com.foo.bar.category&quot;
-            class=&quot;com.foo.bar.tools.MyMCPTool&quot;
-            description=&quot;LLM Tooling will read this to understand how to invoke my tool&quot;
-            id=&quot;com.foo.bar.tools.MyMCPToolId&quot;
-            name=&quot;foo-myTool&quot;
-            schema=&quot;my XML escaped JSON schema declaring the inputs into my tool&quot;&gt;
-         &lt;propertyPage
-               id=&quot;com.foo.bar.tools.myPropertyPageId1&quot;&gt;
-         &lt;/propertyPage&gt;
-         &lt;propertyPage
-               id=&quot;com.foo.bar.tools.myPropertyPageId2&quot;&gt;
-         &lt;/propertyPage&gt;
-      &lt;/tool&gt;
-      &lt;toolServerBinding
-            serverId=&quot;com.foo.bar.server&quot;
-            toolId=&quot;com.foo.bar.tools.MyMCPToolId&quot;&gt;
-      &lt;/toolServerBinding&gt;
-      &lt;toolFactory
-            class=&quot;com.foo.bar.tools.MyMCPToolFactory&quot;
-      &lt;/toolFactory&gt;
-      &lt;toolServerBinding
-            serverId=&quot;com.foo.bar.server&quot;
-            toolId=&quot;com.foo.bar.tools.MyMCPToolFromFactoryId&quot;&gt;
-      &lt;/toolServerBinding&gt;
-      &lt;resourceController
-            class=&quot;com.foo.bar.tools.MyMCPResourceController&quot;
-            id=&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;
-            name=&quot;foo-myController&quot;
-            description=&quot;Adds and removes resources dynamically to/from server&quot;
-            categoryId=&quot;com.foo.bar.category&quot;&gt;
-            &lt;propertyPage
-               id=&quot;com.foo.bar.tools.myPropertyPageId3&quot;&gt;
-            &lt;/propertyPage&gt;
-      &lt;/resourceController&gt;
-      &lt;resourceControllerServerBinding
-            serverId=&quot;com.foo.bar.server&quot;
-            resourceControllerId=&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;&gt;
-      &lt;/resourceControllerServerBinding&gt;
+         id=&quot;foo.com.my.extension.id&quot;
+         name=&quot;My MCP Extension&quot;&gt;
+
+      &lt;contributor
+         id=&quot;foo.com.my.contributor.id&quot;
+         name=&quot;My MCP Contributor&quot;
+         description=&quot;My MCP Contributor Description&quot;
+         provider=&quot;My Product&quot;
+         activityId=&quot;foo.com.my.activity.id&quot;&gt;
+         &lt;factory class = &quot;foo.com.MyFactory&quot;/&gt;
+      &lt;/contributor&gt;
    &lt;/extension&gt;
 &lt;/pre&gt;
 &lt;/p&gt;

@@ -22,19 +22,18 @@ Behind the scenes, declared MCP Servers will be instantiated using the modelcont
 </p><p>
 A "Platform MCP Servers" preference page will let users:
 <ul>
-  <li>Customize Servers</li>
-  <li>Customize a Server's Tools and Resource Managers</li>
- <ul>
-    <li> Add / Remove</li>
-    <li> Enable / Disable</li>
-    <li> Customize name and description to suit an Agentic scenario</li>
-    <li> Custom property pages for specific tools and resource managers</li>
-   </ul>
+  <li>Enable/Disable the Server</li>
+  <li>Customize the HTTP port</li>
 </ul>
+Contributors may be associated with an Activity/Capability to toggle their contributions to the server
+You may bind your own activities to categoryId "org.eclipse.mcp.activity"
+You may add your preference pages under parent 
+You may add your own preference pages under the page "org.eclipse.mcp.preferences.general"
+You may use your own preferences to remove/add your tools to the server dynamically using <code>ToolFactory.setVisibility</code>
 </p><p></p>
 <h6 class="CaptionFigColumn SchemaHeader">Configuration Markup:</h6>
 <p></p>
-<p class="code SchemaDtd">&lt;!ELEMENT <a name="e.extension">extension</a> (<a href="#e.tool">tool</a> , <a href="#e.toolFactory">toolFactory</a> , <a href="#e.resourceController">resourceController</a> , <a href="#e.server">server</a> , <a href="#e.category">category</a> , <a href="#e.toolServerBinding">toolServerBinding</a> , <a href="#e.resourceControllerServerBinding">resourceControllerServerBinding</a>)*&gt;</p>
+<p class="code SchemaDtd">&lt;!ELEMENT <a name="e.extension">extension</a> (<a href="#e.factory">factory</a>)+&gt;</p>
 <p class="code SchemaDtd">&lt;!ATTLIST extension</p>
 <p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED</p>
 <p class="code SchemaDtdAttlist">name&nbsp;&nbsp;CDATA #IMPLIED</p>
@@ -45,204 +44,52 @@ A "Platform MCP Servers" preference page will let users:
 <li><b>name</b> - an optional name of the extension instance</li>
 <li><b>point</b> - a fully qualified identifier of the target extension point</li>
 </ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.tool">tool</a> (<a href="#e.propertyPage">propertyPage</a>)*&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST tool</p>
-<p class="code SchemaDtdAttlist">description&nbsp;CDATA #IMPLIED</p>
+<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.contributor">contributor</a> (<a href="#e.factory">factory</a>)+&gt;</p>
+<p class="code SchemaDtd">&lt;!ATTLIST contributor</p>
 <p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
 <p class="code SchemaDtdAttlist">name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">schema&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">class&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">categoryId&nbsp;&nbsp;IDREF #IMPLIED&gt;</p>
+<p class="code SchemaDtdAttlist">description&nbsp;CDATA #REQUIRED</p>
+<p class="code SchemaDtdAttlist">provider&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
+<p class="code SchemaDtdAttlist">activityId&nbsp;&nbsp;CDATA #IMPLIED&gt;</p>
 <p></p>
 <p class="ConfigMarkupElementDesc">
 This element is used to define a <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions">Model Context Protocol Tool</a></p>
 <br>
 <ul class="ConfigMarkupAttlistDesc">
-<li><b>description</b> - The description of this MCP tool that is shared with MCP clients</li>
-<li><b>id</b> - the unique identifier of this tool</li>
-<li><b>name</b> - The name of this MCP tool that is shared with MCP clients</li>
-<li><b>schema</b> - The JSON schema this tool takes as input argument</li>
-<li><b>class</b> - The fully qualified name of the AbstractTool implemention.  Must implement <tt>org.eclipse.mcp.IMCPTool</tt> and have an zero-parameter constructor.</li>
-<li><b>categoryId</b> - the unique identifier of the category for this tool</li>
+<li><b>id</b> - the unique identifier of this factory</li>
+<li><b>name</b> - The name of this MCP factory</li>
+<li><b>description</b> - A description of the tools, resources and prompts this factory contributes</li>
+<li><b>provider</b> - The name of product contributing this factory</li>
+<li><b>activityId</b> - Contributors may be associated with an Activity/Capability to toggle the presence of their contributions on the server
+You may bind your own activities to categoryId "org.eclipse.mcp.activity"
+Enabling / Disabling an activity that has contributors assocated with it will trigger the server to restart</li>
 </ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.toolFactory">toolFactory</a> EMPTY&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST toolFactory</p>
+<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.factory">factory</a> EMPTY&gt;</p>
+<p class="code SchemaDtd">&lt;!ATTLIST factory</p>
 <p class="code SchemaDtdAttlist">class&nbsp;CDATA #REQUIRED&gt;</p>
 <p></p>
 <p class="ConfigMarkupElementDesc">
-A convenience/alternative for generating one or more <code>tool<code> elements from a class with Annotated methods.  The factory must implement <code>org.eclipse.mcp.IMCPToolFactory.</code> and use the method annotations <code>org.eclipse.mcp.IMCPToolFactory.Tool</code> and the method argument annoation <code>org.eclipse.mcp.IMCPToolFactory.ToolArg</code> on each method they would like to expose as a  <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions">Model Context Protocol Tools</a>
-
-Example:
-<pre class="Example"><span class="code SchemaTag">
-@Tool (id = "foo.bar.helloWorld", 
-	description = "Greets user with a hello", 
-	name = "e4-hello-world",
-	categoryId = "foo.bar.categoryId",
-	propertyPageIds = { "foo.bar.propertyPage1", "foo.bar.propertyPage1"})
-public String[] helloWorld(
-	@ToolArg(name = "firstName", description = "First name") String firstName,
-	@ToolArg(name = "age", description = "User&apos;s age", required = false) Integer age,
-	@ToolArg(name = "address", description = "User&apos;s address", required = false) String[] address) {	
-		return new String[] { "Hello " + firstName };
-	}
-</span></pre></p>
+Add one or more IFactories to this contributor.  There are different descendants of IFactory tailored for tool creation, annotated tool creation, dynamic resource addition/subtraction, and resource templating with substitution variables w/ content assist</p>
 <br>
 <ul class="ConfigMarkupAttlistDesc">
-<li><b>class</b> - The fully qualified name of the IMCPToolFactory implemention.  Must implement <tt>org.eclipse.mcp.IMCPTooFactoryl</tt> and have an zero-parameter constructor.</li>
-</ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.resourceController">resourceController</a> (<a href="#e.propertyPage">propertyPage</a>)*&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST resourceController</p>
-<p class="code SchemaDtdAttlist">description&nbsp;CDATA #IMPLIED</p>
-<p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">class&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">categoryId&nbsp;&nbsp;IDREF #IMPLIED&gt;</p>
-<p></p>
-<p class="ConfigMarkupElementDesc">
-This element is used to define a controller that may dynamically create and remove <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data">Model Context Protocol Resources</a> from the server.</p>
-<br>
-<ul class="ConfigMarkupAttlistDesc">
-<li><b>description</b> - The description of this MCP resource controller</li>
-<li><b>id</b> - the unique identifier of this resource manager</li>
-<li><b>name</b> - The name of this MCP resource controller</li>
-<li><b>class</b> - The fully qualified name of the IMCPResourceController implemention.  Must implement <tt>org.eclipse.mcp.IMCPResourceController</tt> and have an zero-parameter constructor.  Resource Controllers are responsible for dynamically adding and removing resources and translating a url to string content</li>
-<li><b>categoryId</b> - the unique identifier of the category for this resource controller</li>
-</ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.server">server</a> EMPTY&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST server</p>
-<p class="code SchemaDtdAttlist">description&nbsp;CDATA #IMPLIED</p>
-<p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">defaultPort&nbsp;CDATA #REQUIRED&gt;</p>
-<p></p>
-<p class="ConfigMarkupElementDesc">
-This element declares a <a href="https://modelcontextprotocol.io/docs/learn/server-concepts">Model Context Protocol Server</a> that may serve a collection of <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions">Model Context Protocol Tools</a>  and  <a href="https://modelcontextprotocol.io/docs/learn/server-concepts#resources-context-data">Model Context Protocol Resources</a> and make them available within the the IDE Process or over HTTP.</p>
-<br>
-<ul class="ConfigMarkupAttlistDesc">
-<li><b>description</b> - a translatable short description of this server for display in the UI</li>
-<li><b>id</b> - the unique identifier of this server</li>
-<li><b>name</b> - the translatable name of this server for display in the UI</li>
-<li><b>version</b> - the version of this server for display in the logs</li>
-<li><b>defaultPort</b> - The default port to be used if this server exposes its tools on a localhost http server</li>
-</ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.category">category</a> EMPTY&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST category</p>
-<p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
-<p class="code SchemaDtdAttlist">name&nbsp;CDATA #REQUIRED&gt;</p>
-<p></p>
-<p class="ConfigMarkupElementDesc">
-This element allows one to define a category for Tools, Resource Managers</p>
-<br>
-<ul class="ConfigMarkupAttlistDesc">
-<li><b>id</b> - the unique identifier of this category</li>
-<li><b>name</b> - the translatable name of this category for display in the UI</li>
-</ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.toolServerBinding">toolServerBinding</a> EMPTY&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST toolServerBinding</p>
-<p class="code SchemaDtdAttlist">toolId&nbsp;&nbsp;&nbsp;IDREF #REQUIRED</p>
-<p class="code SchemaDtdAttlist">serverId&nbsp;IDREF #REQUIRED&gt;</p>
-<p></p>
-<p class="ConfigMarkupElementDesc">
-This element allows one to bind tool to a server</p>
-<br>
-<ul class="ConfigMarkupAttlistDesc">
-<li><b>toolId</b> - the unique identifier of the activity to bind</li>
-<li><b>serverId</b> - the unique identifier of the server to bind</li>
-</ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.resourceControllerServerBinding">resourceControllerServerBinding</a> EMPTY&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST resourceControllerServerBinding</p>
-<p class="code SchemaDtdAttlist">resourceControllerId&nbsp;IDREF #REQUIRED</p>
-<p class="code SchemaDtdAttlist">serverId&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IDREF #REQUIRED&gt;</p>
-<p></p>
-<p class="ConfigMarkupElementDesc">
-This element allows one to bind a Resource Controller to a Server</p>
-<br>
-<ul class="ConfigMarkupAttlistDesc">
-<li><b>resourceControllerId</b> - the unique identifier of the activity to bind</li>
-<li><b>serverId</b> - the unique identifier of the server to bind</li>
-</ul>
-<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.propertyPage">propertyPage</a> EMPTY&gt;</p>
-<p class="code SchemaDtd">&lt;!ATTLIST propertyPage</p>
-<p class="code SchemaDtdAttlist">id&nbsp;CDATA #REQUIRED&gt;</p>
-<p></p>
-<p class="ConfigMarkupElementDesc">
-Specify an optional custom propertyPage to let the user customize the behavior of a tool or resource.
-    your class should implement org.eclipse.ui.dialogs.PropertyPage
-    you can load and save preferences from the input object, which is an instance of org.eclipse.mcp.IMCPElementPropertyInput
- 
- <extension point="org.eclipse.ui.propertyPages">
-    <page name="My Page Name"
-         class="com.foo.bar.MyPropertyPage"
-         id="com.foo.bar.MyPropertyPage.ID">
-         <enabledWhen>
-             <instanceof
-                 value="org.eclipse.mcp.IMCPElementPropertyInput">
-             </instanceof>
-         </enabledWhen>
-   </page>
- </extension></p>
-<br>
-<ul class="ConfigMarkupAttlistDesc">
-<li><b>id</b> - the identifier of an 'org.eclipse.ui.propertyPages' extension that will enable for input of interface IMCPElementPropertyInput</li>
+<li><b>class</b> - The fully qualified name of an IFactory implemention.  Must implement <tt>org.eclipse.mcp.factory.IFactory</tt> and have an zero-parameter constructor.</li>
 </ul>
 <br><h6 class="CaptionFigColumn SchemaHeader">Examples: </h6>The following is an example of several activity and category definitions as well as associated bindings.
 <p>
 <pre class="Example"><span class="code SchemaTag">
   &lt;extension
          point=</span><span class="code SchemaCstring">&quot;org.eclipse.mcp.modelContextProtocolServer&quot;</span><span class="code SchemaTag">
-         id=</span><span class="code SchemaCstring">&quot;com.foo.bar.mcp&quot;</span><span class="code SchemaTag">
-         name=</span><span class="code SchemaCstring">&quot;My MCP Contributions&quot;</span><span class="code SchemaTag">&gt;
-      &lt;category
-            id=</span><span class="code SchemaCstring">&quot;com.foo.bar.category&quot;</span><span class="code SchemaTag">
-            name=</span><span class="code SchemaCstring">&quot;My Cateogry&quot;</span><span class="code SchemaTag">&gt;
-      &lt;/category&gt;
-      &lt;server
-            description=</span><span class="code SchemaCstring">&quot;My first MCP server&quot;</span><span class="code SchemaTag">
-            id=</span><span class="code SchemaCstring">&quot;com.foo.bar.server&quot;</span><span class="code SchemaTag">
-            name=</span><span class="code SchemaCstring">&quot;My MCP Server&quot;</span><span class="code SchemaTag">
-            version=</span><span class="code SchemaCstring">&quot;1.0.0&quot;</span><span class="code SchemaTag">
-            defaultPort=</span><span class="code SchemaCstring">&quot;12932&quot;</span><span class="code SchemaTag">&gt;
-      &lt;/server&gt;
-      &lt;tool
-            categoryId=</span><span class="code SchemaCstring">&quot;com.foo.bar.category&quot;</span><span class="code SchemaTag">
-            class=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPTool&quot;</span><span class="code SchemaTag">
-            description=</span><span class="code SchemaCstring">&quot;LLM Tooling will read this to understand how to invoke my tool&quot;</span><span class="code SchemaTag">
-            id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolId&quot;</span><span class="code SchemaTag">
-            name=</span><span class="code SchemaCstring">&quot;foo-myTool&quot;</span><span class="code SchemaTag">
-            schema=</span><span class="code SchemaCstring">&quot;my XML escaped JSON schema declaring the inputs into my tool&quot;</span><span class="code SchemaTag">&gt;
-         &lt;propertyPage
-               id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.myPropertyPageId1&quot;</span><span class="code SchemaTag">&gt;
-         &lt;/propertyPage&gt;
-         &lt;propertyPage
-               id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.myPropertyPageId2&quot;</span><span class="code SchemaTag">&gt;
-         &lt;/propertyPage&gt;
-      &lt;/tool&gt;
-      &lt;toolServerBinding
-            serverId=</span><span class="code SchemaCstring">&quot;com.foo.bar.server&quot;</span><span class="code SchemaTag">
-            toolId=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolId&quot;</span><span class="code SchemaTag">&gt;
-      &lt;/toolServerBinding&gt;
-      &lt;toolFactory
-            class=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolFactory&quot;</span><span class="code SchemaTag">
-      &lt;/toolFactory&gt;
-      &lt;toolServerBinding
-            serverId=</span><span class="code SchemaCstring">&quot;com.foo.bar.server&quot;</span><span class="code SchemaTag">
-            toolId=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPToolFromFactoryId&quot;</span><span class="code SchemaTag">&gt;
-      &lt;/toolServerBinding&gt;
-      &lt;resourceController
-            class=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPResourceController&quot;</span><span class="code SchemaTag">
-            id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;</span><span class="code SchemaTag">
-            name=</span><span class="code SchemaCstring">&quot;foo-myController&quot;</span><span class="code SchemaTag">
-            description=</span><span class="code SchemaCstring">&quot;Adds and removes resources dynamically to/from server&quot;</span><span class="code SchemaTag">
-            categoryId=</span><span class="code SchemaCstring">&quot;com.foo.bar.category&quot;</span><span class="code SchemaTag">&gt;
-            &lt;propertyPage
-               id=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.myPropertyPageId3&quot;</span><span class="code SchemaTag">&gt;
-            &lt;/propertyPage&gt;
-      &lt;/resourceController&gt;
-      &lt;resourceControllerServerBinding
-            serverId=</span><span class="code SchemaCstring">&quot;com.foo.bar.server&quot;</span><span class="code SchemaTag">
-            resourceControllerId=</span><span class="code SchemaCstring">&quot;com.foo.bar.tools.MyMCPResourceControllerId&quot;</span><span class="code SchemaTag">&gt;
-      &lt;/resourceControllerServerBinding&gt;
+         id=</span><span class="code SchemaCstring">&quot;foo.com.my.extension.id&quot;</span><span class="code SchemaTag">
+         name=</span><span class="code SchemaCstring">&quot;My MCP Extension&quot;</span><span class="code SchemaTag">&gt;
+
+      &lt;contributor
+         id=</span><span class="code SchemaCstring">&quot;foo.com.my.contributor.id&quot;</span><span class="code SchemaTag">
+         name=</span><span class="code SchemaCstring">&quot;My MCP Contributor&quot;</span><span class="code SchemaTag">
+         description=</span><span class="code SchemaCstring">&quot;My MCP Contributor Description&quot;</span><span class="code SchemaTag">
+         provider=</span><span class="code SchemaCstring">&quot;My Product&quot;</span><span class="code SchemaTag">
+         activityId=</span><span class="code SchemaCstring">&quot;foo.com.my.activity.id&quot;</span><span class="code SchemaTag">&gt;
+         &lt;factory class = </span><span class="code SchemaCstring">&quot;foo.com.MyFactory&quot;</span><span class="code SchemaTag">/&gt;
+      &lt;/contributor&gt;
    &lt;/extension&gt;
 </span></pre>
 </p>
