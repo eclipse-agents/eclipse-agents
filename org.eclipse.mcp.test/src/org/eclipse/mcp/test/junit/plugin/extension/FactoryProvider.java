@@ -9,7 +9,10 @@ public class FactoryProvider implements IFactoryProvider {
 
 	@Override
 	public ToolFactory[] createToolFactories() {
-		return AnnotatedToolFactory.createToolFactories(AnnotatedToolFactory.class);
+		return AnnotatedToolFactory.createToolFactories(new Class<?>[] {
+				AnnotatedToolFactory.class,
+				AnnotatedToolFactoryComplex.class
+		});
 	}
 
 	@Override

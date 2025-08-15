@@ -8,6 +8,8 @@ import java.util.Map;
 import org.eclipse.mcp.factory.IFactory;
 import org.eclipse.mcp.internal.ManagedServer;
 import org.eclipse.mcp.test.junit.plugin.extension.FactoryProvider;
+import org.eclipse.mcp.test.junit.plugin.extension.json.Address;
+import org.eclipse.mcp.test.junit.plugin.extension.json.Person;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
@@ -18,6 +20,7 @@ import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.ClientCapabilities;
+import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.InitializeResult;
 import io.modelcontextprotocol.spec.McpSchema.ListResourceTemplatesResult;
 import io.modelcontextprotocol.spec.McpSchema.ListToolsResult;
@@ -144,6 +147,35 @@ public final class ManagedServerTest {
 		addTestMapEquals(suite, toolResult, 9, args, "ai1");
 		
 		
+		suite.addTest(new TestCase("Call Complex Tool") {
+			@Override
+			protected void runTest() throws Throwable {
+				
+				Person person = new Person();
+				person.setName("Jeremy");
+				
+				Person father = new Person();
+				father.setName("Ken");
+				person.setParents(new Person[] { father });
+				
+				Address address = new Address();
+				address.setStreet(new String[] { "100 Main Street", "PO Box 123" });
+				address.setCity("Miami");
+				person.setAddress(address);
+				
+				Map<String, Object> argsComplex = new HashMap<String, Object>();
+				argsComplex.put("PERSON", person);
+				argsComplex.put("address", address);
+				
+				toolResult[0] = client.callTool(
+					    new CallToolRequest("test-hello-world-complex",
+					    		argsComplex));
+				
+				Content content = toolResult[0].content().get(0);
+				String result = ((TextContent)content).text();
+				Assert.assertEquals("Validate complex response", result, "Hello Jeremy from Miami son of Ken");
+			}
+		});
 		
 		suite.addTest(new TestCase("Client Disconnect") {
 			@Override

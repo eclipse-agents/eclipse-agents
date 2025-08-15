@@ -11,4 +11,5 @@ Require-Bundle: org.eclipse.core.resources,
  io.modelcontextprotocol;bundle-version="0.11.2"
 Automatic-Module-Name: org.eclipse.mcp.test
 Bundle-RequiredExecutionEnvironment: JavaSE-21
-Import-Package: com.google.gson
+Import-Package: com.fasterxml.jackson.annotation;version="[2.17.0,3.0.0)",
+ com.google.gson
