@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.internal.Tracer;
 
@@ -16,24 +17,18 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 
-public interface IToolFactory extends IFactory{	
+public abstract class ToolFactory implements IFactory{	
 
-	/**
-	 * @return Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension
-	 */
-	public default String getId() {
-		return getClass().getCanonicalName();
-	}
-	
-	public String getCategory();
+	private ListenerList<ToolVisibilityListener> listeners = new ListenerList<ToolVisibilityListener>();
+	private boolean visible = true;
 
-	public McpSchema.Tool createTool();
+	public abstract McpSchema.Tool createTool();
 	
-	public default SyncToolSpecification createSpec(McpSchema.Tool tool) {
+	public SyncToolSpecification createSpec(McpSchema.Tool tool) {
 		return McpServerFeatures.SyncToolSpecification.builder().tool(tool).callHandler(this::apply).build();
 	}
 	
-	public default CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
+	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
 		CallToolResult result = null;
 		List<Content> content = new ArrayList<Content>();
 		
@@ -56,6 +51,30 @@ public interface IToolFactory extends IFactory{
 		return result;
 	}
 	
-	public String[] apply(Map<String, Object> args) throws MCPException;
+	public abstract String[] apply(Map<String, Object> args) throws MCPException;
 
+	public void setVisibility(boolean visibility) {
+		if (visible != visibility) {
+			visible = visibility;
+			for (ToolVisibilityListener listener: listeners) {
+				listener.visibilityChanged(this);
+			}
+		}
+	}
+	
+	public void addVisibilityListener(ToolVisibilityListener listener) {
+		listeners.add(listener);
+	}
+	
+	public void removeVisibilityListener(ToolVisibilityListener listener) {
+		listeners.remove(listener);
+	}
+	
+	public interface ToolVisibilityListener {
+		public void visibilityChanged(ToolFactory factory);
+	}
+	
+	public boolean isVisible() {
+		return visible;
+	}
 }

@@ -9,9 +9,22 @@
       <contributor
             id="org.eclipse.mcp.builtins.BuiltinsFactory"
             name="Platform MCP"
-            description="MCP Services for Eclipse Platform">
+            description="MCP Services for Eclipse Platform"
+            activityId="org.eclipse.mcp.platform">
          <factory class="org.eclipse.mcp.builtins.BuiltinFactoryProvider"/>
       </contributor>
    </extension>
+   
+    <extension point="org.eclipse.ui.activities">
+
+      <activity id="org.eclipse.mcp.platform" 
+          description="Editors, Consoles and Problems"
+          name="Editors, Consoles and Problems" />
+
+      <categoryActivityBinding activityId="org.eclipse.mcp.platform"
+          categoryId="org.eclipse.mcp.activity" />
+   
+      <defaultEnablement id="org.eclipse.mcp.platform" />
+    </extension>
 
 </plugin>

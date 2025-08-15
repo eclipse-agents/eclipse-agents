@@ -18,10 +18,6 @@ import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 
 public interface IResourceTemplateFactory extends IFactory{
 		
-	public default String getId() {
-		return getClass().getCanonicalName();
-	}
-	
 	public McpSchema.ResourceTemplate[] createResourceTemplates();
 	
 	public default SyncResourceSpecification getResourceTemplateSpecification(McpSchema.ResourceTemplate template) {

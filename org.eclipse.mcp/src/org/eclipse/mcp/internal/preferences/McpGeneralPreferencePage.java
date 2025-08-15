@@ -8,21 +8,10 @@
  *******************************************************************************/
 package org.eclipse.mcp.internal.preferences;
 
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.mcp.internal.Activator;
-import org.eclipse.mcp.internal.Images;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -30,102 +19,37 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+
 
 public class McpGeneralPreferencePage extends PreferencePage
 		implements IPreferenceConstants, IWorkbenchPreferencePage, SelectionListener, ModifyListener {
 
 	VerifyListener integerListener;
 	PreferenceManager preferenceManager;
-
-	TableComposite serverComposite, toolsComposite;
+	
+	Button serverEnable;
+	Text serverPort;
 
 	public McpGeneralPreferencePage() {
 		super();
-
-		preferenceManager = new PreferenceManager();
-//		preferenceManager.load();
 
 		integerListener = (VerifyEvent e) -> {
 			String string = e.text;
 			e.doit = string.matches("\\d*"); //$NON-NLS-1$
 			return;
 		};
-	}
-
-	private class ServersLabelProvider extends LabelProvider implements ITableLabelProvider {
-
-		public final static String[] columns = { "Name", "Description", "HTTP Port" };
-
-		@Override
-		public Image getColumnImage(Object element, int columnIndex) {
-			if (columnIndex == 0) {
-				return Activator.getDefault().getImageRegistry().get(Images.IMG_SERVER);
-			}
-			return null;
-		}
-
-		@Override
-		public String getColumnText(Object element, int columnIndex) {
-			System.out.println(element);
-//			if (element instanceof IPreferencedServer) {
-//				switch (columnIndex) {
-//				case 0:
-//					return ((IPreferencedServer) element).getName();
-//				case 1:
-//					return ((IPreferencedServer) element).getDescription();
-//				case 2:
-//					return ((IPreferencedServer) element).getHttpPort();
-//				default:
-//					return "e"; //$NON-NLS-1$
-//				}
-//			}
-			return "?";
-		}
-	}
-
-	private class ToolsLabelProvider extends LabelProvider implements ITableLabelProvider {
-
-		public final static String[] columns = new String[] { "Name", "Type", "Category", "Description" };
-
-		@Override
-		public Image getColumnImage(Object element, int columnIndex) {
-//			if (columnIndex == 0) {
-//				if (element instanceof Tool) {
-//					return Activator.getDefault().getImageRegistry().get(Images.IMG_TOOL);
-//				} else if (element instanceof ResourceController) {
-//					return Activator.getDefault().getImageRegistry().get(Images.IMG_RESOURCEMANAGER);
-//				}
-//			}
-			return null;
-		}
-
-		@Override
-		public String getColumnText(Object element, int columnIndex) {
-//			if (element instanceof ServerElement) {
-//				switch (columnIndex) {
-//				case 0:
-//					return ((ServerElement) element).getName();
-//				case 1:
-//					return (element instanceof Tool) ? "Tool" : "Resources";
-//				case 2:
-//					return ((ServerElement) element).getCategory();
-//				case 3:
-//					return ((ServerElement) element).getDescription();
-//				default:
-//					return "e"; //$NON-NLS-1$
-//				}
-//			}
-			return "?";
-		}
 	}
 
 	@Override
@@ -138,142 +62,38 @@ public class McpGeneralPreferencePage extends PreferencePage
 		layout.marginWidth = 0;
 		parent.setLayout(layout);
 
-		Composite innerParent = new Composite(parent, SWT.NONE);
-		GridLayout innerLayout = new GridLayout();
-		innerLayout.numColumns = 1;
-		innerLayout.marginHeight = 0;
-		innerLayout.marginWidth = 0;
-		innerParent.setLayout(innerLayout);
-		GridData gd = new GridData(GridData.FILL_BOTH);
-		gd.horizontalSpan = 2;
-		innerParent.setLayoutData(gd);
-
-		serverComposite = new TableComposite(innerParent, ServersLabelProvider.columns, new ServersLabelProvider()) {
+		Link link = new Link(parent, SWT.NONE);
+		link.setText("To change the availability of categories of MCP categories, click <a>Capabilities</a>.");
+		link.addSelectionListener(new SelectionListener() {
 			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				// TODO Auto-generated method stub
-
-			}
+			public void widgetDefaultSelected(SelectionEvent arg0) {}
 
 			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-
-				toolsComposite.getTableViewer().setInput(event.getStructuredSelection().getFirstElement());
-
+			public void widgetSelected(SelectionEvent arg0) {
+				PreferencesUtil.createPreferenceDialogOn(parent.getShell(), "org.eclipse.sdk.capabilities", //$NON-NLS-1$
+						null, null);
 			}
-
-			@Override
-			public void checkStateChanged(CheckStateChangedEvent event) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent event) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public Object[] getElements(Object parent) {
-				return new Object[0];
-//				return preferenceManager.getServers();
-			}
-
-		};
-
-		GridData data = new GridData(GridData.FILL_BOTH);
-		data.widthHint = 360;
-		data.heightHint = convertHeightInCharsToPixels(15);
-		serverComposite.setLayoutData(data);
-
-		serverComposite.getTableViewer().setInput(preferenceManager);
-		serverComposite.getTableViewer().setAllChecked(false);
-//		TODO tableComposite.getTableViewer().setCheckedElements();
-
-		toolsComposite = new TableComposite(innerParent, ToolsLabelProvider.columns, new ToolsLabelProvider()) {
-			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void checkStateChanged(CheckStateChangedEvent event) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent event) {
-			}
-
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-				if (event.getSource() == toolsComposite.edit) {
-					
-					Object serverSelection = serverComposite.getSelection();
-					Object elementSelection = toolsComposite.getSelection();
-					
-//					if (serverSelection != null && elementSelection != null) {
-//						IPreferencedServer server = (IPreferencedServer)serverSelection;
-//						ServerElement element = (ServerElement)elementSelection;
-//						
-//						IMCPElementPropertyInput input = new MCPElementPropertyInput(server.getId(), element.getId(), element.getName(), Images.IMG_TOOL, preferenceManager);
-//						PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
-//									Activator.getDisplay().getActiveShell(), input,
-//									"org.eclipse.mcp.internal.preferences.ToolPropertyPage",
-//									Stream.concat(Arrays.stream(new String[] { "org.eclipse.mcp.internal.preferences.ToolPropertyPage" }),
-//											Arrays.stream( element.getPropertyEditorIds()))
-//											.toArray(String[]::new),
-//									input);
-//						
-//						if (dialog != null) {
-//							dialog.open();
-//						}
-//					}
-				}
-			}
-
-			@Override
-			public Object[] getElements(Object parent) {
-//				if (parent instanceof IPreferencedServer) {
-//					return Stream.concat(Arrays.stream(((IPreferencedServer) parent).getTools()),
-//							Arrays.stream(((IPreferencedServer) parent).getResourceFactories())).toArray();
-//				}
-				return new Object[0];
-			}
-
-		};
-
-		data = new GridData(GridData.FILL_BOTH);
-		data.widthHint = 360;
-		data.heightHint = convertHeightInCharsToPixels(25);
-		toolsComposite.setLayoutData(data);
-
-		toolsComposite.getTableViewer().setInput(preferenceManager);
-		toolsComposite.getTableViewer().setAllChecked(false);
-		// --END TOOLS
-
-//		TODO updateButtons();
-		Dialog.applyDialogFont(parent);
-		innerParent.layout();
+		});
+		link.setLayoutData(new GridData());
+		((GridData)link.getLayoutData()).horizontalSpan = 2;
+		
+		serverEnable = new Button(parent, SWT.CHECK);
+		serverEnable.setText("Serve over HTTP");
+		serverEnable.setLayoutData(new GridData());
+		((GridData)serverEnable.getLayoutData()).horizontalSpan = 2;
+		
+		Label label = new Label(parent, SWT.NONE);
+		label.setText("HTTP Port:");
+		label.setLayoutData(new GridData());
+		
+		serverPort = new Text(parent, SWT.SINGLE | SWT.BORDER);
+		serverPort.setLayoutData(new GridData());
+		serverPort.addVerifyListener(integerListener);
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent,
 				"org.eclipse.mcp.internal.preferences.McpGeneralPreferencePage"); //$NON-NLS-1$
 
+		loadPreferences();
 		updateValidation();
 
 		return parent;
@@ -287,6 +107,10 @@ public class McpGeneralPreferencePage extends PreferencePage
 	private void updateValidation() {
 		String errorMessage = null;
 
+		if (serverEnable.getSelection() && serverPort.getText().isEmpty()) {
+			errorMessage = "Enter an HTTP Port";
+		}
+
 		setValid(errorMessage == null);
 		setErrorMessage(errorMessage);
 
@@ -294,10 +118,27 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 	private void loadPreferences() {
 		IPreferenceStore store = getPreferenceStore();
+		serverEnable.setSelection(store.getBoolean(P_SERVER_ENABLED));
+		serverPort.setText("" + store.getInt(P_SERVER_HTTP_PORT));
 	}
 
 	private void savePreferences() {
 		IPreferenceStore store = getPreferenceStore();
+
+		boolean restartServer = false;
+		if (store.getBoolean(P_SERVER_ENABLED) != serverEnable.getSelection()) {
+			restartServer = true;
+		} else if (serverEnable.getSelection() && 
+				!serverPort.getText().equals("" + store.getInt(P_SERVER_HTTP_PORT))) {
+			restartServer = true;
+		}
+				
+		store.setValue(P_SERVER_ENABLED, serverEnable.getSelection());
+		store.setValue(P_SERVER_HTTP_PORT, Integer.parseInt(serverPort.getText()));;
+
+		if (restartServer) {
+			Activator.getDefault().requestServerRestart();
+		}
 	}
 
 	@Override
@@ -315,6 +156,9 @@ public class McpGeneralPreferencePage extends PreferencePage
 	protected void performDefaults() {
 		IPreferenceStore store = getPreferenceStore();
 
+		serverEnable.setSelection(store.getDefaultBoolean(P_SERVER_ENABLED));
+		serverPort.setText("" + store.getDefaultInt(P_SERVER_HTTP_PORT));
+		
 		updateValidation();
 	}
 
@@ -325,7 +169,7 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 	@Override
 	public void widgetSelected(SelectionEvent event) {
-
+		updateValidation();
 	}
 
 	@Override

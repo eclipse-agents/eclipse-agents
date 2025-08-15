@@ -12,11 +12,23 @@
          name="JUnit Contributor"
          description="JUnit Contributor Description"
          provider="IBM"
-         capabilityId="IBM">
+         activityId="org.eclipse.mcp.junit">
          <factory class = "org.eclipse.mcp.test.junit.plugin.extension.FactoryProvider"/>
       </contributor>
       
    </extension>
+   
+   <extension point="org.eclipse.ui.activities">
+
+      <activity id="org.eclipse.mcp.junit" 
+          description="Internal Testing"
+          name="**Internal MCP Testing**" />
+
+      <categoryActivityBinding activityId="org.eclipse.mcp.junit"
+          categoryId="org.eclipse.mcp.activity" />
+   
+    </extension>
+
  	
    <!-- uncpmment ttp test Extemsopm<amager [arser extension
          point="org.eclipse.ui.propertyPages">

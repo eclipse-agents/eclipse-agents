@@ -14,18 +14,27 @@ import io.modelcontextprotocol.spec.McpSchema.Resource;
 import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 
-public interface IResourceFactory extends IFactory{
+/**
+ * Interface for components that may dynamically add and remove MCP resources to the server
+ */
+public interface IResourceFactory extends IFactory {
 	
-	public default String getId() {
-		return getClass().getCanonicalName();
-	}
-	
+	/**
+	 * Used to forward the controller and to add any resources to the new server's initial, empty state
+	 * Called when the server starts, but also when a server restarts due to a configuration change.
+	 * Use this to add any resources that should exist on the newly started/restarted server
+	 * @param controller
+	 */
 	public abstract void initialize(IResourceController controller);
 
 	public default SyncResourceSpecification createResourceSpec(Resource resource) {
 		return new McpServerFeatures.SyncResourceSpecification(resource, this::readResource); 
 	}
 	
+	/**
+	 * @param uri
+	 * @return mime type of this uri.  Default is text/plain
+	 */
 	public default String getResourceMimeType(String uri) {
 		return "text/plain";
 	}
@@ -41,6 +50,11 @@ public interface IResourceFactory extends IFactory{
 		return new ReadResourceResult(contents);
 	}
 	
+	/**
+	 * Simplistic helper method for turning a URI to an String[] of content
+	 * For advanced operations, see the other <code>readResource<code> method
+	 * @param url
+	 * @return
+	 */
 	public String[] readResource(String url);
-
 }
