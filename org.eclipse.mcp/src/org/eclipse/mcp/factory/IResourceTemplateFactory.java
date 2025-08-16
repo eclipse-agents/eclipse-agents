@@ -2,6 +2,7 @@ package org.eclipse.mcp.factory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
@@ -35,7 +36,9 @@ public interface IResourceTemplateFactory extends IFactory{
 	}
 	
 	public default CompleteResult completionReq(McpSyncServerExchange exchange, CompleteRequest request) {
-		List<String> results = completionReq(request.argument().name(), request.argument().value());
+		String uri = request.ref().identifier();
+		Map<String, String> arguments = request.context().arguments();
+		List<String> results = completionReq(request.argument().name(), request.argument().value(), uri, arguments);
 		return new McpSchema.CompleteResult(
 	            new CompleteResult.CompleteCompletion(
 	             results,
@@ -62,7 +65,7 @@ public interface IResourceTemplateFactory extends IFactory{
 	 * @param argumentValue
 	 * @return
 	 */
-	public List<String> completionReq(String argumentName, String argumentValue);
+	public List<String> completionReq(String argumentName, String argumentValue, String uri, Map<String, String> arguments);
 	
 	/**
 	 * Simplistic helper method for turning a URI to an String[] of content

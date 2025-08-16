@@ -2,6 +2,7 @@ package org.eclipse.mcp.builtin.resource.templates;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
@@ -20,7 +21,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class EditorTemplates extends MCPAnnotatedResourceTemplateFactory {
 
 	@Override
-	public List<String> completionReq(String argumentName, String argumentValue) {
+	public List<String> completionReq(String argumentName, String argumentValue, String uri, Map<String, String> arguments) {
 		List<String> result = new ArrayList<String>();
 		if (argumentName.equals("name")) {
 			for (IWorkbenchWindow ww: PlatformUI.getWorkbench().getWorkbenchWindows()) {
