@@ -2,6 +2,7 @@ package org.eclipse.mcp.builtins;
 
 import org.eclipse.mcp.builtin.resource.Editors;
 import org.eclipse.mcp.builtin.resource.templates.EditorTemplates;
+import org.eclipse.mcp.builtin.resource.templates.FileTemplates;
 import org.eclipse.mcp.builtins.tools.BuiltinAnnotatedToolsFactory;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
@@ -26,7 +27,8 @@ public class BuiltinFactoryProvider implements IFactoryProvider {
 	@Override
 	public IResourceTemplateFactory[] createResourceTemplateFactories() {
 		return new IResourceTemplateFactory[] {
-				new EditorTemplates()
+				new EditorTemplates(),
+				new FileTemplates()
 		};
 	}
 
