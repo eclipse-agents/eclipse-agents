@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.mcp.modelContextProtocolServer"
+         id="com.ibm.systemz.mcp.mvs.modelContextProtocolServer"
+         name="MVS Subsystem">
+
+      <contributor
+         id="com.ibm.systemz.mcp.mvs.contributor"
+         name="MVS Subsystem Contributions"
+         activityId="org.eclipse.mcp.junit">
+         <factory class = "com.ibm.systemz.mcp.mvs.MvsFactoryProvider"/>
+      </contributor>
+      
+   </extension>
+   
+   <extension point="org.eclipse.ui.activities">
+
+      <activity id="com.ibm.systemz.mcp.mvs.activity" 
+          description="MCP support for MVS Subsystem"
+          name="MVS Subsystems" />
+
+      <categoryActivityBinding activityId="com.ibm.systemz.mcp.mvs.activity"
+          categoryId="org.eclipse.mcp.activity" />
+   
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            id="com.ibm.systemz.mcp.mvs.properties.samplePropertyPage"
+            name="Sample Page"
+            class="com.ibm.systemz.mcp.mvs.properties.SamplePropertyPage"
+            nameFilter="*.*">
+         <enabledWhen>
+            <instanceof
+                  value="org.eclipse.core.resources.IFile">
+            </instanceof>
+         </enabledWhen>
+      </page>
+   </extension>
+
+</plugin>

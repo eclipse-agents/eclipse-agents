@@ -2,6 +2,7 @@ package org.eclipse.mcp.test.junit.plugin.extension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory.ResourceTemplate;
@@ -23,7 +24,7 @@ import io.modelcontextprotocol.spec.McpSchema;
 public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTemplateFactory {
 
 	@Override
-	public List<String> completionReq(String argumentName, String argumentValue) {
+	public List<String> completionReq(String argumentName, String argumentValue, String uri, Map<String, String> arguments) {
 		return Arrays.asList(new String[] {
 				argumentValue + "-1",
 				argumentValue + "-2"

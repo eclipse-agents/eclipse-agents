@@ -1,5 +1,7 @@
 package org.eclipse.mcp;
 
+import org.eclipse.core.runtime.IStatus;
+
 /**
  * TODO
  */
@@ -9,5 +11,9 @@ public class MCPException extends RuntimeException {
 
 	public MCPException(Exception e) {
 		super(e.getLocalizedMessage(), e);
+	}
+	
+	public MCPException(IStatus status) {
+		super(status.getMessage(), status.getException());
 	}
 }
