@@ -24,7 +24,7 @@ import com.ibm.systemz.mcp.mvs.job.QueryPDSMemberJob;
 
 @ResourceTemplate (name = "PDS Member", 
 		description = "Member file of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set",
-		uriTemplate = "mvspdsm:///{system}/{pds}/{member}")
+		uriTemplate = "eclipse:///mvs/{system}/{pds}/{member}")
 public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTemplateFactory {
 
 	Map<ISubSystem, QueryDataSetsJob> dataSetSearchJobs = new HashMap<ISubSystem, QueryDataSetsJob>();

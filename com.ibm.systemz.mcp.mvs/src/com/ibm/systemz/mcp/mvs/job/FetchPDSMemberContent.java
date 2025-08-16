@@ -1,6 +1,7 @@
 package com.ibm.systemz.mcp.mvs.job;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -57,23 +58,24 @@ public class FetchPDSMemberContent extends QueryPDSMemberJob {
 			IZOSDataSetMember member = members.get(0);
 			
 			//TODO determine if content needs to be refreshed
+			IFile file = PBResourceUtils.copyFileToLocal(member, monitor);
 			
-			try {
-				IFile file = PBResourceUtils.copyFileToLocal(member, monitor);
-				InputStreamReader reader = new InputStreamReader(file.getContents(), file.getCharset());
+			try (InputStreamReader reader = new InputStreamReader(
+					file.getContents(), file.getCharset())) {
+			       
 				BufferedReader breader = new BufferedReader(reader);
 				String read = breader.lines().collect(Collectors.joining("\n")); //$NON-NLS-1$
 				if (read != null) {
 					content.add(read);
 				}
-			} catch (UnsupportedEncodingException e) {
+			}catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			} catch (CoreException e) {
 				e.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
 
-			
-			
 //			member.getContents();
 //			member.getFullPath();
 			
