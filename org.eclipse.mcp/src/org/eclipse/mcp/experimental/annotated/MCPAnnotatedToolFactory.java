@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import org.eclipse.mcp.factory.ToolFactory;
 import org.eclipse.mcp.internal.Tracer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -153,7 +151,6 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	Object instance;
 	Method method;
 	Tool toolAnnotation;
-	ListenerList listeners = new ListenerList();
 	static ObjectMapper mapper = new ObjectMapper();
 
 	public MCPAnnotatedToolFactory(Method method, Tool toolAnnotation) {
@@ -204,7 +201,13 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			return toolAnnotation.outputSchema();
 		}
 		
-		return generateJsonSchema(method.getReturnType()).toString();
+		JsonNode outputSchema =  generateJsonSchema(method.getReturnType());
+		
+		if (outputSchema.has("type") && "object".equals(outputSchema.get("type").textValue())) {
+			return outputSchema.toString();
+		}
+		return null;
+		
 	}
 	
 	public String getName() {
@@ -232,55 +235,28 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 				toolAnnotation.openWorldHint(),
 				toolAnnotation.returnDirect());
 		
-		return io.modelcontextprotocol.spec.McpSchema.Tool.builder()
+		McpSchema.Tool.Builder builder = McpSchema.Tool.builder()
 				.annotations(annotations)
 				.name(getName())
 				.description(getDescription())
 				.title(toolAnnotation.title())
-				.inputSchema(createInputSchema())
-				.outputSchema(createOutputSchema())
-				.build();
+				.inputSchema(createInputSchema());
+		
+		String outputSchema = createOutputSchema();
+		if (outputSchema != null) {
+			builder.outputSchema(outputSchema);
+		}
+				
+		return builder.build();
 				
 	}
-
-
-//	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
-//		CallToolResult result = null;
-//		List<Content> content = new ArrayList<Content>();
-//		
-//		try {
-//			Object response = apply(req.arguments());
-//			
-//			if (response != null) {
-//				if (response instanceof String) {
-//					content.add(new TextContent((String)response));
-//				} else if (response instanceof String[]) {
-//					for (String s: (String[])response) {
-//						content.add(new TextContent(s));
-//					}
-//				} else {
-//					throw new MCPException("ToolFactory.apply did not return a String or String[], but returned: " + response.getClass().getCanonicalName());
-//				}
-//			} else {
-//				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
-//						"ToolFactory.apply(Map<String, Object>) returned null");
-//			}
-//			result = new CallToolResult(content, false);
-//		} catch (Exception e) {
-//			content.add(new TextContent(e.getLocalizedMessage()));
-//			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, e.getLocalizedMessage(), e);
-//			e.printStackTrace();
-//			result = new CallToolResult(content, true);
-//		}
-//		return result;
-//	}
 	
 	@Override
 	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
 
 		List<Content> content = new ArrayList<Content>();
 		boolean isError = false;
-		Map<String, Object> structuredContent = new HashMap<String, Object>();
+		Map<String, Object> structuredContent = null;
 		List<Object> inputs = new ArrayList<Object>();
 		for (Parameter param: method.getParameters()) {
 			ToolArg arg = param.getAnnotation(ToolArg.class);
@@ -302,7 +278,9 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 					for (String s: (String[])response) {
 						content.add(new TextContent(s));
 					}
+					
 				} else {
+					structuredContent = new HashMap<String, Object>();
 					for (Field field: response.getClass().getFields()) {
 						JsonProperty jsonProperty = field.getAnnotation(JsonProperty.class);
 						String fieldName = field.getName();
@@ -330,7 +308,9 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 		System.out.println(createOutputSchema());
 		System.out.println();
 		
-		CallToolResult result = new CallToolResult(content, isError, structuredContent);
+		CallToolResult result = (structuredContent == null) ?
+				new CallToolResult(content, isError) :
+				new CallToolResult(content, isError, structuredContent);
 
 		return result;
 	}

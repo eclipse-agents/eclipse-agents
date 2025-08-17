@@ -22,6 +22,10 @@ public class TextSelection {
 	@JsonPropertyDescription("selected text")
 	String text;
 
+	public TextSelection() {
+		
+	}
+	
 	public TextSelection(ISelection selection) {
 		super();
 		if (selection instanceof ITextSelection) {

@@ -48,23 +48,29 @@ public class AnnotatedToolFactoryComplex extends MCPAnnotatedToolFactory {
 	@Tool ( description = "Greets a complex user with a hello", 
 			name = "test-hello-world-complex",
 			title = "Test Hello World Complex")
-	public String[] helloWorld(
+	public Person helloWorld(
 			@ToolArg(name = "PERSON", description = "The person to say hello to")
 			Person person,
 			@ToolArg(name = "address", description = "Where the person is living")
 			Address address
 			) {
 		
-		String result = "Hello " + person.getName();
+		String greeting = "Hello " + person.getName();
 		
 		if (person.getAddress() != null && person.getAddress().getCity() != null) {
-			result += " from " + person.getAddress().getCity();
+			greeting += " from " + person.getAddress().getCity();
 		}
 		if (person.parents != null && person.parents.length > 0 && person.parents[0].getName() != null) {
-			result += " son of " + person.parents[0].getName();
+			greeting += " son of " + person.parents[0].getName();
 		}
-		return new String[] {
-			result
-		};
+		
+		
+		Person result = new Person();
+		result.setParents(new Person[0]);
+		result.setAddress(new Address());
+		result.getAddress().setStreet(new String[] { "My Greeting Is:", greeting});
+		result.setName("Jeremy");
+		
+		return result;
 	}
 }
