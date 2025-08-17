@@ -11,9 +11,9 @@ public class AnnotatedToolFactory extends MCPAnnotatedToolFactory {
 		super(method, toolAnnotation);
 	}
 
-	@Tool (id = "junit.MCPToolFactory.helloWorld", 
-			description = "Greets user with a hello", 
-			name = "test-hello-world")
+	@Tool (description = "Greets user with a hello", 
+			name = "test-hello-world", 
+			title = "Test Hello World")
 	public String[] helloWorld(
 			@ToolArg(name = "b1", description = "boolean")
 			Boolean b,

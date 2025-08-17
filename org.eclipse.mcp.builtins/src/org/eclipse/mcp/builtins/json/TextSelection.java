@@ -5,15 +5,28 @@ import org.eclipse.jface.text.IMarkSelection;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 
-public class Selection {
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
+@JsonClassDescription("Range of characters selected in a text editor")
+public class TextSelection {
+
+	@JsonPropertyDescription("position of the first selected character")
 	int offset;
+	@JsonPropertyDescription("length of the text selection")
 	int length;
+	@JsonPropertyDescription("line of the offset of the selected text")
 	int startLine;
+	@JsonPropertyDescription("line of the last character of the selected text")
 	int endLine;
+	@JsonPropertyDescription("selected text")
 	String text;
 
-	public Selection(ISelection selection) {
+	public TextSelection() {
+		
+	}
+	
+	public TextSelection(ISelection selection) {
 		super();
 		if (selection instanceof ITextSelection) {
 			this.offset = ((ITextSelection) selection).getOffset();

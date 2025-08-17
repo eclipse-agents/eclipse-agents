@@ -23,8 +23,8 @@ import com.ibm.systemz.mcp.mvs.job.QueryPDSMemberJob;
 
 
 @ResourceTemplate (name = "PDS Member", 
-		description = "Member file of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set",
-		uriTemplate = "eclipse:///mvs/{system}/{pds}/{member}")
+		description = "A file that is a member of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set (PDS)",
+		uriTemplate = "file://{host}/mvs/{pds}/{member}")
 public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTemplateFactory {
 
 	Map<ISubSystem, QueryDataSetsJob> dataSetSearchJobs = new HashMap<ISubSystem, QueryDataSetsJob>();
@@ -38,16 +38,16 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 	public List<String> completionReq(String argumentName, String argumentValue, String uri, Map<String, String> arguments) {
 		List<String> result = new ArrayList<String>();
 		
-		if (argumentName.equals("system")) {
+		if (argumentName.equals("host")) {
 		
 			for (IHost host : SystemStartHere.getConnections()) {
 				if (host.getSystemType().getId().equals("com.ibm.etools.zos.system")) { //$NON-NLS-1$
-					result.add(host.getName());
+					result.add(host.getHostName());
 				}
 			}
 		} else if (argumentName.equals("pds")) {
 			
-			ISubSystem subSystem = findMvsSubsystem(arguments.get("system"));
+			ISubSystem subSystem = findMvsSubsystem(arguments.get("host"));
 			
 			if (subSystem != null) {
 				dataSetSearchFilters.put(subSystem, argumentValue);
@@ -78,7 +78,7 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 			}
 		} else if (argumentName.equals("member")) {
 
-			ISubSystem subSystem = findMvsSubsystem(arguments.get("system"));
+			ISubSystem subSystem = findMvsSubsystem(arguments.get("host"));
 			
 			if (subSystem != null) {
 				pdsMemberSearchFilters.put(subSystem, argumentValue);
@@ -157,7 +157,7 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 	private ISubSystem findMvsSubsystem(String systemName) {
 		for (IHost host : SystemStartHere.getConnections()) {
 			if (host.getSystemType().getId().equals("com.ibm.etools.zos.system")) { //$NON-NLS-1$
-				if (host.getName().equals(systemName)) {
+				if (host.getHostName().equals(systemName)) {
 
 					for (ISubSystem subSystem: host.getSubSystems()) {
 						if (subSystem instanceof IMVSFileSubSystem) {

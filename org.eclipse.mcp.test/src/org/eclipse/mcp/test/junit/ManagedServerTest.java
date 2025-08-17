@@ -14,6 +14,10 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
@@ -92,27 +96,21 @@ public final class ManagedServerTest {
 		
 		CallToolResult[] toolResult = new CallToolResult[] { null };
 		
-		suite.addTest(new TestCase("Call Tool") {
+		suite.addTest(new TestCase("Call Basic Tool") {
 			@Override
 			protected void runTest() throws Throwable {
 				
-				Map<String, Object> args = new HashMap<String, Object>();
-				args.put("b1", Boolean.TRUE);
-				args.put("c1", Character.valueOf('a'));
-				args.put("s1", "Hello");
-				args.put("d1", Double.parseDouble("2.3"));
-				args.put("f1", Float.valueOf("3.4"));
-				args.put("i1", Integer.parseInt("1234"));
-				args.put("l1", Long.valueOf(1234));
-				args.put("sh1", Short.parseShort("1234"));
-				args.put("as1", new String[] { "jeremy", "flicker" });
-				args.put("ai1", new Integer[] { 1234, 2345 });
-				
 				toolResult[0] = client.callTool(
-					    new CallToolRequest("test-hello-world",
-					        args));
+					    new CallToolRequest("test-hello-world-basic", "{}"));
+				
+				Content content = toolResult[0].content().get(0);
+				String result = ((TextContent)content).text();
+				
+				Assert.assertEquals("Validate basic response: name", result, "Hello");
+
 			}
 		});
+		
 		
 		Map<String, Object> args = new HashMap<String, Object>();
 		args.put("b1", Boolean.TRUE);
@@ -173,7 +171,15 @@ public final class ManagedServerTest {
 				
 				Content content = toolResult[0].content().get(0);
 				String result = ((TextContent)content).text();
-				Assert.assertEquals("Validate complex response", result, "Hello Jeremy from Miami son of Ken");
+				
+				JsonElement e = JsonParser.parseString(result);
+				String name = e.getAsJsonObject().get("name").getAsString();
+				JsonArray streetAddress = e.getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonArray();
+
+				Assert.assertEquals("Validate complex response: name", e.getAsJsonObject().get("name").getAsString(), "Jeremy");
+				Assert.assertEquals("Validate complex response: street address 1", streetAddress.get(0).getAsString(), "My Greeting Is:");
+				Assert.assertEquals("Validate complex response: street address 2", streetAddress.get(1).getAsString(), "Hello Jeremy from Miami son of Ken");
+
 			}
 		});
 		

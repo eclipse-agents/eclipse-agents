@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.mcp.builtins.json.Console;
+import org.eclipse.mcp.builtins.json.Consoles;
 import org.eclipse.mcp.builtins.json.Editor;
-import org.eclipse.mcp.builtins.json.Selection;
+import org.eclipse.mcp.builtins.json.Editors;
+import org.eclipse.mcp.builtins.json.TextEditorSelection;
+import org.eclipse.mcp.builtins.json.TextSelection;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
@@ -17,8 +20,6 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 
-import com.google.gson.Gson;
-
 public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 
 	
@@ -27,54 +28,64 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 	}
 
 	@Tool (
-			id = " org.eclipse.mcp.builtins.currentSelection", 
-			description = "Return active editor and its text selection")
-	public String[] currentSelection() {
-		List<String> result = new ArrayList<String>();
+			name = "currentSelection",
+			title = "Currrent Selection",
+			description = "Return the text selection of active Eclipse IDE text editor")
+	public TextEditorSelection currentSelection() {
+		TextEditorSelection selection = null;
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		if (workbench != null) {
 			IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 			if (window != null) {
 				IWorkbenchPage page = window.getActivePage();
 				if (page != null && page.getActiveEditor() != null) {
-					Editor editor = new Editor(page.getActiveEditor());
-					Selection selection = new Selection(page.getActiveEditor().getEditorSite().getSelectionProvider().getSelection());
-					Gson gson = new Gson();
-					result.add(gson.toJson(editor));
-					result.add(gson.toJson(selection));
+					TextEditorSelection tes = new TextEditorSelection();
+					tes.editor = new Editor(page.getActiveEditor());
+					tes.textSelection = new TextSelection(page.getActiveEditor().getEditorSite().getSelectionProvider().getSelection());
 				}
 			}
 		}
-		return result.toArray(String[]::new);
+		return selection;
 	}
 	
 	@Tool (
-			id = " org.eclipse.mcp.builtins.listEditors", 
-			description = "List open editors")
-	public String[] listEditors() {
-		List<String> result = new ArrayList<String>();
-		Gson gson = new Gson();
+			name = "listEditors",
+			title = "List Editors",
+			description = "List open Eclipse IDE text editors")
+	public Editors listEditors() {
+		Editors editors = new Editors();
+		List<Editor> result = new ArrayList<Editor>();
+		
 		for (IWorkbenchWindow ww: PlatformUI.getWorkbench().getWorkbenchWindows()) {
 			for (IWorkbenchPage page: ww.getPages()) {
 				for (IEditorReference reference: page.getEditorReferences()) {
-					result.add(gson.toJson(new Editor(reference)));
+					result.add(new Editor(reference));
 				}
 			}
 		}
-		return result.toArray(new String[0]);
+
+		editors.editors = result.toArray(new Editor[0]); 
+		return editors;
 	}
 	
 	@Tool (
-			id = " org.eclipse.mcp.builtins.listConsoles", 
-			description = "List open editors")
-	public String[] listConsoles() {
+			name = "listConsoles",
+			title = "List Consoles",
+			description = "List open Eclipse IDE consoles")
+	public Consoles listConsoles() {
+		
+		List<Console> result = new ArrayList<Console>();
 		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-		Gson gson = new Gson();
-		List<String> result = new ArrayList<String>();
 		for (IConsole console: manager.getConsoles()) {
-			Console c = new Console(console.getName(), console.hashCode(),  console.getType());
-			result.add(gson.toJson(c));
+			result.add(new Console(console.getName(), console.hashCode(),  console.getType()));
 		}
-		return result.toArray(new String[0]);
+		Consoles consoles = new Consoles();
+		consoles.consoles = result.toArray(new Console[0]);
+		return consoles;
 	}
+	
+//	@Tool
+//	public Problem[] listProblems() {
+//		return new Problem[0];
+//	}
 }

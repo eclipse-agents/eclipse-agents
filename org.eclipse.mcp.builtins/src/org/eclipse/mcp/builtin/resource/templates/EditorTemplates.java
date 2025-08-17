@@ -25,7 +25,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 @ResourceTemplate (
-		uriTemplate = "eclipse:///editor/{name}",
+		uriTemplate = "eclipse://editor/{name}",
 		name = "Eclipse Editor",
 		description = "Content of an Eclipse Text Editor")
 public class EditorTemplates extends MCPAnnotatedResourceTemplateFactory {

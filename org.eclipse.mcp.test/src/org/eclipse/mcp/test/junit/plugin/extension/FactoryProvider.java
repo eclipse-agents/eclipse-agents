@@ -11,7 +11,8 @@ public class FactoryProvider implements IFactoryProvider {
 	public ToolFactory[] createToolFactories() {
 		return AnnotatedToolFactory.createToolFactories(new Class<?>[] {
 				AnnotatedToolFactory.class,
-				AnnotatedToolFactoryComplex.class
+				AnnotatedToolFactoryComplex.class,
+				AnnotatedToolBasic.class
 		});
 	}
 

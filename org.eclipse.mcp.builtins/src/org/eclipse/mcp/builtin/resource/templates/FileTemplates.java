@@ -24,7 +24,7 @@ import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactor
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory.ResourceTemplate;
 
 @ResourceTemplate (
-		uriTemplate = "eclipse:///file/{project}/{name}",
+		uriTemplate = "file://eclipse/{project}/{name}",
 		name = "Eclipse Workspace File",
 		description = "Content of an file in an Eclipse workspace")
 public class FileTemplates extends MCPAnnotatedResourceTemplateFactory {
@@ -76,7 +76,7 @@ public class FileTemplates extends MCPAnnotatedResourceTemplateFactory {
 
 	@Override
 	public String[] readResource(String url) {
-		String prefix = "eclipse:///file/";
+		String prefix = "file://eclipse/";
 		String postfix = url.substring(prefix.length());
 		String projectName = postfix.split("/")[0];
 		String fileRelativePath = postfix.substring(projectName.length() + 1);

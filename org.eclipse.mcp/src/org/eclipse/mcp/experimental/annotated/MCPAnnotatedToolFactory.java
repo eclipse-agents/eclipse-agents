@@ -5,24 +5,32 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.factory.ToolFactory;
+import org.eclipse.mcp.internal.Tracer;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.Content;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
@@ -34,35 +42,62 @@ import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
  */
 public class MCPAnnotatedToolFactory extends ToolFactory {
 	
+	/**
+	 * <a href="https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/draft/schema.ts#L885">Tool Schema Reference</a>
+	 */
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
 	public @interface Tool {
-		/**
-		 * Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension
-		 * @return
-		 */
-	    String id() default "";
 	    /**
-	     * Agent-presentable name for this  MCP Tool
-	     * @return
+	     *	Intended for programmatic or logical use, but used as a display name in past specs or fallback (if title isn't present).
 	     */
 	    String name() default "";
 	    /**
-	     * Agent-presentable description for this MCP Tool
-	     * @return
+	     * This can be used by clients to improve the LLM's understanding of available tools. It can be thought of like a "hint" to the model.
 	     */
 	    String description();
 	    /**
-	     * Optional reference to a <code>org.eclipse.mcp.modelContextProtocolServer</code> category
-	     * @return
+	     * A JSON Schema object defining the expected parameters for the tool.
 	     */
-	    String contributor() default "";
 	    String inputSchema() default "";
+	    /**
+	     * An optional JSON Schema object defining the structure of the tool's output returned in
+	     * the structuredContent field of a CallToolResult.
+	     */
 	    String outputSchema() default "";
-	    String title() default "";
+	    /**
+	     * A human-readable title for the tool.   
+	     * Display name precedence order is: title, annotations.title, then name.
+	     */
+	    String title();
+	    /**
+	     * If true, the tool does not modify its environment.
+	     */
 	    boolean readOnlyHint() default false;
-	    boolean destructiveHint() default false;
+	    /**
+	     * If true, the tool may perform destructive updates to its environment.
+	     * If false, the tool performs only additive updates.
+	     *
+	     * (This property is meaningful only when `readOnlyHint == false`)
+	    */
+	    boolean destructiveHint() default true;
+	    /**
+	     * If true, calling the tool repeatedly with the same arguments
+	     * will have no additional effect on the its environment.
+	     *
+	     * (This property is meaningful only when `readOnlyHint == false`)
+	     *
+	     * Default: false
+	     */
 	    boolean idempotentHint() default false;
+	    /**
+	     * If true, this tool may interact with an "open world" of external
+	     * entities. If false, the tool's domain of interaction is closed.
+	     * For example, the world of a web search tool is open, whereas that
+	     * of a memory tool is not.
+	     *
+	     * Default: true
+	     */
 	    boolean openWorldHint() default false;
 	    boolean returnDirect() default false;
 
@@ -116,18 +151,13 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	Object instance;
 	Method method;
 	Tool toolAnnotation;
-	String inputSchema;
-	String outputSchema;
-	ListenerList listeners = new ListenerList();
+	static ObjectMapper mapper = new ObjectMapper();
 
 	public MCPAnnotatedToolFactory(Method method, Tool toolAnnotation) {
 		super();
 		this.instance = this;
 		this.method = method;
 		this.toolAnnotation = toolAnnotation;
-		
-		inputSchema = createInputSchema();
-		outputSchema = createOutputSchema();
 	}
 
 	public String createInputSchema() {
@@ -136,7 +166,6 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			return toolAnnotation.inputSchema();
 		}
 		
-		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode result = mapper.createObjectNode();
 		ObjectNode properties = mapper.createObjectNode();
 		ArrayNode required = mapper.createArrayNode();
@@ -171,15 +200,14 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 		if (!toolAnnotation.outputSchema().isEmpty()) {
 			return toolAnnotation.outputSchema();
 		}
-		return generateJsonSchema(method.getReturnType()).toString();
-	}
-
-	@Override
-	public String getId() {
-		if (toolAnnotation.id().isEmpty()) {
-			return instance.getClass().getCanonicalName() + "." +  method.getName();
+		
+		JsonNode outputSchema =  generateJsonSchema(method.getReturnType());
+		
+		if (outputSchema.has("type") && "object".equals(outputSchema.get("type").textValue())) {
+			return outputSchema.toString();
 		}
-		return toolAnnotation.id();
+		return null;
+		
 	}
 	
 	public String getName() {
@@ -192,16 +220,10 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	public String getDescription() {
 		return toolAnnotation.description();
 	}
-
-	public String getInputSchema() {
-		return inputSchema.toString();
-	}
 	
 	public boolean isValid() {
 		return true;
 	}
-	
-	
 
 	@Override
 	public McpSchema.Tool createTool() {
@@ -213,19 +235,28 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 				toolAnnotation.openWorldHint(),
 				toolAnnotation.returnDirect());
 		
-		return io.modelcontextprotocol.spec.McpSchema.Tool.builder()
+		McpSchema.Tool.Builder builder = McpSchema.Tool.builder()
 				.annotations(annotations)
 				.name(getName())
 				.description(getDescription())
 				.title(toolAnnotation.title())
-				.inputSchema(createInputSchema())
-//				.outputSchema(createOutputSchema())
-				.build();
+				.inputSchema(createInputSchema());
+		
+		String outputSchema = createOutputSchema();
+		if (outputSchema != null) {
+			builder.outputSchema(outputSchema);
+		}
+				
+		return builder.build();
 				
 	}
-
+	
 	@Override
-	public String[] apply(Map<String, Object> args) {
+	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
+
+		List<Content> content = new ArrayList<Content>();
+		boolean isError = false;
+		Map<String, Object> structuredContent = null;
 		List<Object> inputs = new ArrayList<Object>();
 		for (Parameter param: method.getParameters()) {
 			ToolArg arg = param.getAnnotation(ToolArg.class);
@@ -233,29 +264,67 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			if (arg != null && arg.name() != null) {
 				paramName = arg.name();
 			}
-			Object casted = castArgumentToClass(args.get(paramName), param.getType());
+			Object casted = castArgumentToClass(req.arguments().get(paramName), param.getType());
 			inputs.add(casted);
 		}
-		Object result = null;
+
+		Object response = null;
 		try {
-			result = method.invoke(instance, inputs.toArray());
-		} catch (IllegalAccessException e) {
-			throw new MCPException(e);
-		} catch (IllegalArgumentException e) {
-			throw new MCPException(e);
-		} catch (InvocationTargetException e) {
-			throw new MCPException(e);
+			response = method.invoke(instance, inputs.toArray());
+			if (response != null) {
+				if (response instanceof String) {
+					content.add(new TextContent((String)response));
+				} else if (response instanceof String[]) {
+					for (String s: (String[])response) {
+						content.add(new TextContent(s));
+					}
+					
+				} else {
+					structuredContent = new HashMap<String, Object>();
+					for (Field field: response.getClass().getFields()) {
+						JsonProperty jsonProperty = field.getAnnotation(JsonProperty.class);
+						String fieldName = field.getName();
+						if (jsonProperty != null && jsonProperty.value() != null && !jsonProperty.value().isEmpty()) {
+							fieldName = jsonProperty.value();
+						}
+						structuredContent.put(fieldName, field.get(response));
+					}
+					content.add(new TextContent(mapper.writer().writeValueAsString(response)));
+				}
+			} else {
+				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
+						"ToolFactory.apply(Map<String, Object>) returned null");
+			}
+		} catch (Exception e) {
+			content.add(new TextContent(e.getLocalizedMessage()));
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, e.getLocalizedMessage(), e);
+			isError = true;
 		}
-		if (result instanceof String[]) {
-			return (String[])result;
-		}
+		
+		System.out.println(content);
+		System.out.println();
+		System.out.println(structuredContent);
+		System.out.println();
+		System.out.println(createOutputSchema());
+		System.out.println();
+		
+		CallToolResult result = (structuredContent == null) ?
+				new CallToolResult(content, isError) :
+				new CallToolResult(content, isError, structuredContent);
+
+		return result;
+	}
+	
+
+	@Override
+	public Object apply(Map<String, Object> args) throws MCPException {
+		// not used
 		return null;
 	}
 	
 	
 	protected Object castArgumentToClass(Object value, Class<?> javaType) {
 		
-		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = mapper.convertValue(value, JsonNode.class);
 		Object cast = mapper.convertValue(node, javaType);
 		return cast;

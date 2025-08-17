@@ -9,6 +9,9 @@ public class MCPException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
+	public MCPException(String message) {
+		super(message);
+	}
 	public MCPException(Exception e) {
 		super(e.getLocalizedMessage(), e);
 	}

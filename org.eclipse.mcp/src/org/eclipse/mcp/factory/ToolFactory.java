@@ -10,6 +10,7 @@ import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.internal.Tracer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
 import com.github.victools.jsonschema.generator.SchemaGenerator;
@@ -52,18 +53,25 @@ public abstract class ToolFactory implements IFactory{
 		List<Content> content = new ArrayList<Content>();
 		
 		try {
-			String[] rawText = apply(req.arguments());
-			if (rawText != null) {
-				for (String s: rawText) {
-					content.add(new TextContent(s));
+			Object response = apply(req.arguments());
+			if (response != null) {
+				if (response instanceof String) {
+					content.add(new TextContent((String)response));
+				} else if (response instanceof String[]) {
+					for (String s: (String[])response) {
+						content.add(new TextContent(s));
+					}
+				} else {
+					throw new MCPException("ToolFactory.apply did not return a String or String[], but returned: " + response.getClass().getCanonicalName());
 				}
 			} else {
 				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
-						"org.eclipse.mcp.IMCPToolFactory.apply(Map<String, Object>) returned null");
+						"ToolFactory.apply(Map<String, Object>) returned null");
 			}
 			result = new CallToolResult(content, false);
 		} catch (Exception e) {
 			content.add(new TextContent(e.getLocalizedMessage()));
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, e.getLocalizedMessage(), e);
 			e.printStackTrace();
 			result = new CallToolResult(content, true);
 		}
@@ -73,10 +81,10 @@ public abstract class ToolFactory implements IFactory{
 	/**
 	 * Simplistic method to transform a map of input arguments to a String[] response
 	 * @param args
-	 * @return
+	 * @return For simplistic responses return String or String[]
 	 * @throws MCPException
 	 */
-	public abstract String[] apply(Map<String, Object> args) throws MCPException;
+	public abstract Object apply(Map<String, Object> args) throws MCPException;
 
 	/**
 	 * May be used to dynamically add/remove this tool to the server.
@@ -112,7 +120,7 @@ public abstract class ToolFactory implements IFactory{
 		JacksonOption[] options = Arrays.asList(
 				JacksonOption.RESPECT_JSONPROPERTY_ORDER,
 	            JacksonOption.RESPECT_JSONPROPERTY_REQUIRED,
-	            JacksonOption.FLATTENED_ENUMS_FROM_JSONVALUE).toArray(JacksonOption[]::new);;
+	            JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY).toArray(JacksonOption[]::new);;
 //	            JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY,
 //	            JacksonOption.INCLUDE_ONLY_JSONPROPERTY_ANNOTATED_METHODS,
 //	            JacksonOption.IGNORE_PROPERTY_NAMING_STRATEGY,
@@ -122,7 +130,7 @@ public abstract class ToolFactory implements IFactory{
 //	            JacksonOption.IGNORE_TYPE_INFO_TRANSFORM,
 //	            JacksonOption.JSONIDENTITY_REFERENCE_ALWAYS_AS_ID);
 		
-	     new JacksonModule(options);
+	    new JacksonModule(options);
 		var configBuilder = new SchemaGeneratorConfigBuilder(
 				SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON)
                 .without(Option.SCHEMA_VERSION_INDICATOR);
@@ -130,6 +138,7 @@ public abstract class ToolFactory implements IFactory{
 		configBuilder.with(new JacksonModule(options));
         
 		SchemaGenerator generator = new SchemaGenerator(configBuilder.build());
-		return generator.generateSchema(c);
+		ObjectNode result =  generator.generateSchema(c);
+		return result;
 	}
 }
