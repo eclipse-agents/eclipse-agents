@@ -5,27 +5,34 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.factory.ToolFactory;
+import org.eclipse.mcp.internal.Tracer;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.JsonSchema;
+import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.Content;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
@@ -147,6 +154,7 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	Method method;
 	Tool toolAnnotation;
 	ListenerList listeners = new ListenerList();
+	static ObjectMapper mapper = new ObjectMapper();
 
 	public MCPAnnotatedToolFactory(Method method, Tool toolAnnotation) {
 		super();
@@ -161,7 +169,6 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			return toolAnnotation.inputSchema();
 		}
 		
-		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode result = mapper.createObjectNode();
 		ObjectNode properties = mapper.createObjectNode();
 		ArrayNode required = mapper.createArrayNode();
@@ -197,17 +204,6 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			return toolAnnotation.outputSchema();
 		}
 		
-		JsonNode node = generateJsonSchema(method.getReturnType());
-		try {
-			JsonSchema schema = new ObjectMapper().readValue(node.toString(), JsonSchema.class);
-			System.out.println(schema);
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println(generateJsonSchema(method.getReturnType()).toString());
 		return generateJsonSchema(method.getReturnType()).toString();
 	}
 	
@@ -247,8 +243,44 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 				
 	}
 
+
+//	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
+//		CallToolResult result = null;
+//		List<Content> content = new ArrayList<Content>();
+//		
+//		try {
+//			Object response = apply(req.arguments());
+//			
+//			if (response != null) {
+//				if (response instanceof String) {
+//					content.add(new TextContent((String)response));
+//				} else if (response instanceof String[]) {
+//					for (String s: (String[])response) {
+//						content.add(new TextContent(s));
+//					}
+//				} else {
+//					throw new MCPException("ToolFactory.apply did not return a String or String[], but returned: " + response.getClass().getCanonicalName());
+//				}
+//			} else {
+//				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
+//						"ToolFactory.apply(Map<String, Object>) returned null");
+//			}
+//			result = new CallToolResult(content, false);
+//		} catch (Exception e) {
+//			content.add(new TextContent(e.getLocalizedMessage()));
+//			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, e.getLocalizedMessage(), e);
+//			e.printStackTrace();
+//			result = new CallToolResult(content, true);
+//		}
+//		return result;
+//	}
+	
 	@Override
-	public String[] apply(Map<String, Object> args) {
+	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
+
+		List<Content> content = new ArrayList<Content>();
+		boolean isError = false;
+		Map<String, Object> structuredContent = new HashMap<String, Object>();
 		List<Object> inputs = new ArrayList<Object>();
 		for (Parameter param: method.getParameters()) {
 			ToolArg arg = param.getAnnotation(ToolArg.class);
@@ -256,29 +288,63 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			if (arg != null && arg.name() != null) {
 				paramName = arg.name();
 			}
-			Object casted = castArgumentToClass(args.get(paramName), param.getType());
+			Object casted = castArgumentToClass(req.arguments().get(paramName), param.getType());
 			inputs.add(casted);
 		}
-		Object result = null;
+
+		Object response = null;
 		try {
-			result = method.invoke(instance, inputs.toArray());
-		} catch (IllegalAccessException e) {
-			throw new MCPException(e);
-		} catch (IllegalArgumentException e) {
-			throw new MCPException(e);
-		} catch (InvocationTargetException e) {
-			throw new MCPException(e);
+			response = method.invoke(instance, inputs.toArray());
+			if (response != null) {
+				if (response instanceof String) {
+					content.add(new TextContent((String)response));
+				} else if (response instanceof String[]) {
+					for (String s: (String[])response) {
+						content.add(new TextContent(s));
+					}
+				} else {
+					for (Field field: response.getClass().getFields()) {
+						JsonProperty jsonProperty = field.getAnnotation(JsonProperty.class);
+						String fieldName = field.getName();
+						if (jsonProperty != null && jsonProperty.value() != null && !jsonProperty.value().isEmpty()) {
+							fieldName = jsonProperty.value();
+						}
+						structuredContent.put(fieldName, field.get(response));
+					}
+					content.add(new TextContent(mapper.writer().writeValueAsString(response)));
+				}
+			} else {
+				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
+						"ToolFactory.apply(Map<String, Object>) returned null");
+			}
+		} catch (Exception e) {
+			content.add(new TextContent(e.getLocalizedMessage()));
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, e.getLocalizedMessage(), e);
+			isError = true;
 		}
-		if (result instanceof String[]) {
-			return (String[])result;
-		}
+		
+		System.out.println(content);
+		System.out.println();
+		System.out.println(structuredContent);
+		System.out.println();
+		System.out.println(createOutputSchema());
+		System.out.println();
+		
+		CallToolResult result = new CallToolResult(content, isError, structuredContent);
+
+		return result;
+	}
+	
+
+	@Override
+	public Object apply(Map<String, Object> args) throws MCPException {
+		// not used
 		return null;
 	}
 	
 	
 	protected Object castArgumentToClass(Object value, Class<?> javaType) {
 		
-		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = mapper.convertValue(value, JsonNode.class);
 		Object cast = mapper.convertValue(node, javaType);
 		return cast;

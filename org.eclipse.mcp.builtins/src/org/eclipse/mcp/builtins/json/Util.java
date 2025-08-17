@@ -54,6 +54,6 @@ public class Util {
 	}
 
 	public static  String fileToURI(IFile file) {
-		return "file://eclipse/" + file.getProject().getName() + "/" + file.getProjectRelativePath().toPortableString();
+		return file.getRawLocationURI().toString();
 	}
 }

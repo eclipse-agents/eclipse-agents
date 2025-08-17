@@ -20,7 +20,7 @@ import io.modelcontextprotocol.spec.McpSchema;
 @JsonClassDescription("An Eclipse IDE text editor")
 public class Editor {
 
-	@JsonProperty
+	@JsonProperty()
 	@JsonPropertyDescription("Title of this editor")
 	String name;
 	

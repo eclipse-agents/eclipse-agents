@@ -31,7 +31,9 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 			name = "currentSelection",
 			title = "Currrent Selection",
 			description = "Return the text selection of active Eclipse IDE text editor")
-	public TextEditorSelection currentSelection() {
+	public TextEditorSelection currentSelection(
+			@ToolArg(name = "adsf", description = "do this")
+			TextSelection selection2) {
 		TextEditorSelection selection = null;
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		if (workbench != null) {
