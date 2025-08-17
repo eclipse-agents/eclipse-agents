@@ -17,12 +17,15 @@ import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.factory.ToolFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.JsonSchema;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 
 
@@ -34,35 +37,62 @@ import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
  */
 public class MCPAnnotatedToolFactory extends ToolFactory {
 	
+	/**
+	 * <a href="https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/draft/schema.ts#L885">Tool Schema Reference</a>
+	 */
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
 	public @interface Tool {
-		/**
-		 * Unique identifier reference-able in <code>org.eclipse.mcp.modelContextProtocolServer</code> extension
-		 * @return
-		 */
-	    String id() default "";
 	    /**
-	     * Agent-presentable name for this  MCP Tool
-	     * @return
+	     *	Intended for programmatic or logical use, but used as a display name in past specs or fallback (if title isn't present).
 	     */
 	    String name() default "";
 	    /**
-	     * Agent-presentable description for this MCP Tool
-	     * @return
+	     * This can be used by clients to improve the LLM's understanding of available tools. It can be thought of like a "hint" to the model.
 	     */
 	    String description();
 	    /**
-	     * Optional reference to a <code>org.eclipse.mcp.modelContextProtocolServer</code> category
-	     * @return
+	     * A JSON Schema object defining the expected parameters for the tool.
 	     */
-	    String contributor() default "";
 	    String inputSchema() default "";
+	    /**
+	     * An optional JSON Schema object defining the structure of the tool's output returned in
+	     * the structuredContent field of a CallToolResult.
+	     */
 	    String outputSchema() default "";
-	    String title() default "";
+	    /**
+	     * A human-readable title for the tool.   
+	     * Display name precedence order is: title, annotations.title, then name.
+	     */
+	    String title();
+	    /**
+	     * If true, the tool does not modify its environment.
+	     */
 	    boolean readOnlyHint() default false;
-	    boolean destructiveHint() default false;
+	    /**
+	     * If true, the tool may perform destructive updates to its environment.
+	     * If false, the tool performs only additive updates.
+	     *
+	     * (This property is meaningful only when `readOnlyHint == false`)
+	    */
+	    boolean destructiveHint() default true;
+	    /**
+	     * If true, calling the tool repeatedly with the same arguments
+	     * will have no additional effect on the its environment.
+	     *
+	     * (This property is meaningful only when `readOnlyHint == false`)
+	     *
+	     * Default: false
+	     */
 	    boolean idempotentHint() default false;
+	    /**
+	     * If true, this tool may interact with an "open world" of external
+	     * entities. If false, the tool's domain of interaction is closed.
+	     * For example, the world of a web search tool is open, whereas that
+	     * of a memory tool is not.
+	     *
+	     * Default: true
+	     */
 	    boolean openWorldHint() default false;
 	    boolean returnDirect() default false;
 
@@ -116,8 +146,6 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	Object instance;
 	Method method;
 	Tool toolAnnotation;
-	String inputSchema;
-	String outputSchema;
 	ListenerList listeners = new ListenerList();
 
 	public MCPAnnotatedToolFactory(Method method, Tool toolAnnotation) {
@@ -125,9 +153,6 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 		this.instance = this;
 		this.method = method;
 		this.toolAnnotation = toolAnnotation;
-		
-		inputSchema = createInputSchema();
-		outputSchema = createOutputSchema();
 	}
 
 	public String createInputSchema() {
@@ -171,15 +196,19 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 		if (!toolAnnotation.outputSchema().isEmpty()) {
 			return toolAnnotation.outputSchema();
 		}
-		return generateJsonSchema(method.getReturnType()).toString();
-	}
-
-	@Override
-	public String getId() {
-		if (toolAnnotation.id().isEmpty()) {
-			return instance.getClass().getCanonicalName() + "." +  method.getName();
+		
+		JsonNode node = generateJsonSchema(method.getReturnType());
+		try {
+			JsonSchema schema = new ObjectMapper().readValue(node.toString(), JsonSchema.class);
+			System.out.println(schema);
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
 		}
-		return toolAnnotation.id();
+		
+		System.out.println(generateJsonSchema(method.getReturnType()).toString());
+		return generateJsonSchema(method.getReturnType()).toString();
 	}
 	
 	public String getName() {
@@ -192,16 +221,10 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	public String getDescription() {
 		return toolAnnotation.description();
 	}
-
-	public String getInputSchema() {
-		return inputSchema.toString();
-	}
 	
 	public boolean isValid() {
 		return true;
 	}
-	
-	
 
 	@Override
 	public McpSchema.Tool createTool() {
@@ -219,7 +242,7 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 				.description(getDescription())
 				.title(toolAnnotation.title())
 				.inputSchema(createInputSchema())
-//				.outputSchema(createOutputSchema())
+				.outputSchema(createOutputSchema())
 				.build();
 				
 	}

@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: MCP Builtins
 Bundle-SymbolicName: org.eclipse.mcp.builtins;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Export-Package: org.eclipse.mcp.builtins.json
 Bundle-Activator: org.eclipse.mcp.builtins.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -14,7 +15,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  com.google.gson,
  org.eclipse.jface.text,
- org.eclipse.ui.workbench.texteditor
+ org.eclipse.ui.workbench.texteditor,
+ com.fasterxml.jackson.core.jackson-annotations,
+ org.eclipse.core.filesystem
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.eclipse.mcp.builtins
 Bundle-ActivationPolicy: lazy

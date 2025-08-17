@@ -10,6 +10,7 @@ import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.internal.Tracer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
 import com.github.victools.jsonschema.generator.SchemaGenerator;
@@ -122,7 +123,7 @@ public abstract class ToolFactory implements IFactory{
 //	            JacksonOption.IGNORE_TYPE_INFO_TRANSFORM,
 //	            JacksonOption.JSONIDENTITY_REFERENCE_ALWAYS_AS_ID);
 		
-	     new JacksonModule(options);
+	    new JacksonModule(options);
 		var configBuilder = new SchemaGeneratorConfigBuilder(
 				SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON)
                 .without(Option.SCHEMA_VERSION_INDICATOR);
@@ -130,6 +131,7 @@ public abstract class ToolFactory implements IFactory{
 		configBuilder.with(new JacksonModule(options));
         
 		SchemaGenerator generator = new SchemaGenerator(configBuilder.build());
-		return generator.generateSchema(c);
+		ObjectNode result =  generator.generateSchema(c);
+		return result;
 	}
 }

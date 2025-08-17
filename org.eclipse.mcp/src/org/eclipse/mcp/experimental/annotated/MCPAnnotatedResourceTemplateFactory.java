@@ -30,13 +30,47 @@ public abstract class MCPAnnotatedResourceTemplateFactory implements IResourceTe
 	@Target(ElementType.TYPE)
 	@Repeatable(ResourceTemplates.class)
 	public @interface ResourceTemplate {
+		/**
+		 * A URI template (according to RFC 6570) that can be used to construct resource URIs.
+		 */
 		String uriTemplate();
+		/**
+		 * Intended for programmatic or logical use, but used as a display name in past specs or fallback (if title isn't present).
+		 */
 		String name();
+		/**
+		 * A human-readable name for the type of resource this template refers to.
+		 *
+		 * This can be used by clients to populate UI elements.
+		 */
 		String title() default "";
+		/**
+		 * A description of what this template is for.
+		 *
+		 * This can be used by clients to improve the LLM's understanding of available resources. It can be thought of like a "hint" to the model.
+		 */
 		String description();
+		/**
+		 * The MIME type for all resources that match this template. This should only be included if all resources matching this template have the same type.
+		 */
 		String mimeType() default "text/plain";
+		/**
+		 * Describes who the intended customer of this object or data is.
+		 *
+		 * It can include multiple entries to indicate content useful for multiple audiences (e.g., `["user", "assistant"]`).
+		 */
 		McpSchema.Role[] roles() default { };
-		double priority() default -10;
+		/**
+		 * Describes how important this data is for operating the server.
+		 *
+		 * A value of 1 means "most important," and indicates that the data is
+		 * effectively required, while 0 means "least important," and indicates that
+		 * the data is entirely optional.
+		 *
+		 * @minimum 0
+		 * @maximum 1
+		 */
+		double priority() default -1;
 	}
 	
 	List<ResourceTemplate> annotations = new ArrayList<ResourceTemplate>();

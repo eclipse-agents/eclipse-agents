@@ -45,9 +45,9 @@ public class AnnotatedToolFactoryComplex extends MCPAnnotatedToolFactory {
 		super(method, toolAnnotation);
 	}
 
-	@Tool (id = "junit.MCPToolFactory.helloWorld2", 
-			description = "Greets a complex user with a hello", 
-			name = "test-hello-world-complex")
+	@Tool ( description = "Greets a complex user with a hello", 
+			name = "test-hello-world-complex",
+			title = "Test Hello World Complex")
 	public String[] helloWorld(
 			@ToolArg(name = "PERSON", description = "The person to say hello to")
 			Person person,

@@ -140,6 +140,8 @@ public class ManagedServer implements ToolVisibilityListener {
 			
 			McpSchema.Tool tool = toolFactory.createTool();
 			toolMap.put(toolFactory, tool);
+			System.out.println(tool.inputSchema());
+			System.out.println(tool.outputSchema());
 			
 			SyncToolSpecification spec = toolFactory.createSpec(tool);
 			toolSpecMap.put(toolFactory, spec);
