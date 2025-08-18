@@ -21,6 +21,7 @@ import org.eclipse.mcp.internal.ManagedServer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -28,6 +29,9 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.AllTests;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
@@ -115,10 +119,14 @@ public final class JUnitPluginTest {
 					public void run() {
 						try {
 							IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+							IWorkbenchPart part = page.getActivePart();
+							part.dispose();
+							
 							IEditorPart editor = IDE.openEditor(page, file, true);
 							if (editor instanceof ITextEditor) {
 								ITextEditor textEditor= (ITextEditor) editor;
 								textEditor.selectAndReveal(7, 5);
+								page.activate(textEditor);
 							}
 							Map attr = new HashMap();
 							attr.put(IMarker.MESSAGE, "There is a problem");
@@ -129,6 +137,8 @@ public final class JUnitPluginTest {
 							attr.put(IMarker.LINE_NUMBER, 1);
 
 							file.createMarker(IMarker.PROBLEM, attr);
+							
+							page.getActivePart();
 						} catch (PartInitException e) {
 							e.printStackTrace();
 						} catch (CoreException e) {
@@ -180,7 +190,7 @@ public final class JUnitPluginTest {
 		
 		CallToolResult[] toolResult = new CallToolResult[3];
 		
-		suite.addTest(new TestCase("Call Current Selection") {
+		suite.addTest(new TestCase("Call currentSelection()") {
 			@Override
 			protected void runTest() throws Throwable {
 				
@@ -190,12 +200,63 @@ public final class JUnitPluginTest {
 				Content content = toolResult[0].content().get(0);
 				String result = ((TextContent)content).text();
 				System.out.println(result);
+				
 
+				ObjectMapper mapper = new ObjectMapper();
+				
+				JsonNode received = mapper.readTree(result);
+				JsonNode expected = mapper.readTree("""
+{
+   "editor":{
+      "name":"HelloWorld.java",
+      "resource":{
+         "type":"resource_link",
+         "name":"HelloWorld.java",
+         "uri":"eclipse://editor/HelloWorld.java",
+         "description":"Content of an Eclipse Text Editor",
+         "mimeType":"text/plain",
+         "size":124,
+         "annotations":{
+            "audience":[
+               "assistant",
+               "user"
+            ],
+            "priority":1.0
+         }
+      },
+      "file":{
+         "type":"resource_link",
+         "name":"HelloWorld.java",
+         "uri":"file:/Users/jflicke/junit-workspace/Project/HelloWorld.java",
+         "description":"Content of an file in an Eclipse workspace",
+         "mimeType":"text/plain",
+         "size":124,
+         "annotations":{
+            "audience":[
+               "assistant",
+               "user"
+            ],
+            "priority":1.0
+         }
+      },
+      "isActive":true,
+      "isDirty":false
+   },
+   "textSelection":{
+      "offset":7,
+      "length":5,
+      "startLine":0,
+      "endLine":0,
+      "text":"class"
+   }
+}""");
+				Assert.assertEquals(expected, received);
+				
+				
 			}
 		});
 		
-		
-		suite.addTest(new TestCase("Call Tool") {
+		suite.addTest(new TestCase("Call listEditors()") {
 			@Override
 			protected void runTest() throws Throwable {
 				toolResult[1] = client.callTool(
@@ -204,11 +265,58 @@ public final class JUnitPluginTest {
 				
 				Content content = toolResult[1].content().get(0);
 				String result = ((TextContent)content).text();
-				System.out.println(result);
+				
+				System.out.println(result + "\n\n");
+				
+				ObjectMapper mapper = new ObjectMapper();
+						
+				JsonNode received = mapper.readTree(result);
+				JsonNode expected = mapper.readTree("""
+{
+   "editors":[
+      {
+         "name":"HelloWorld.java",
+         "resource":{
+            "type":"resource_link",
+            "name":"HelloWorld.java",
+            "uri":"eclipse://editor/HelloWorld.java",
+            "description":"Content of an Eclipse Text Editor",
+            "mimeType":"text/plain",
+            "size":124,
+            "annotations":{
+               "audience":[
+                  "assistant",
+                  "user"
+               ],
+               "priority":1.0
+            }
+         },
+         "file":{
+            "type":"resource_link",
+            "name":"HelloWorld.java",
+            "uri":"file:/Users/jflicke/junit-workspace/Project/HelloWorld.java",
+            "description":"Content of an file in an Eclipse workspace",
+            "mimeType":"text/plain",
+            "size":124,
+            "annotations":{
+               "audience":[
+                  "assistant",
+                  "user"
+               ],
+               "priority":1.0
+            }
+         },
+         "isActive":false,
+         "isDirty":false
+      }
+   ]
+}""");
+				
+				Assert.assertEquals(expected, received);
 			}
 		});
 		
-		suite.addTest(new TestCase("Call Complex Tool") {
+		suite.addTest(new TestCase("Call listConsoles()") {
 			@Override
 			protected void runTest() throws Throwable {
 				toolResult[2] = client.callTool(
@@ -218,6 +326,15 @@ public final class JUnitPluginTest {
 				Content content = toolResult[2].content().get(0);
 				String result = ((TextContent)content).text();
 				System.out.println(result);
+				
+				JsonNode node = new ObjectMapper().readValue(result, JsonNode.class);
+				
+				JsonNode consoles = node.get("consoles");
+				JsonNode console = consoles.get(0);
+				
+				testEquals("console.name", console.get("name").asText(), "z/OS");
+				testEquals("console.type", console.get("type").asText(), "zosConsole");
+				
 			}
 		});
 		
@@ -242,27 +359,14 @@ public final class JUnitPluginTest {
 		return suite;
 	}
 	
-	public static void addTestMapEquals(TestSuite suite, CallToolResult[] toolResult, int i, Map<String, Object> args, String var) {
-		suite.addTest(new TestCase("Test Call Tool Result: " + var) {
-			@Override
-			protected void runTest() throws Throwable {
-
-				Object expected = args.get(var);
-				String received = ((TextContent)toolResult[0].content().get(i)).text();
-				
-				if (expected instanceof String[]) {
-					expected = Arrays.toString((String[])expected);
-				} else if (expected instanceof Integer[]) {
-					expected = Arrays.toString((Integer[])expected);
-				}
-
-				System.out.print("'" + received + "' == '" + expected + "' :: for " + var);
-
-				
-				Assert.assertEquals(var, "\n" + expected.toString(), received.toString());
-			}
-		});
+	public static void testEquals(String message, String left, String right) {
+		System.out.println(message + ":: " + left + " == " + right);
+		Assert.assertEquals(message, left, right);
 	}
 	
+	public static void testArrayEquals(String message, String[] left, String[] right) {
+		System.out.println(message + ":: " + Arrays.toString(left) + " == " + Arrays.toString(right));
+		Assert.assertArrayEquals(message, left, right);
+	}
 	
 }

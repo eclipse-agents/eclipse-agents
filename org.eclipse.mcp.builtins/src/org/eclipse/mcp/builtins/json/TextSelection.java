@@ -6,19 +6,29 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 
 import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @JsonClassDescription("Range of characters selected in a text editor")
 public class TextSelection {
 
+	@JsonProperty
 	@JsonPropertyDescription("position of the first selected character")
 	int offset;
+	
+	@JsonProperty
 	@JsonPropertyDescription("length of the text selection")
 	int length;
+	
+	@JsonProperty
 	@JsonPropertyDescription("line of the offset of the selected text")
 	int startLine;
+	
+	@JsonProperty
 	@JsonPropertyDescription("line of the last character of the selected text")
 	int endLine;
+	
+	@JsonProperty
 	@JsonPropertyDescription("selected text")
 	String text;
 

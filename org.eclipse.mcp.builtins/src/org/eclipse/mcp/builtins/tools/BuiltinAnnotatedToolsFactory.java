@@ -11,6 +11,7 @@ import org.eclipse.mcp.builtins.json.Editors;
 import org.eclipse.mcp.builtins.json.TextEditorSelection;
 import org.eclipse.mcp.builtins.json.TextSelection;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -32,19 +33,24 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 			title = "Currrent Selection",
 			description = "Return the text selection of active Eclipse IDE text editor")
 	public TextEditorSelection currentSelection() {
-		TextEditorSelection selection = null;
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		if (workbench != null) {
-			IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-			if (window != null) {
-				IWorkbenchPage page = window.getActivePage();
-				if (page != null && page.getActiveEditor() != null) {
-					TextEditorSelection tes = new TextEditorSelection();
-					tes.editor = new Editor(page.getActiveEditor());
-					tes.textSelection = new TextSelection(page.getActiveEditor().getEditorSite().getSelectionProvider().getSelection());
+		final TextEditorSelection selection = new TextEditorSelection();
+		Display.getDefault().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				if (workbench != null) {
+					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					if (window != null) {
+						IWorkbenchPage page = window.getActivePage();
+						if (page != null && page.getActiveEditor() != null) {
+							selection.editor = new Editor(page.getActiveEditor());
+							selection.textSelection = new TextSelection(page.getActiveEditor().getEditorSite().getSelectionProvider().getSelection());
+						}
+					}
 				}
 			}
-		}
+		});
+		
 		return selection;
 	}
 	
