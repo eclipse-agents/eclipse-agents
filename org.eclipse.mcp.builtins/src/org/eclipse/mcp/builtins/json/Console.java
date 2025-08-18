@@ -21,5 +21,4 @@ public class Console {
 		this.id = id;
 		this.type = type;
 	}
-	
 }

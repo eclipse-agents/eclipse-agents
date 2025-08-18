@@ -5,7 +5,9 @@ import java.util.Arrays;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -36,7 +38,7 @@ public class Util {
 	public static McpSchema.ResourceLink fileToResourceLink(IFile file) {
 
 		McpSchema.ResourceLink.Builder builder =  McpSchema.ResourceLink.builder()
-				.uri(fileToURI(file))
+				.uri(resourceToURI(file))
 				.name(file.getName())
 				.description("Content of an file in an Eclipse workspace")
 				.mimeType("text/plain")
@@ -52,8 +54,22 @@ public class Util {
 
 		return builder.build();
 	}
+	
+	public static McpSchema.ResourceLink containerToResourceLink(IContainer container) {
 
-	public static  String fileToURI(IFile file) {
-		return file.getRawLocationURI().toString();
+		McpSchema.ResourceLink.Builder builder =  McpSchema.ResourceLink.builder()
+				.uri(resourceToURI(container))
+				.name(container.getName())
+				.description("Content of an folder in an Eclipse workspace")
+				.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0));
+
+		return builder.build();
+	}
+	
+	public static  String resourceToURI(IResource resource) {
+		resource.getLocation();
+		resource.getLocationURI();
+		resource.getRawLocation();
+		return resource.getLocationURI().toString();
 	}
 }
