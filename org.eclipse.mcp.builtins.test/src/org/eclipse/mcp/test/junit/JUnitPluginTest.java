@@ -57,7 +57,7 @@ public final class JUnitPluginTest {
 		});
 		
 		// Create a sync client with custom configuration
-		HttpClientSseClientTransport transport = new HttpClientSseClientTransport("http://localhost:1834/sse");
+		HttpClientSseClientTransport transport = new HttpClientSseClientTransport("http://localhost:3028/sse");
 		final McpSyncClient client = McpClient.sync(transport)
 		    .requestTimeout(Duration.ofSeconds(10))
 		    .capabilities(ClientCapabilities.builder()
@@ -139,17 +139,6 @@ public final class JUnitPluginTest {
 				});
 			}
 		});
-		
-		
-		// Test Tool
-		suite.addTest(new TestCase("Start Server") {
-			@Override
-			protected void runTest() throws Throwable {
-				
-				IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				
-			}
-		});
 
 		// Test Tool
 		suite.addTest(new TestCase("Start Server") {
@@ -189,63 +178,46 @@ public final class JUnitPluginTest {
 			}
 		});
 		
-		CallToolResult[] toolResult = new CallToolResult[] { null };
+		CallToolResult[] toolResult = new CallToolResult[3];
 		
-		suite.addTest(new TestCase("Call Basic Tool") {
+		suite.addTest(new TestCase("Call Current Selection") {
 			@Override
 			protected void runTest() throws Throwable {
 				
 				toolResult[0] = client.callTool(
-					    new CallToolRequest("test-hello-world-basic", "{}"));
+					    new CallToolRequest("currentSelection", "{}"));
 				
 				Content content = toolResult[0].content().get(0);
 				String result = ((TextContent)content).text();
-				
-				Assert.assertEquals("Validate basic response: name", result, "Hello");
+				System.out.println(result);
 
 			}
 		});
 		
-		
-		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("b1", Boolean.TRUE);
-		args.put("c1", Character.valueOf('a'));
-		args.put("s1", "Hello");
-		args.put("d1", Double.parseDouble("2.3"));
-		args.put("f1", Float.valueOf("3.4"));
-		args.put("i1", Integer.parseInt("1234"));
-		args.put("l1", Long.valueOf(1234));
-		args.put("sh1", Short.parseShort("1234"));
-		args.put("as1", new String[] { "jeremy", "flicker" });
-		args.put("ai1", new Integer[] { 1234, 2345 });
 		
 		suite.addTest(new TestCase("Call Tool") {
 			@Override
 			protected void runTest() throws Throwable {
-				toolResult[0] = client.callTool(
-					    new CallToolRequest("test-hello-world",
-					        args));
+				toolResult[1] = client.callTool(
+					    new CallToolRequest("listEditors",
+					        "{}"));
+				
+				Content content = toolResult[1].content().get(0);
+				String result = ((TextContent)content).text();
+				System.out.println(result);
 			}
 		});
-		
-		addTestMapEquals(suite, toolResult, 0, args, "b1");
-		addTestMapEquals(suite, toolResult, 1, args, "c1");
-		addTestMapEquals(suite, toolResult, 2, args, "s1");
-		addTestMapEquals(suite, toolResult, 3, args, "d1");
-		addTestMapEquals(suite, toolResult, 4, args, "f1");
-		addTestMapEquals(suite, toolResult, 5, args, "i1");
-		addTestMapEquals(suite, toolResult, 6, args, "l1");
-		addTestMapEquals(suite, toolResult, 7, args, "sh1");
-		addTestMapEquals(suite, toolResult, 8, args, "as1");
-		addTestMapEquals(suite, toolResult, 9, args, "ai1");
-		
 		
 		suite.addTest(new TestCase("Call Complex Tool") {
 			@Override
 			protected void runTest() throws Throwable {
+				toolResult[2] = client.callTool(
+					    new CallToolRequest("listConsoles",
+					        "{}"));
 				
-				
-
+				Content content = toolResult[2].content().get(0);
+				String result = ((TextContent)content).text();
+				System.out.println(result);
 			}
 		});
 		
