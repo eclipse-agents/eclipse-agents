@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.mcp.factory.IFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceFactory;
@@ -107,7 +108,11 @@ public class ExtensionManager {
 				for (IConfigurationElement childElement: e.getChildren("factory")) {
 					try {
 						Object impl = childElement.createExecutableExtension("class");
-						if (impl instanceof IFactory) {
+						if (impl instanceof MCPAnnotatedToolFactory) {
+							//TODO 
+							factories.addAll(Arrays.asList(
+									MCPAnnotatedToolFactory.createToolFactories(impl.getClass())));
+						} else if (impl instanceof IFactory) {
 							factories.add((IFactory)impl);
 						} else {
 							errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactory";

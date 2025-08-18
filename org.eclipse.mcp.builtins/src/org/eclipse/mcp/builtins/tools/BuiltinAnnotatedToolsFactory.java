@@ -4,10 +4,20 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.builtins.json.Console;
 import org.eclipse.mcp.builtins.json.Consoles;
 import org.eclipse.mcp.builtins.json.Editor;
 import org.eclipse.mcp.builtins.json.Editors;
+import org.eclipse.mcp.builtins.json.Problem;
+import org.eclipse.mcp.builtins.json.Problems;
 import org.eclipse.mcp.builtins.json.TextEditorSelection;
 import org.eclipse.mcp.builtins.json.TextSelection;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
@@ -89,9 +99,64 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 		consoles.consoles = result.toArray(new Console[0]);
 		return consoles;
 	}
-	
-//	@Tool
-//	public Problem[] listProblems() {
-//		return new Problem[0];
-//	}
+
+//     public void openEditor(String fileUri, String selectionPattern) {
+//             
+//     }
+//     
+//     public void closeEditor(String fileUri, String selectionPattern) {
+//             
+//     }
+//     
+//     public boolean saveEditor(String editorUri) {
+//             
+//     }
+//
+//     public void changeEditorText(String fileUri, String proposedContent, String proposalTitle) {
+//     
+//     }
+       
+//     @Tool (
+//                     name = "listConsoles",
+//                     title = "List Consoles",
+//                     description = "List open Eclipse IDE consoles")
+//     
+//     public Projects getProjects() {
+//             
+//     }
+//     
+//     @Tool (
+//                     name = "listConsoles",
+//                     title = "List Consoles",
+//                     description = "List open Eclipse IDE consoles")
+//     
+//     public String readResource(String uri) {
+//             
+//     }
+//
+//     
+//     @Tool (
+//                     name = "listConsoles",
+//                     title = "List Consoles",
+//                     description = "List open Eclipse IDE consoles")
+//     
+
+     @Tool(title = "listProblems", description = "list Eclipse IDE compilation and configuration problems")
+     public Problems listProblems() {
+    	 Problems problems = new Problems();
+    	 List<Problem> results = new ArrayList<Problem>();
+    	 
+    	IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    	try {
+			for (IMarker marker: root.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE)) {
+				results.add(new Problem(marker));
+			}
+		} catch (CoreException e) {
+			throw new MCPException(e);
+		}
+    	
+    	problems.problems = results.toArray(Problem[]::new);
+ 		return problems;
+     }
+
 }
