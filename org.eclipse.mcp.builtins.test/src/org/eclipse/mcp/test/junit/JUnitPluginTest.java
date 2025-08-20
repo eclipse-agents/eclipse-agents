@@ -39,10 +39,18 @@ import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.ClientCapabilities;
+import io.modelcontextprotocol.spec.McpSchema.CompleteReference;
+import io.modelcontextprotocol.spec.McpSchema.CompleteRequest;
+import io.modelcontextprotocol.spec.McpSchema.CompleteResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
 import io.modelcontextprotocol.spec.McpSchema.InitializeResult;
 import io.modelcontextprotocol.spec.McpSchema.ListResourceTemplatesResult;
 import io.modelcontextprotocol.spec.McpSchema.ListToolsResult;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
+import io.modelcontextprotocol.spec.McpSchema.Resource;
+import io.modelcontextprotocol.spec.McpSchema.ResourceReference;
+import io.modelcontextprotocol.spec.McpSchema.ResourceTemplate;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -73,6 +81,13 @@ public final class JUnitPluginTest {
 //		    .elicitation(null)
 		    .build();
 	
+		suite.addTest(new TestCase("Don't run in UI Thread") {
+			@Override
+			protected void runTest() throws Throwable {
+				Assert.assertTrue("Dont run test in UI thread", !Thread.currentThread().equals((Display.getDefault().getThread())));
+			}
+		});
+		
 		suite.addTest(new TestCase("Set-up project") {
 			@Override
 			protected void runTest() throws Throwable {
@@ -334,6 +349,48 @@ public final class JUnitPluginTest {
 				
 				testEquals("console.name", console.get("name").asText(), "z/OS");
 				testEquals("console.type", console.get("type").asText(), "zosConsole");
+				
+			}
+		});
+		
+		suite.addTest(new TestCase("Template Complete Result: Project") {
+			@Override
+			protected void runTest() throws Throwable {
+				
+				boolean found = false;
+				ListResourceTemplatesResult result = client.listResourceTemplates();
+				for (ResourceTemplate rt: result.resourceTemplates()) {
+					if (rt.name().equals("Eclipse Workspace File")) {
+						CompleteReference ref = new ResourceReference(rt.uriTemplate());
+						CompleteRequest.CompleteArgument arg = new CompleteRequest.CompleteArgument("project", "");
+						CompleteRequest.CompleteContext context = new CompleteRequest.CompleteContext(new HashMap<String, String>());
+						CompleteRequest cr = new CompleteRequest(ref, arg, context);
+						CompleteResult res = client.completeCompletion(cr);
+						
+						CompleteResult.CompleteCompletion com = res.completion();
+						
+						Assert.assertTrue("Completions contains 'Project'", com.values().contains("Project"));
+						found = true;
+					
+					}
+				}
+				Assert.assertTrue("Found template for \"Eclipse Workspace File\"", found);
+				
+			}
+		});
+		
+		suite.addTest(new TestCase("Template Retrieve Resource") {
+			@Override
+			protected void runTest() throws Throwable {
+//				
+//				Failing with:
+//				java.lang.IllegalArgumentException: Could not resolve type id 'io.modelcontextprotocol.spec.McpSchema$TextResourceContents' as a subtype of `io.modelcontextprotocol.spec.McpSchema$ResourceContents`: no such class found
+//				 at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: io.modelcontextprotocol.spec.McpSchema$ReadResourceResult["contents"]->java.util.ArrayList[0])
+//				Seems to be a local class loading issue as this works outside of eclipse, and works outside of junit
+
+
+				ReadResourceResult result = client.readResource(new ReadResourceRequest("file://eclipse/Project/HelloWorld.java"));
+				System.err.println(result);
 				
 			}
 		});

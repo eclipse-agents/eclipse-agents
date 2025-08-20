@@ -104,7 +104,7 @@ public class Editors implements IResourceFactory {
 				
 					controller.addResource(McpSchema.Resource.builder()
 							.name(part.getTitle())
-							.uri("editors:///" + part.getTitle())
+							.uri("eclipse://editor/"+ part.getTitle())
 							.description(part.getTitleToolTip())
 							.mimeType("text/plain")
 							.build());
@@ -138,7 +138,8 @@ public class Editors implements IResourceFactory {
 
 	@Override
 	public String[] readResource(String url) {
-		// TODO Auto-generated method stub
+		//TODO {
+		// should be handled by the editor template template
 		return null;
 	}
 }
