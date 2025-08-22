@@ -1,14 +1,8 @@
 package org.eclipse.mcp.builtin.resource.templates;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -18,13 +12,12 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.mcp.builtins.Activator;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory.ResourceTemplate;
 
 @ResourceTemplate (
-		uriTemplate = "file://eclipse/{project}/{name}",
+		uriTemplate = "file://workspace/{relative-path}",
 		name = "Eclipse Workspace File",
 		description = "Content of an file in an Eclipse workspace")
 public class FileTemplates extends MCPAnnotatedResourceTemplateFactory {
@@ -75,47 +68,12 @@ public class FileTemplates extends MCPAnnotatedResourceTemplateFactory {
 	}
 
 	@Override
-	public String[] readResource(String url) {
-		String prefix = "file://eclipse/";
-		String postfix = url.substring(prefix.length());
-		String projectName = postfix.split("/")[0];
-		String fileRelativePath = postfix.substring(projectName.length() + 1);
-		
-		IPath path = Path.fromPortableString(fileRelativePath);
-		path.toOSString();
-		
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IProject project = workspace.getRoot().getProject(projectName);
-		if (project != null) {
-			IResource resource = project.findMember(fileRelativePath);
-			
-			if (resource == null) {
-				fileRelativePath = URLDecoder.decode(fileRelativePath);
-				resource = project.findMember(fileRelativePath);
-			}
-			if (resource instanceof IFile) {
-				IFile file = (IFile)resource;
-				
-				try (InputStreamReader reader = new InputStreamReader(
-						file.getContents(), file.getCharset())) {
-				       
-					BufferedReader breader = new BufferedReader(reader);
-					String read = breader.lines().collect(Collectors.joining("\n")); //$NON-NLS-1$
-					if (read != null) {
-						return new String[] { read };
-					}
-				}catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				} catch (CoreException e) {
-					e.printStackTrace();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			}
-			
+	public String[] readResource(String uri) {
+		String result = Activator.getDefault().getResourceContent(uri);
+		if (result != null) {
+			return new String[] { result };
 		}
-	
-		return new String[0];
+		return null;
 	}
 
 }

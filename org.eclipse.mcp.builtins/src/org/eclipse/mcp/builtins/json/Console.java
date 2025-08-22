@@ -1,5 +1,8 @@
 package org.eclipse.mcp.builtins.json;
 
+import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
+import org.eclipse.ui.console.IConsole;
+
 import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -11,14 +14,22 @@ public class Console {
 	@JsonPropertyDescription("Console name")
 	String name;
 	@JsonProperty()
-	int id;
-	@JsonProperty()
 	String type;
+	@JsonProperty()
+	String uri;
+	
+	public Console(IConsole console) {
+		super();
+		this.name = console.getName();
+		this.type = console.getType();
+		
+		this.uri = new ConsoleAdapter().getUniqueTemplatePrefix() + name;
+	}
 	
 	public Console(String name, int id, String type) {
 		super();
 		this.name = name;
-		this.id = id;
 		this.type = type;
+		this.uri = new ConsoleAdapter().getUniqueTemplatePrefix() + name;
 	}
 }
