@@ -1,5 +1,10 @@
 package org.eclipse.mcp.builtins;
 
+import org.eclipse.mcp.builtin.resource.AbsoluteFileAdapter;
+import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
+import org.eclipse.mcp.builtin.resource.EditorAdapter;
+import org.eclipse.mcp.builtin.resource.IResourceAdapter;
+import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -13,6 +18,13 @@ public class Activator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static Activator plugin;
+	
+	private IResourceAdapter<?>[] adapters = new IResourceAdapter[] {
+		new RelativeFileAdapter(),
+		new AbsoluteFileAdapter(),
+		new EditorAdapter(),
+		new ConsoleAdapter()
+	};
 	
 	/**
 	 * The constructor
@@ -40,5 +52,22 @@ public class Activator extends AbstractUIPlugin {
 	public static Activator getDefault() {
 		return plugin;
 	}
-
+	
+	public String getResourceContent(String uri) {
+		for (IResourceAdapter<?> adapter: adapters) {
+			if (uri.startsWith(adapter.getUniqueTemplatePrefix())) {
+				return adapter.uriToResourceContent(uri);
+			}
+		}
+		return null;
+	}
+	
+	public Object getEclipseResource(String uri) {
+		for (IResourceAdapter<?> adapter: adapters) {
+			if (uri.startsWith(adapter.getUniqueTemplatePrefix())) {
+				return adapter.uriToEclipseObject(uri);
+			}
+		}
+		return null;
+	}
 }

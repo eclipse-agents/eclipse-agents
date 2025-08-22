@@ -2,11 +2,11 @@ package org.eclipse.mcp.builtins.json;
 
 import java.util.Map;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 
 import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +28,9 @@ public class Problem {
 	
 	@JsonProperty(required = false)
 	String type;
+	
+	@JsonProperty(required = false)
+	String message;
 	
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("An integer value indicating where a text marker starts. This attribute is zero-relative and inclusive.")
@@ -106,6 +109,10 @@ public class Problem {
 				}
 			}
 	
+			if (map.containsKey(IMarker.MESSAGE)) {
+				message = map.get(IMarker.MESSAGE).toString();
+			}
+
 			if (map.containsKey(IMarker.CHAR_START) && 
 					map.get(IMarker.CHAR_START) instanceof Integer) {
 				charStart = (int)map.get(IMarker.CHAR_START);
@@ -131,10 +138,8 @@ public class Problem {
 				location = (String)map.get(IMarker.LOCATION);
 			}
 						
-			if (marker.getResource() instanceof IFile) {
-				resource_link = Util.fileToResourceLink((IFile)marker.getResource());
-			} else if (marker.getResource() instanceof IContainer) {
-				resource_link = Util.containerToResourceLink((IContainer)marker.getResource());
+			if (marker.getResource() != null) {
+				resource_link = new RelativeFileAdapter().eclipseObjectToResourceLink((marker.getResource()));
 			} 
 			
 		} catch (CoreException e) {

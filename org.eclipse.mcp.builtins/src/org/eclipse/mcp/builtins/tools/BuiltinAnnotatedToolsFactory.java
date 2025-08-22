@@ -1,23 +1,32 @@
 package org.eclipse.mcp.builtins.tools;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
+import org.eclipse.mcp.builtin.resource.EditorAdapter;
+import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
+import org.eclipse.mcp.builtins.Activator;
 import org.eclipse.mcp.builtins.json.Console;
 import org.eclipse.mcp.builtins.json.Consoles;
 import org.eclipse.mcp.builtins.json.Editor;
 import org.eclipse.mcp.builtins.json.Editors;
 import org.eclipse.mcp.builtins.json.Problem;
 import org.eclipse.mcp.builtins.json.Problems;
+import org.eclipse.mcp.builtins.json.Resource;
+import org.eclipse.mcp.builtins.json.Resources;
 import org.eclipse.mcp.builtins.json.TextEditorSelection;
 import org.eclipse.mcp.builtins.json.TextSelection;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
@@ -99,6 +108,80 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 		consoles.consoles = result.toArray(new Console[0]);
 		return consoles;
 	}
+	
+	@Tool (
+			name = "listProjects",
+			title = "List Projects",
+			description = "List open Eclipse IDE projects")
+	public Resources listProjects() {
+		
+		Resources resources = new Resources();
+		List<Resource> projects = new ArrayList<Resource>();
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		for (IProject project: workspace.getRoot().getProjects()) {
+			projects.add(new Resource(project, 0));
+		}
+		resources.resources = projects.toArray(Resource[]::new);
+		return resources;
+	}
+	
+	@Tool (
+			name = "listChildResources",
+			title = "List Child Resources",
+			description = "List child resources of an Eclipse project or folder")
+	public Resources listChildResources(
+			@ToolArg(name = "resourceURI", description = "URI of an eclipse project or folder")
+			String resourceURI) { 
+//			@ToolArg(name = "depth", description = "how many levels of descendents to return, max is 3", required = false)
+//			int depth) {
+		
+		Object resolved = Activator.getDefault().getEclipseResource(resourceURI);
+		if (resolved == null) {
+			throw new MCPException("The uri could not be resolved");
+		} else if (resolved instanceof IContainer) {
+			return new Resources((IContainer)resolved);
+		} else if (resolved instanceof IFile) {
+			throw new MCPException("the resource is a file.  Only folders can have children");
+		} else if (resolved instanceof File) {
+			if (!((File)resolved).isFile()) {
+				//TODO 
+				throw new MCPException("Absolute file paths not supported at this time");
+			} else {
+				throw new MCPException("the resource is a file.  Only folders can have children");
+			}
+		} else {
+			throw new MCPException("No text content could be read from that resource");
+		}
+	}
+	
+	@Tool (
+			name = "readResource",
+			title = "Read Resources",
+			description = "Returns the contents of a file, editor, or console URI")
+	public String readResource(
+			@ToolArg(name = "uri", description = "URI of an eclipse file, editor or console")
+			String uri) {
+	
+		String result =  Activator.getDefault().getResourceContent(uri);
+		if (result == null) {
+			Object resolved = Activator.getDefault().getEclipseResource(uri);
+			if (resolved == null) {
+				throw new MCPException("The uri could not be resolved");
+			} else if (resolved instanceof IContainer) {
+				throw new MCPException("The URI resolved to a folder or project.  Only files can be read");
+			} else if (resolved instanceof File) {
+				if (!((File)resolved).isFile()) {
+					throw new MCPException("The URI resolved to a folder.  Only files can be read");
+				}
+			} else {
+				throw new MCPException("No text content could be read from that resource");
+			}
+			throw new MCPException("No text content could be read from that resource");
+		}
+		return result;
+	}
+	
+	
 
 //     public void openEditor(String fileUri, String selectionPattern) {
 //             
@@ -142,21 +225,34 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 //     
 
      @Tool(title = "listProblems", description = "list Eclipse IDE compilation and configuration problems")
-     public Problems listProblems() {
-    	 Problems problems = new Problems();
-    	 List<Problem> results = new ArrayList<Problem>();
+     public Problems listProblems(
+    		 @ToolArg(name = "resourceURI", description = "URI file in the Eclipse workspace")
+    		 String resourceURI) {
     	 
-    	IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    	try {
-			for (IMarker marker: root.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE)) {
-				results.add(new Problem(marker));
-			}
-		} catch (CoreException e) {
-			throw new MCPException(e);
-		}
+    	 RelativeFileAdapter adapter= new RelativeFileAdapter();
+    	 IResource resource = adapter.uriToEclipseObject(resourceURI);
+    	 if (resource instanceof IFile) {
+    		 Problems problems = new Problems();
+        	 List<Problem> results = new ArrayList<Problem>();
+        	 
+        	IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        	try {
+    			for (IMarker marker: ((IFile)resource).findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE)) {
+    				results.add(new Problem(marker));
+    			}
+    		} catch (CoreException e) {
+    			throw new MCPException(e);
+    		}
+        	problems.problems = results.toArray(Problem[]::new);
+        	return problems;
+    	 } else if (resource instanceof IContainer) {
+    		 throw new MCPException("Problems cannot be returned for folder uris");
+    	 } else if (resource instanceof IEditorReference) {
+    		 //TODO
+    	 }
     	
-    	problems.problems = results.toArray(Problem[]::new);
- 		return problems;
+    	throw new MCPException("The resource URI could not be resolved");
+ 		
      }
 
 }

@@ -1,4 +1,4 @@
-package org.eclipse.mcp.test.junit;
+package org.eclipse.mcp.builtins.test.plugin;
 
 import java.io.ByteArrayInputStream;
 import java.time.Duration;
@@ -56,7 +56,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 @RunWith(AllTests.class)
-public final class JUnitPluginTest {
+public final class MCPServerTest {
 
 	/**
 	 * 

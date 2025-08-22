@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resource;
+package org.eclipse.mcp.builtin.resource.factory;
 
 import java.util.HashSet;
 import java.util.Set;

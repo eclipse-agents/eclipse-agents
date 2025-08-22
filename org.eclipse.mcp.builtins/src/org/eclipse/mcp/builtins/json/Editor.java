@@ -1,6 +1,9 @@
 package org.eclipse.mcp.builtins.json;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.mcp.builtin.resource.EditorAdapter;
+import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -25,19 +28,19 @@ public class Editor {
 	String name;
 	
 	@JsonProperty
-	@JsonPropertyDescription("The current content of this editor")
-	McpSchema.ResourceLink resource;
+	@JsonPropertyDescription("The contents of the text editor")
+	McpSchema.ResourceLink buffer;
 	
 	@JsonProperty
-	@JsonPropertyDescription("The file being edited")
+	@JsonPropertyDescription("The file being edited containing the last saved changes")
 	McpSchema.ResourceLink file;
 	
 	@JsonProperty
-	@JsonPropertyDescription("Whether this is the editor the user is currently using")
+	@JsonPropertyDescription("Whether this is the editor has the user's focus")
 	boolean isActive;
 	
 	@JsonProperty
-	@JsonPropertyDescription("Whether this editor's buffer has unsaved changes")
+	@JsonPropertyDescription("Whether text editor contains unsaved changes")
 	boolean isDirty;
 	
 	public Editor() {
@@ -50,7 +53,7 @@ public class Editor {
 		if (editor != null) {
 			this.name = editor.getTitle();
 			this.isDirty = editor.isDirty();
-			
+
 			IWorkbench workbench = PlatformUI.getWorkbench();
 			if (workbench != null) {
 				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
@@ -69,11 +72,11 @@ public class Editor {
 			
 			if (input instanceof IFileEditorInput) {
 				IFile ifile = ((IFileEditorInput)input).getFile();
-				file = Util.fileToResourceLink(ifile);
+				file = new RelativeFileAdapter().eclipseObjectToResourceLink((IResource)ifile);
 			}
 			
 			if (editor instanceof ITextEditor) {
-				resource = Util.editorToResourceLink((ITextEditor)editor);
+				buffer = new EditorAdapter().eclipseObjectToResourceLink((ITextEditor)editor);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 package org.eclipse.mcp.builtins;
 
-import org.eclipse.mcp.builtin.resource.Editors;
+import org.eclipse.mcp.builtin.resource.factory.Editors;
 import org.eclipse.mcp.builtin.resource.templates.EditorTemplates;
 import org.eclipse.mcp.builtin.resource.templates.FileTemplates;
 import org.eclipse.mcp.builtins.tools.BuiltinAnnotatedToolsFactory;
