@@ -5,6 +5,7 @@ import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.IResourceAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -69,5 +70,9 @@ public class Activator extends AbstractUIPlugin {
 			}
 		}
 		return null;
+	}
+	
+	public static Display getDisplay() {
+		return Display.getCurrent() == null ? Display.getDefault() : Display.getCurrent();
 	}
 }

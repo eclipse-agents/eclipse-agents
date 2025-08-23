@@ -1,18 +1,22 @@
 package org.eclipse.mcp.builtins.tools;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.patch.ApplyPatchOperation;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 import org.eclipse.mcp.builtins.Activator;
@@ -20,17 +24,17 @@ import org.eclipse.mcp.builtins.json.Console;
 import org.eclipse.mcp.builtins.json.Consoles;
 import org.eclipse.mcp.builtins.json.Editor;
 import org.eclipse.mcp.builtins.json.Editors;
-import org.eclipse.mcp.builtins.json.Problem;
 import org.eclipse.mcp.builtins.json.Problems;
-import org.eclipse.mcp.builtins.json.Resource;
 import org.eclipse.mcp.builtins.json.Resources;
 import org.eclipse.mcp.builtins.json.TextEditorSelection;
 import org.eclipse.mcp.builtins.json.TextSelection;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -171,6 +175,126 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 		}
 		return result;
 	}
+	
+
+/**
+diff --git a/com.ibm.systemz.db2.samples/cobol/example1/README.md b/com.ibm.systemz.db2.samples/cobol/example1/README.md
+index deb881a..a2199c5 100644
+--- a/com.ibm.systemz.db2.samples/cobol/example1/README.md
++++ b/com.ibm.systemz.db2.samples/cobol/example1/README.md
+@@ -4,7 +4,7 @@
+ 
+ Following environment was used : MVS System: VM30094.POK.STGLABS.IBM.COM
+ 
+-DB2 Subsystem name:port DB2D:61013 (DB2 version 13)
++DB2 Subsys name:port DB2D:61013 (DB2 version 13)
+ 
+ **Instructions:**
+ 
+@@ -50,7 +50,7 @@
+ 
+ **Explanation of changes applied in a PROCLIB**
+ 
+-Following definitions for //SYSTSIN should be applied in ELACFSP and ELACFSQL members of your-proclib   :
++Following deitions for //SYSTSIN should be applied in ELACFSP and ELACFSQL members of your-proclib   :
+  
+      //SYSTSIN DD *
+ 
+*/
+
+/**
+patch`: `--- java/src/java/Main.java
++++ java/src/java/Main.java
+@@ -5,8 +5,8 @@ public class Main {
+ 	public static void main(String[] args) {
+ 		// TODO Auto-generated method stub
+ 		System.out.println(\"asdf\");
+-		System.out.pintln(\"asdf\");
++		System.out.println(\"asdf\");
+ 		System.out.println(\"asdf\");
+-		System.ot.println(\"asdf\");
++		System.out.println(\"asdf\");
+ 	}
+ 
+ }
+ */
+//file://workspace/java/src/java/Main.java
+//	 @Tool (
+//				name = "applyPatch",
+//				title = "Apply Patch",
+//				description = "Apply a git unified diff format patch to ?workspace")
+//	public void applyPatch(
+//			@ToolArg(name = "patch", description = "A unified diff format patch to to workspace root")
+//			String patch,
+//			@ToolArg(name = "resourceURI", description = "uri to apply the patch to")
+//			String resourceUrl) {
+//
+//		System.out.println(patch);
+//		System.out.println(resourceUrl);
+//		IResource resource = resourceUrl == null ? null : 
+//				new RelativeFileAdapter().uriToEclipseObject(resourceUrl);
+//
+//		IStorage patchStorage = new IStorage() {
+//			@Override
+//			public <T> T getAdapter(Class<T> arg0) {
+//				return null;
+//			}
+//			@Override
+//			public InputStream getContents() throws CoreException {
+//				return new ByteArrayInputStream(patch.getBytes()) {
+//
+//					@Override
+//					public synchronized int read() {
+//						// TODO Auto-generated method stub
+//						return super.read();
+//					}
+//
+//					@Override
+//					public synchronized int read(byte[] b, int off, int len) {
+//						// TODO Auto-generated method stub
+//						return super.read(b, off, len);
+//					}
+//
+//					@Override
+//					public synchronized byte[] readAllBytes() {
+//						// TODO Auto-generated method stub
+//						return super.readAllBytes();
+//					}
+//
+//					@Override
+//					public int readNBytes(byte[] b, int off, int len) {
+//						// TODO Auto-generated method stub
+//						return super.readNBytes(b, off, len);
+//					}
+//					
+//				};
+//			}
+//			@Override
+//			public IPath getFullPath() {
+//				return null;
+//			}
+//			@Override
+//			public String getName() {
+//				return "MCP Patch";
+//			}
+//			@Override
+//			public boolean isReadOnly() {
+//				return true;
+//			}
+//		};
+//		
+//		Activator.getDisplay().asyncExec(new Runnable() {
+//			@Override
+//			public void run() {
+//				IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+//				
+//				ApplyPatchOperation oper = new ApplyPatchOperation(activePart, patchStorage, resource, new CompareConfiguration());
+//				
+//				
+//				BusyIndicator.showWhile(Display.getDefault(), oper);
+//			}
+//		});
+//	}
 	
 	
 

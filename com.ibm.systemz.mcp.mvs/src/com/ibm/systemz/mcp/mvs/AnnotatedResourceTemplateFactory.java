@@ -147,7 +147,7 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 					throw new MCPException(status);
 				}
 			} else {
-				throw new MCPException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Host not found: " + system));
+				throw new MCPException("Host not found: " + system);
 			}
 		}
 		

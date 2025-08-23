@@ -4,22 +4,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.Annotations;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
-import io.modelcontextprotocol.spec.McpSchema.Role;
 
 public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 	
@@ -71,7 +71,7 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 				
 		
 		if (resource instanceof IFile) {
-			builder.description("Text content of file in Eclipse workspace");
+			builder.description("Eclipse workspace file");
 			builder.mimeType("text/plain");
 
 			try {
@@ -82,8 +82,12 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
-		} else {
-			
+		} else if (resource instanceof IProject) {
+			builder.description("Eclipse workspace project");
+		} else if (resource instanceof IWorkspaceRoot) {
+			builder.description("Eclipse workspace root");
+		} else if (resource instanceof IFolder) {
+			builder.description("Eclipse workspace folder");
 		}
 
 		return builder.build();
