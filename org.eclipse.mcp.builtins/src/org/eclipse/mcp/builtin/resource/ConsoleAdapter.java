@@ -61,9 +61,9 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 				.uri(eclipseObjectToURI(console))
 				.name(console.getName())
 				.description("Content of an Eclipse IDE console")
-				.mimeType("text/plain")
-				.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0));
+				.mimeType("text/plain");
 		
+		addAnnotations(builder);
 		
 		return builder.build();
 

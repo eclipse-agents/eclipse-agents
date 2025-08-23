@@ -145,6 +145,5 @@ public class Problem {
 		} catch (CoreException e) {
 			throw new MCPException(e);
 		}
-
 	}
 }
