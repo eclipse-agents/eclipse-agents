@@ -22,9 +22,9 @@ import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.spec.McpSchema.Role;
 
 public class RelativeFileAdapter implements IResourceAdapter<IResource> {
-
-
+	
 	final String template = "file://workspace/{relative-path}";
+	boolean includeAnnotations = false;
 
 	@Override
 	public String getTemplate() {
@@ -39,7 +39,9 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 	@Override
 	public IResource uriToEclipseObject(String uri) {
 		IResource resource = null;
-		if (uri.startsWith(getUniqueTemplatePrefix())) {
+		if (uri.equals(getUniqueTemplatePrefix())) {
+			return ResourcesPlugin.getWorkspace().getRoot();
+		} else if (uri.startsWith(getUniqueTemplatePrefix())) {
 			String relativePath = uri.substring(getUniqueTemplatePrefix().length());
 			IWorkspace workspace = ResourcesPlugin.getWorkspace();
 			resource = workspace.getRoot().findMember(relativePath);
@@ -63,8 +65,10 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 
 		McpSchema.ResourceLink.Builder builder =  McpSchema.ResourceLink.builder()
 				.uri(eclipseObjectToURI(resource))
-				.name(resource.getName())
-				.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0));
+				.name(resource.getName());
+		
+		addAnnotations(builder);
+				
 		
 		if (resource instanceof IFile) {
 			builder.description("Text content of file in Eclipse workspace");

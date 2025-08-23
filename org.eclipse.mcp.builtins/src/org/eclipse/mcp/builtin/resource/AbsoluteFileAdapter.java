@@ -55,9 +55,9 @@ public class AbsoluteFileAdapter implements IResourceAdapter<File> {
 				.uri(eclipseObjectToURI(file))
 				.name(file.getName())
 				.description("Content of an file in an Eclipse workspace")
-				.mimeType("text/plain")
-				.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0));
+				.mimeType("text/plain");
 		
+		addAnnotations(builder);
 		
 		if (file.isFile()) {
 			builder.size(file.length());

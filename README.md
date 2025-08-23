@@ -14,7 +14,7 @@ Provides a centralized location for users customize Eclipse MCP capabilities and
 - [Java Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
 
 ## Demonstrations
-
+- [Claude Conversation: What's wrong with my java project](https://claude.ai/share/31968356-df7e-471b-8fec-3b85868a2376)
 - [Demo for Plug-in Developers](https://ibm.box.com/s/s6nc9n1nlpi4uiuzl7jpo4x6ra25zrk5)
 - [Demo for Eclipse and IDz Users](https://ibm.box.com/s/sg4aq3w723cp7a7i75rdj0l1dgm3txg0)
 - [Early prototype of Eclipse and Chat interactivity](https://ibm.box.com/s/cv4dnrvm6heapmu0c1amucs9l177fvrh)

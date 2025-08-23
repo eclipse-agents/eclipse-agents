@@ -1,5 +1,6 @@
 package org.eclipse.mcp.builtin.resource;
 
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 
 public interface IResourceAdapter<T> {
@@ -24,5 +25,11 @@ public interface IResourceAdapter<T> {
 			return eclipseObjectToResourceContent(object);
 		}
 		return null;
+	}
+	
+	public default void addAnnotations(McpSchema.ResourceLink.Builder builder) {
+		//TODO if (preference)
+		
+//		builder.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0));
 	}
 }
