@@ -47,7 +47,7 @@ Users can use capabilities to enable/disable a collection of Tool, Recourse, Tem
     - Platform (Builtin)
     - Db2 for z/OS
       - Runtime Options
-  Agent Integrations
+  - Agent Integrations
     - Claude Code
     - Goose
 
@@ -89,20 +89,20 @@ Users can use capabilities to enable/disable a collection of Tool, Recourse, Tem
 
 ## Tools
 
-### CORE
-
-- 🤔 readResource(String fileURI)
-  - Some agents will not read a resource without user intervention regardless of audience annotations, yet they will call tools 
-
 ### BUILT IN
-
-- 🤔 changeEditorText(?, ?)
-- 🤔 void closeEditor("editor://eclipse/{editor-tab-name}")
-- ✓ Selection currentSelection()
-- 🤔 Resources getProjects()
+- ✓ readResource(uri)
+  - Some agents will not read a resource without user intervention regardless of audience annotations, yet they will call tools
+  - accepts uri for console, editor or file
 - ✓ Consoles listConsoles()
 - ✓ Editors listEditors()
-- ✓ Problems listProblems()
+- ✓ Problems listProblems(resourceURI) 
+  - accepts uri for workspace, project, folder or 
+  - TODO accept uri for editor
+- ✓ Selection currentSelection()
+- ✓ Resources listProjects()
+- ✓ Resources listChildResources(resourceURI, depth)
+- 🤔 changeEditorText(?, ?)
+- 🤔 void closeEditor("editor://eclipse/{editor-tab-name}")
 - 🤔 void openEditor(file://{absolute-or-workspace-relative-file-path")
 - 🤔 void saveEditor("editor://eclipse/{editor-tab-name}")
 
