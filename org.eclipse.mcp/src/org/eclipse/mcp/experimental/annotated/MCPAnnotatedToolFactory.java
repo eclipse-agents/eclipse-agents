@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.factory.ToolFactory;
 import org.eclipse.mcp.internal.Tracer;
@@ -26,12 +26,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpError;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Content;
+import io.modelcontextprotocol.spec.McpSchema.ErrorCodes;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
+import io.modelcontextprotocol.spec.McpSchema.JSONRPCResponse.JSONRPCError;
 
 
 /**
@@ -269,6 +272,7 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 		}
 
 		Object response = null;
+		McpError error = null;
 		try {
 			response = method.invoke(instance, inputs.toArray());
 			if (response != null) {
@@ -295,10 +299,22 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
 						"ToolFactory.apply(Map<String, Object>) returned null");
 			}
-		} catch (Exception e) {
-			content.add(new TextContent(e.getLocalizedMessage()));
-			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, e.getLocalizedMessage(), e);
-			isError = true;
+		} catch (McpError e) {
+			error = e;
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
+					"ToolFactory.apply(Map<String, Object>) threw McpError", e) ;
+			
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof McpError) {
+				error = (McpError)e.getTargetException();
+			} else {
+				error = new McpError(new JSONRPCError(ErrorCodes.INTERNAL_ERROR, e.getTargetException().getLocalizedMessage(), e.getTargetException()));
+			}
+		}
+		catch (Exception e) {
+			error = new McpError(new JSONRPCError(ErrorCodes.INTERNAL_ERROR, e.getLocalizedMessage(), e));
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
+					"ToolFactory.apply(Map<String, Object>) threw unexpected error", e) ;
 		}
 		
 		System.out.println(content);
@@ -308,6 +324,9 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 		System.out.println(createOutputSchema());
 		System.out.println();
 		
+		if (error != null) {
+			throw error;			
+		}
 		CallToolResult result = (structuredContent == null) ?
 				new CallToolResult(content, isError) :
 				new CallToolResult(content, isError, structuredContent);

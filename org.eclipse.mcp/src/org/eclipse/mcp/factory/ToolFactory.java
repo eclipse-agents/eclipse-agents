@@ -32,7 +32,7 @@ import io.modelcontextprotocol.spec.McpSchema.TextContent;
  * Factory for contributing a single MCP tool
  * See MCPAnnotatedToolFactory for a convenience way to create multiple tools in a file using annotations
  */
-public abstract class ToolFactory implements IFactory{	
+public abstract class ToolFactory implements IFactory {	
 
 	private ListenerList<ToolVisibilityListener> listeners = new ListenerList<ToolVisibilityListener>();
 	private boolean visible = true;
