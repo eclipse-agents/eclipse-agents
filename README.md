@@ -13,10 +13,11 @@ The built-in MCP Server makes available a suite MCP resources, templates and too
 ## Documentation
 
 - [Extension Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html)
-- [Java Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
-- [Platform MCP Tools](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
-- [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
-- [Platform Resource Factories](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
+- [Extension Point Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
+- Summaries of Platform MCP contributions:
+  - [Platform MCP Tools](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
+  - [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtin/resource/templates/package-summary.html)
+  - [Platform Resource Factories](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtin/resource/factory/package-summary.html)
 
 ## Demonstrations
 
