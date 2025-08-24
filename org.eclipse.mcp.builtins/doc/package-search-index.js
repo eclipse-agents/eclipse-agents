@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.eclipse.mcp.builtin.resource"},{"l":"org.eclipse.mcp.builtin.resource.factory"},{"l":"org.eclipse.mcp.builtin.resource.templates"},{"l":"org.eclipse.mcp.builtins.json"},{"l":"org.eclipse.mcp.builtins.tools"}];updateSearchResults();
