@@ -12,6 +12,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+/**
+ * Contributes MCP Resource template "eclipse://editor/{name}" and completion assistance
+ */
 @ResourceTemplate (
 		uriTemplate = "eclipse://editor/{name}",
 		name = "Eclipse Editor",

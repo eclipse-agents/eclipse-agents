@@ -20,7 +20,7 @@ import org.eclipse.ui.PlatformUI;
 import io.modelcontextprotocol.spec.McpSchema;
 
 /**
- * Maintains an MCP resource for each open Eclipse Text Editor
+ * Synchronizes availability of one ""eclipse://editor/{name}" MCP resource for each open Eclipse editor
  */
 public class Editors implements IResourceFactory {
 
