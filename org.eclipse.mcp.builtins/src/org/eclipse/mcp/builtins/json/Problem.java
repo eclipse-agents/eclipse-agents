@@ -3,7 +3,6 @@ package org.eclipse.mcp.builtins.json;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;

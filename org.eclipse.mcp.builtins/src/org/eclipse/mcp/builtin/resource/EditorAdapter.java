@@ -85,6 +85,8 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 	
 
 	public ResourceLink eclipseObjectToResourceLink(ITextEditor textEditor) {
+		textEditor.getDocumentProvider();
+		textEditor.getEditorInput();
 		IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
 		
 		McpSchema.ResourceLink.Builder builder = McpSchema.ResourceLink.builder()

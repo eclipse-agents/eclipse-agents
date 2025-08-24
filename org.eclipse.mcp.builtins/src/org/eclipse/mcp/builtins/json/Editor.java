@@ -27,11 +27,11 @@ public class Editor {
 	@JsonPropertyDescription("Title of this editor")
 	String name;
 	
-	@JsonProperty
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("The contents of the text editor")
 	McpSchema.ResourceLink buffer;
 	
-	@JsonProperty
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("The file being edited containing the last saved changes")
 	McpSchema.ResourceLink file;
 	
@@ -54,6 +54,7 @@ public class Editor {
 			this.name = editor.getTitle();
 			this.isDirty = editor.isDirty();
 
+			//TODO does active check may fail if Eclipse doesn't have focus
 			IWorkbench workbench = PlatformUI.getWorkbench();
 			if (workbench != null) {
 				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
@@ -88,5 +89,9 @@ public class Editor {
 			this.name = reference.getTitle();
 			this.isDirty = reference.isDirty();
 		}
+	}
+	
+	public boolean isValid() {
+		return file != null && buffer != null;
 	}
 }
