@@ -24,7 +24,7 @@ import org.eclipse.mcp.Activator;
 
 @ResourceTemplate (name = "PDS Member", 
 		description = "A file that is a member of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set (PDS)",
-		uriTemplate = "file://{host}/mvs/{pds}/{member}")
+		uriTemplate = "file://mvs/{host}/{pds}/{member}")
 public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTemplateFactory {
 
 	Map<ISubSystem, QueryDataSetsJob> dataSetSearchJobs = new HashMap<ISubSystem, QueryDataSetsJob>();
