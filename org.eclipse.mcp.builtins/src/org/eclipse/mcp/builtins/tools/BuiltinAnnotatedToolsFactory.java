@@ -59,7 +59,7 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 	@Tool (
 			name = "currentSelection",
 			title = "Currrent Selection",
-			description = "Return the text selection of active Eclipse IDE text editor")
+			description = "Return the active Eclipse IDE text editor and its selected text")
 	public TextEditorSelection currentSelection() {
 		final TextEditorSelection selection = new TextEditorSelection();
 		Display.getDefault().syncExec(new Runnable() {
@@ -134,7 +134,7 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 	@Tool (
 			name = "listChildResources",
 			title = "List Child Resources",
-			description = "List child resources of an Eclipse project or folder")
+			description = "List child resources of an Eclipse workspace, project or folder URI")
 	public Resources listChildResources(
 			@ToolArg(name = "resourceURI", description = "URI of an eclipse project or folder")
 			String resourceURI,
@@ -162,8 +162,8 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 	
 	@Tool (
 			name = "readResource",
-			title = "Read Resources",
-			description = "Returns the contents of a file, editor, or console URI")
+			title = "Read Resource",
+			description = "Returns the contents of an Eclipse workspace file, editor, or console URI")
 	public String readResource(
 			@ToolArg(name = "uri", description = "URI of an eclipse file, editor or console")
 			String uri) {
@@ -188,7 +188,7 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 	}
 	
 
-/**
+/*
 diff --git a/com.ibm.systemz.db2.samples/cobol/example1/README.md b/com.ibm.systemz.db2.samples/cobol/example1/README.md
 index deb881a..a2199c5 100644
 --- a/com.ibm.systemz.db2.samples/cobol/example1/README.md
@@ -308,13 +308,20 @@ patch`: `--- java/src/java/Main.java
 //	}
 	
 	
-	 @Tool(title = "openEditor", description = "open an Eclipse IDE editor on a file and set an initial text selection")
+	/**
+	 * 
+	 * @param fileUri
+	 * @param selectionOffset
+	 * @param selectionLength
+	 * @return
+	 */
+	 @Tool(title = "openEditor", description = "open an Eclipse IDE editor on a file URI and set an initial text selection")
      public Editor openEditor(
-    		 @ToolArg(name = "fileUri", description = "URI file in the Eclipse workspace")
+    		 @ToolArg(name = "fileUri", description = "Eclipse workspace file uri")
     		 String fileUri, 
-    		 @ToolArg(name = "selectionOffset", description = "offset of the selected text", required = false)
+    		 @ToolArg(name = "selectionOffset", description = "offset of the text selection", required = false)
     		 int selectionOffset, 
-    		 @ToolArg(name = "selectionLength", description = "length of the selected text", required = false)
+    		 @ToolArg(name = "selectionLength", description = "length of the text selection", required = false)
     		 int selectionLength) {
     	 
 		 RelativeFileAdapter adapter = new RelativeFileAdapter();
@@ -368,7 +375,7 @@ patch`: `--- java/src/java/Main.java
      
 	 @Tool(title = "closeEditor", description = "close an Eclipse IDE editor")
      public void closeEditor(
-    		 @ToolArg(name = "editorUri", description = "URI of an Eclipse editor")
+    		 @ToolArg(name = "editorUri", description = "URI of an open Eclipse editor")
     		 String editorUri) {
     	 EditorAdapter adapter = new EditorAdapter();
     	 final IEditorReference reference = adapter.uriToEclipseObject(editorUri);
@@ -382,9 +389,9 @@ patch`: `--- java/src/java/Main.java
     	 });
      }
      
-	 @Tool(title = "saveEditor", description = "open an Eclipse IDE editor on a file and set an initial text selection")
+	 @Tool(title = "saveEditor", description = "save the contents of a dirty Eclipse IDE editor to file")
      public boolean saveEditor(
-    		 @ToolArg(name = "editorUri", description = "URI of an Eclipse editor")
+    		 @ToolArg(name = "editorUri", description = "URI of an open Eclipse editor")
     		 String editorUri) {
     	 EditorAdapter adapter = new EditorAdapter();
     	 final IEditorReference reference = adapter.uriToEclipseObject(editorUri);
@@ -417,7 +424,7 @@ patch`: `--- java/src/java/Main.java
 
 	 @Tool(title = "changeEditorText", description = "Make one or more changes to an Eclipse text editor")
      public boolean changeEditorText(
-    		 @ToolArg(name = "editorURI", description = "URI of an Eclipse editor")
+    		 @ToolArg(name = "editorURI", description = "Open Eclipse editor URI")
     		 String editorURI, 
     		 @ToolArg(name = "replacements", description = "One or more text replacements to be applied in order")
     		 TextReplacement[] replacements) {
@@ -481,9 +488,9 @@ patch`: `--- java/src/java/Main.java
 
      @Tool(title = "listProblems", description = "list Eclipse IDE compilation and configuration problems")
      public Problems listProblems(
-    		 @ToolArg(name = "resourceURI", description = "Eclipse workspace file URI")
+    		 @ToolArg(name = "resourceURI", description = "Eclipse workspace file or editor URI")
     		 String resourceURI,
-    		 @ToolArg(name = "severity", description = "One of ERROR, INFO or WARNING", required = false)
+    		 @ToolArg(name = "severity", description = "One of ERROR, INFO or WARNING. Default i", required = false)
     		 String severity) {
     	 
     	 Object resource = null;
@@ -505,7 +512,7 @@ patch`: `--- java/src/java/Main.java
     		 	 throw new MCPException("Severity was not ERROR, WARNING or INFO");
     		 }
     	 } else {
-    		 severity = null;
+    		 markerSeverity = IMarker.SEVERITY_ERROR;
     	 }
 
     	 if (resource instanceof IResource) {
@@ -521,9 +528,9 @@ patch`: `--- java/src/java/Main.java
  		
      }
      
-     @Tool(title = "listTasks", description = "list codebase locations containing TODO comments")
+     @Tool(title = "listTasks", description = "list codebase locations of tasks including TODO comments")
      public Tasks listTasks(
-    		 @ToolArg(name = "resourceURI", description = "Eclipse workspace file URI", required = false)
+    		 @ToolArg(name = "resourceURI", description = "Eclipse workspace file or editor URI", required = false)
     		 String resourceURI) {
     	 
     	 Object resource = null;

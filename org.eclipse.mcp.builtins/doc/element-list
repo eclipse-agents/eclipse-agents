@@ -1,0 +1,5 @@
+org.eclipse.mcp.builtin.resource
+org.eclipse.mcp.builtin.resource.factory
+org.eclipse.mcp.builtin.resource.templates
+org.eclipse.mcp.builtins.json
+org.eclipse.mcp.builtins.tools

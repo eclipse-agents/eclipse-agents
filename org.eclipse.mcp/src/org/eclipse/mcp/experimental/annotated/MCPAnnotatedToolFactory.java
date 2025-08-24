@@ -1,5 +1,6 @@
 package org.eclipse.mcp.experimental.annotated;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -50,6 +51,7 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	 */
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
+	@Documented
 	public @interface Tool {
 	    /**
 	     *	Intended for programmatic or logical use, but used as a display name in past specs or fallback (if title isn't present).

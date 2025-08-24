@@ -1,6 +1,7 @@
 package org.eclipse.mcp.experimental.annotated;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -22,6 +23,7 @@ public abstract class MCPAnnotatedResourceTemplateFactory implements IResourceTe
 	
 	@Retention(RetentionPolicy.RUNTIME) // Match the retention of the repeatable annotation
 	@Target(ElementType.TYPE)
+	@Documented
 	public @interface ResourceTemplates {
 		ResourceTemplate[] value(); // Array of the repeatable annotation
 	}
@@ -29,6 +31,7 @@ public abstract class MCPAnnotatedResourceTemplateFactory implements IResourceTe
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.TYPE)
 	@Repeatable(ResourceTemplates.class)
+	@Documented
 	public @interface ResourceTemplate {
 		/**
 		 * A URI template (according to RFC 6570) that can be used to construct resource URIs.
