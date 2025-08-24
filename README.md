@@ -1,19 +1,26 @@
 # Eclipse Plug-In Developer Extension for Model Context Protocol Services
 
-The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html) can be used to declare and instantiate Model Context Protocol (MCP) servers that run within the Eclipse IDE's VM enable interactivity between Eclipse based experiences and LLM Chat or Agents experience running within or outside of the Eclipse IDE.
+The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html) can be used to declare and instantiate Model Context Protocol (MCP) servers that run within the Eclipse IDE's VM enable interactivity between Eclipse based experiences and LLM-powered Agentic experiences running within or outside of the Eclipse IDE.
 
 It provides a simple mechanism to contribute MCP Tools and Resources to an MCP server running inside Eclipse.
 
 Optional access to the underlying [modelcontextprotocol/java-sdk](https://github.com/modelcontextprotocol/java-sdk) elements are available
 
-Provides a centralized location for users customize Eclipse MCP capabilities and preferences
+Provides a centralized location for users customize Eclipse MCP capabilities and preferences.
+
+The built-in MCP Server makes available a suite MCP resources, templates and tools accessing the Eclipse platform, enabling agents to interact with your Eclipse IDEs workspace files, editors, consoles, problems and tasks.
 
 ## Documentation
 
 - [Extension Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html)
-- [Java Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
+- [Extension Point Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
+- Summaries of Platform MCP contributions:
+  - [Platform MCP Tools](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
+  - [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtin/resource/templates/package-summary.html)
+  - [Platform Resource Factories](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtin/resource/factory/package-summary.html)
 
 ## Demonstrations
+
 - [Claude Conversation: What's wrong with my java project](https://claude.ai/share/31968356-df7e-471b-8fec-3b85868a2376)
 - [Demo for Plug-in Developers](https://ibm.box.com/s/s6nc9n1nlpi4uiuzl7jpo4x6ra25zrk5)
 - [Demo for Eclipse and IDz Users](https://ibm.box.com/s/sg4aq3w723cp7a7i75rdj0l1dgm3txg0)
@@ -28,18 +35,6 @@ IT also adds a new "Platform MCP" preference page will let users:
 - Copy the URL to clipboard
 - Turn on/off capabilities/activities for different categories of MCP tools, resources and prompts
 - Add custom preference pages under the MCP preference page to toggle your plugin's behavior and contributions
-
-## [Extenion Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html)
-
-## [Java Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
-
-## Demonstrations
-
-- [Early prototype of Eclipse and Chat interactivity](https://ibm.box.com/s/cv4dnrvm6heapmu0c1amucs9l177fvrh)
-
-- [Demo for Plug-in Developers](https://ibm.box.com/s/s6nc9n1nlpi4uiuzl7jpo4x6ra25zrk5)
-
-- [Demo for Eclipse and IDz Users](https://ibm.box.com/s/sg4aq3w723cp7a7i75rdj0l1dgm3txg0)
 
 To expose an aspect of your IDE plugin as an MCP tool, do the following:
 

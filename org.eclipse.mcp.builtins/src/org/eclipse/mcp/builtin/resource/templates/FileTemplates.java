@@ -16,6 +16,9 @@ import org.eclipse.mcp.builtins.Activator;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory.ResourceTemplate;
 
+/**
+ * Contributes MCP Resource template "file://workspace/{relative-path}" and completion assistance
+ */
 @ResourceTemplate (
 		uriTemplate = "file://workspace/{relative-path}",
 		name = "Eclipse Workspace File",
