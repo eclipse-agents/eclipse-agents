@@ -90,6 +90,7 @@ Users can use capabilities to enable/disable a collection of Tool, Recourse, Tem
 ## Tools
 
 ### BUILT IN
+
 - ✓ readResource(uri)
   - Some agents will not read a resource without user intervention regardless of audience annotations, yet they will call tools
   - accepts uri for console, editor or file
@@ -101,10 +102,10 @@ Users can use capabilities to enable/disable a collection of Tool, Recourse, Tem
 - ✓ Selection currentSelection()
 - ✓ Resources listProjects()
 - ✓ Resources listChildResources(resourceURI, depth)
-- 🤔 changeEditorText(?, ?)
-- 🤔 void closeEditor("editor://eclipse/{editor-tab-name}")
-- 🤔 void openEditor(file://{absolute-or-workspace-relative-file-path")
-- 🤔 void saveEditor("editor://eclipse/{editor-tab-name}")
+- ✓ changeEditorText("editor://eclipse/{editor-tab-name}", TextChanges)
+- ✓ void closeEditor("editor://eclipse/{editor-tab-name}")
+- ✓ void openEditor(file://{absolute-or-workspace-relative-file-path")
+- ✓ void saveEditor("editor://eclipse/{editor-tab-name}")
 
 ### Db2 for z/OS
 

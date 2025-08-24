@@ -258,7 +258,7 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 	public CallToolResult apply(McpSyncServerExchange exchange, CallToolRequest req) {
 
 		List<Content> content = new ArrayList<Content>();
-		boolean isError = false;
+
 		Map<String, Object> structuredContent = null;
 		List<Object> inputs = new ArrayList<Object>();
 		for (Parameter param: method.getParameters()) {
@@ -328,8 +328,8 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			throw error;			
 		}
 		CallToolResult result = (structuredContent == null) ?
-				new CallToolResult(content, isError) :
-				new CallToolResult(content, isError, structuredContent);
+				new CallToolResult(content, false) :
+				new CallToolResult(content, false, structuredContent);
 
 		return result;
 	}

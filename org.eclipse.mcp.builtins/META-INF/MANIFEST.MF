@@ -20,7 +20,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor,
  com.fasterxml.jackson.core.jackson-annotations,
  org.eclipse.core.filesystem,
- org.eclipse.compare
+ org.eclipse.compare,
+ org.eclipse.swt
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.eclipse.mcp.builtins
 Bundle-ActivationPolicy: lazy

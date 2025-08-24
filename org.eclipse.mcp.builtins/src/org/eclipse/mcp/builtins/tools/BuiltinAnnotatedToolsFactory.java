@@ -1,23 +1,23 @@
 package org.eclipse.mcp.builtins.tools;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.compare.CompareConfiguration;
-import org.eclipse.compare.patch.ApplyPatchOperation;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 import org.eclipse.mcp.builtins.Activator;
 import org.eclipse.mcp.builtins.json.Console;
@@ -27,19 +27,25 @@ import org.eclipse.mcp.builtins.json.Editors;
 import org.eclipse.mcp.builtins.json.Problems;
 import org.eclipse.mcp.builtins.json.Resources;
 import org.eclipse.mcp.builtins.json.TextEditorSelection;
+import org.eclipse.mcp.builtins.json.TextReplacement;
 import org.eclipse.mcp.builtins.json.TextSelection;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
-import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 
@@ -85,7 +91,10 @@ public class BuiltinAnnotatedToolsFactory extends MCPAnnotatedToolFactory {
 		for (IWorkbenchWindow ww: PlatformUI.getWorkbench().getWorkbenchWindows()) {
 			for (IWorkbenchPage page: ww.getPages()) {
 				for (IEditorReference reference: page.getEditorReferences()) {
-					result.add(new Editor(reference));
+					Editor editor = new Editor(reference);
+					if (editor.isValid()) {
+						result.add(new Editor(reference));
+					}
 				}
 			}
 		}
@@ -297,46 +306,175 @@ patch`: `--- java/src/java/Main.java
 //	}
 	
 	
+	 @Tool(title = "openEditor", description = "open an Eclipse IDE editor on a file and set an initial text selection")
+     public Editor openEditor(
+    		 @ToolArg(name = "fileUri", description = "URI file in the Eclipse workspace")
+    		 String fileUri, 
+    		 @ToolArg(name = "selectionOffset", description = "offset of the selected text", required = false)
+    		 int selectionOffset, 
+    		 @ToolArg(name = "selectionLength", description = "length of the selected text", required = false)
+    		 int selectionLength) {
+    	 
+		 RelativeFileAdapter adapter = new RelativeFileAdapter();
+    	 IResource resource = adapter.uriToEclipseObject(fileUri);
+    	 final Editor[] result = new Editor[] { null };
+    	 
+    	 if (resource instanceof IFile) {
+    		 Display.getDefault().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+							IWorkbenchPart part = page.getActivePart();
+							part.dispose();
+							
+							IEditorPart editor = IDE.openEditor(page, (IFile)resource, true);
+							result[0] = new Editor(editor);
+							
+							if (editor instanceof ITextEditor) {
+								try {
+									ITextEditor textEditor= (ITextEditor) editor;
+									IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
+									if (selectionOffset >= 0 && document.getLength() > selectionOffset) {
+										if (selectionLength > 0 && document.getLength() > selectionOffset + selectionLength) {
+											textEditor.selectAndReveal(selectionOffset, selectionLength);
+										} else {
+											textEditor.selectAndReveal(selectionOffset, 0);
+										}
+									}
+								} catch (Exception e) {
+									// swallow selection errors
+									e.printStackTrace();
+								}
+							}
+							page.activate(editor);
+							page.getActivePart();
+							
+						} catch (PartInitException e) {
+							throw new MCPException(e);
+						} catch (CoreException e) {
+							throw new MCPException(e);
+						} 
+					}
+    		 });
+    	 } else {
+    		 throw new MCPException("The file URI could not be resolved");
+    	 }
+    	 
+    	 return result[0];
+     }
+     
+	 @Tool(title = "closeEditor", description = "close an Eclipse IDE editor")
+     public void closeEditor(
+    		 @ToolArg(name = "editorUri", description = "URI of an Eclipse editor")
+    		 String editorUri) {
+    	 EditorAdapter adapter = new EditorAdapter();
+    	 final IEditorReference reference = adapter.uriToEclipseObject(editorUri);
+    	 
+    	 //TODO close just the editor, not all editors on editor's file
+    	 Activator.getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				reference.getPage().closeEditors(new IEditorReference[] { reference }, true);
+			}
+    	 });
+     }
+     
+	 @Tool(title = "saveEditor", description = "open an Eclipse IDE editor on a file and set an initial text selection")
+     public boolean saveEditor(
+    		 @ToolArg(name = "editorUri", description = "URI of an Eclipse editor")
+    		 String editorUri) {
+    	 EditorAdapter adapter = new EditorAdapter();
+    	 final IEditorReference reference = adapter.uriToEclipseObject(editorUri);
+    	 boolean[] result = new boolean[] { false };
+    	 if (reference != null) {
+    		 if (reference.isDirty()) {
+		    	 Activator.getDisplay().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							IEditorInput input = reference.getEditorInput();
+							if (input instanceof IFileEditorInput) {
+								IFile ifile = ((IFileEditorInput)input).getFile();
+								result[0] = IDE.saveAllEditors(new IResource[] {ifile}, true);
+							}
+						} catch (PartInitException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+		    	 });
+    		 } else {
+    			 throw new MCPException("Editor does not have unsaved changes");
+    		 }
+    	 } else {
+    		 throw new MCPException("editorURI could not be resolved");
+    	 }
+    	 return result[0];
+     }
 
-//     public void openEditor(String fileUri, String selectionPattern) {
-//             
-//     }
-//     
-//     public void closeEditor(String fileUri, String selectionPattern) {
-//             
-//     }
-//     
-//     public boolean saveEditor(String editorUri) {
-//             
-//     }
-//
-//     public void changeEditorText(String fileUri, String proposedContent, String proposalTitle) {
-//     
-//     }
+	 @Tool(title = "changeEditorText", description = "Make one or more changes to an Eclipse text editor")
+     public boolean changeEditorText(
+    		 @ToolArg(name = "editorURI", description = "URI of an Eclipse editor")
+    		 String editorURI, 
+    		 @ToolArg(name = "replacements", description = "One or more text replacements to be applied in order")
+    		 TextReplacement[] replacements) {
+    	 
+		EditorAdapter adapter = new EditorAdapter();
+    	final IEditorReference reference = adapter.uriToEclipseObject(editorURI);
+    	boolean[] result = new boolean[] { false };
+    	
+    	//TODO apply changes in reverse order
+    	Arrays.sort(replacements, new Comparator<TextReplacement>() {
+			@Override
+			public int compare(TextReplacement o1, TextReplacement o2) {
+				return o2.offset - o1.offset; 
+			}
+    		
+    	});
+    	 
+    	 if (reference != null) {
+    		 IEditorPart part = reference.getEditor(true);
+    		 if (part instanceof ITextEditor) {
+		    	 Activator.getDisplay().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						ITextEditor textEditor = (ITextEditor)part;
+						if (textEditor.isEditable()) {
+							IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
+							
+							IRewriteTarget rewriteTarget = textEditor.getAdapter(IRewriteTarget.class);
+							if (rewriteTarget != null) {
+								rewriteTarget.beginCompoundChange();
+							}
+							
+							try {
+								for (TextReplacement replacement: replacements) {
+									document.replace(replacement.offset, replacement.length, replacement.text);
+								}
+								result[0] = true;
+						    } catch (BadLocationException ble) {
+						        throw new MCPException(ble);
+						    } finally {
+						    	if (rewriteTarget != null) {
+						    		rewriteTarget.endCompoundChange();
+								}
+							}
+						} else {
+							throw new MCPException("The text editor is in read-only mode");
+						}
+					}
+		    	 });
+    		 } else {
+    			 throw new MCPException("Editor is not a text editor");
+    		 }
+    	 } else {
+    		 throw new MCPException("editorURI could not be resolved");
+    	 }
+    	 return result[0];
+     }
        
-//     @Tool (
-//                     name = "listConsoles",
-//                     title = "List Consoles",
-//                     description = "List open Eclipse IDE consoles")
-//     
-//     public Projects getProjects() {
-//             
-//     }
-//     
-//     @Tool (
-//                     name = "listConsoles",
-//                     title = "List Consoles",
-//                     description = "List open Eclipse IDE consoles")
-//     
-//     public String readResource(String uri) {
-//             
-//     }
-//
-//     
-//     @Tool (
-//                     name = "listConsoles",
-//                     title = "List Consoles",
-//                     description = "List open Eclipse IDE consoles")
+//  
 //     
 
      @Tool(title = "listProblems", description = "list Eclipse IDE compilation and configuration problems")
