@@ -19,6 +19,9 @@ import org.eclipse.ui.PlatformUI;
 
 import io.modelcontextprotocol.spec.McpSchema;
 
+/**
+ * Maintains an MCP resource for each open Eclipse Text Editor
+ */
 public class Editors implements IResourceFactory {
 
 	IResourceController controller;
