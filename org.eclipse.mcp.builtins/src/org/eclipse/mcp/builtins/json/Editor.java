@@ -2,9 +2,9 @@ package org.eclipse.mcp.builtins.json;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
-import org.eclipse.mcp.internal.Activator;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;

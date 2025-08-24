@@ -1,11 +1,16 @@
 package org.eclipse.mcp.builtins;
 
+import org.eclipse.mcp.builtin.resource.AbsoluteFileAdapter;
+import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
+import org.eclipse.mcp.builtin.resource.EditorAdapter;
+import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 import org.eclipse.mcp.builtin.resource.factory.Editors;
 import org.eclipse.mcp.builtin.resource.templates.EditorTemplates;
 import org.eclipse.mcp.builtin.resource.templates.FileTemplates;
 import org.eclipse.mcp.builtins.tools.BuiltinAnnotatedToolsFactory;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.mcp.factory.IResourceFactory;
 import org.eclipse.mcp.factory.IResourceTemplateFactory;
 import org.eclipse.mcp.factory.ToolFactory;
@@ -29,6 +34,16 @@ public class BuiltinFactoryProvider implements IFactoryProvider {
 		return new IResourceTemplateFactory[] {
 				new EditorTemplates(),
 				new FileTemplates()
+		};
+	}
+
+	@Override
+	public IResourceAdapter<?>[] createResourceAdapters() {
+		return new IResourceAdapter[] {
+			new ConsoleAdapter(),
+			new EditorAdapter(),
+			new RelativeFileAdapter(),
+			new AbsoluteFileAdapter()
 		};
 	}
 

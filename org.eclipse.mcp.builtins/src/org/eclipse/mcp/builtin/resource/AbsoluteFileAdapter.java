@@ -7,12 +7,11 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+
+import org.eclipse.mcp.factory.IResourceAdapter;
 
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.Annotations;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
-import io.modelcontextprotocol.spec.McpSchema.Role;
 
 public class AbsoluteFileAdapter implements IResourceAdapter<File> {
 

@@ -1,9 +1,15 @@
-package org.eclipse.mcp.builtin.resource;
+package org.eclipse.mcp.factory;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 
-public interface IResourceAdapter<T> {
+/**
+ * Supports the transformation between URIs, Eclipse objects, resource links and resource content
+ * Supports the built-in tool readResource
+ * Each template prefix must be unique or the adapter will be ignored
+ * @param <T> the type of Eclipse object the adapter can transform URIs into
+ */
+public interface IResourceAdapter<T> extends IFactory {
 
 	public String getTemplate();
 	

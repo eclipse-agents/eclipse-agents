@@ -1,4 +1,4 @@
-package org.eclipse.mcp.internal;
+package org.eclipse.mcp;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +14,10 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.ResourceLocator;
+import org.eclipse.mcp.internal.ExtensionManager;
+import org.eclipse.mcp.internal.Images;
+import org.eclipse.mcp.internal.ServerManager;
+import org.eclipse.mcp.internal.Tracer;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -78,6 +82,14 @@ public class Activator extends AbstractUIPlugin {
 	public void requestServerRestart() {
 		Tracer.trace().trace(Tracer.DEBUG, "MCP Server Restart Requested"); //$NON-NLS-1$
 		serverManager.forceRestart();
+	}
+	
+	public String getResourceContent(String uri) {
+		return serverManager.getResourceContent(uri);
+	}
+	
+	public Object getEclipseResource(String uri) {
+		return serverManager.getEclipseResource(uri);
 	}
 
 	/**

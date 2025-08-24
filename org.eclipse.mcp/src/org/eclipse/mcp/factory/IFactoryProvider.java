@@ -10,4 +10,6 @@ public interface IFactoryProvider extends IFactory {
 	public IResourceFactory[] createResourceFactories();
 	
 	public IResourceTemplateFactory[] createResourceTemplateFactories();
+	
+	public IResourceAdapter<?>[] createResourceAdapters();
 }

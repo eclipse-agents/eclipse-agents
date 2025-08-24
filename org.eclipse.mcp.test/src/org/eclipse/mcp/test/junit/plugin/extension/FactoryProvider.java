@@ -1,6 +1,7 @@
 package org.eclipse.mcp.test.junit.plugin.extension;
 
 import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.mcp.factory.IResourceFactory;
 import org.eclipse.mcp.factory.IResourceTemplateFactory;
 import org.eclipse.mcp.factory.ToolFactory;
@@ -28,6 +29,11 @@ public class FactoryProvider implements IFactoryProvider {
 		return new IResourceTemplateFactory[] {
 			new AnnotatedResourceTemplateFactory()
 		};
+	}
+
+	@Override
+	public IResourceAdapter<?>[] createResourceAdapters() {
+		return new IResourceAdapter<?>[0];
 	}
 
 }

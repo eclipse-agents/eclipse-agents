@@ -10,7 +10,7 @@
       <contributor
          id="com.ibm.systemz.mcp.mvs.contributor"
          name="MVS Subsystem Contributions"
-         activityId="org.eclipse.mcp.junit">
+         activityId="com.ibm.systemz.mcp.mvs.activity">
          <factory class = "com.ibm.systemz.mcp.mvs.MvsFactoryProvider"/>
       </contributor>
       

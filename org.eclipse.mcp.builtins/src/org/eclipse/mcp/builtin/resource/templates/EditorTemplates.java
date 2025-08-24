@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.mcp.builtins.Activator;
+import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory.ResourceTemplate;
 import org.eclipse.ui.IEditorReference;

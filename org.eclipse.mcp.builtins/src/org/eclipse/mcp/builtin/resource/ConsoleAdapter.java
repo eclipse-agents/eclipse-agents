@@ -1,16 +1,14 @@
 package org.eclipse.mcp.builtin.resource;
 
 import java.net.URLDecoder;
-import java.util.Arrays;
 
+import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.Annotations;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
-import io.modelcontextprotocol.spec.McpSchema.Role;
 
 public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 

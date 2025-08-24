@@ -1,6 +1,6 @@
 package org.eclipse.mcp.internal.preferences;
 
-import org.eclipse.mcp.internal.Activator;
+import org.eclipse.mcp.Activator;
 
 public interface IPreferenceConstants {
 

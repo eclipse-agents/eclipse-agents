@@ -42,20 +42,17 @@ public class QueryPDSMemberJob extends Job {
 	
 	// used by child job
 	List<IZOSDataSetMember> members;
-	List<String> results;
 	
 	public QueryPDSMemberJob(ISubSystem subSystem){
 		super("Model Context Protocol (MVS)");
 
 		this.subSystem = subSystem;
-		this.results = new ArrayList<String>();
 		this.members = new ArrayList<IZOSDataSetMember>();
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 
-		results.clear();
 		members.clear();
 
 		monitor.beginTask("Searching for " + dataSetName + "(" + dataSetMemberFilter + ")", IProgressMonitor.UNKNOWN);
@@ -112,7 +109,6 @@ public class QueryPDSMemberJob extends Job {
 						if (adaptable instanceof IZOSDataSetMember) {
 							IZOSDataSetMember member = (IZOSDataSetMember)adaptable;
 							members.add(member);
-							results.add(member.getName());
 						}
 					}
 				}
@@ -139,10 +135,6 @@ public class QueryPDSMemberJob extends Job {
 	
  	public void setDataSetMemberFilter(String dataSetMemberFilter) {
  		this.dataSetMemberFilter = dataSetMemberFilter.toUpperCase();
- 	}
-
-	public List<String> getResults() {
- 		return results;
  	}
 	
 	public List<IZOSDataSetMember> getMembers() {
