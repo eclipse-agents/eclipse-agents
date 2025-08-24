@@ -1,6 +1,6 @@
 # Eclipse Plug-In Developer Extension for Model Context Protocol Services
 
-The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html) can be used to declare and instantiate Model Context Protocol (MCP) servers that run within the Eclipse IDE's VM enable interactivity between Eclipse based experiences and LLM-powered Agentic experiences running within or outside of the Eclipse IDE.
+The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/modelContextProtocolServer.html) can be used to declare and instantiate Model Context Protocol (MCP) servers that run within the Eclipse IDE's VM enable interactivity between Eclipse based experiences and LLM-powered Agentic experiences running within or outside of the Eclipse IDE.
 
 It provides a simple mechanism to contribute MCP Tools and Resources to an MCP server running inside Eclipse.
 
@@ -12,12 +12,13 @@ The built-in MCP Server makes available a suite MCP resources, templates and too
 
 ## Documentation
 
-- [Extension Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/modelContextProtocolServer.html)
-- [Extension Point Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/package-summary.html)
+- [Extension Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/modelContextProtocolServer.html)
+- [Extension Point Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/package-summary.html)
+- [Extension Point Annotations Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/experimental/annotated/package-summary.html)
 - Summaries of Platform MCP contributions:
-  - [Platform MCP Tools](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
-  - [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtin/resource/templates/package-summary.html)
-  - [Platform Resource Factories](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.builtins/doc/org/eclipse/mcp/builtin/resource/factory/package-summary.html)
+  - [Platform MCP Tools](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
+  - [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtin/resource/templates/package-summary.html)
+  - [Platform Resource Factories](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtin/resource/factory/package-summary.html)
 
 ## Demonstrations
 
@@ -42,7 +43,7 @@ To expose an aspect of your IDE plugin as an MCP tool, do the following:
 
 1. Create or open an Eclipse Plugin Project
 2. Add plugins `org.eclipse.mcp` and `io.modelcontextprotocol` as dependencies to your plugin
-3. Create a class that implements [MCPAnnotatedToolFactory.java](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp)
+3. Create a class that implements [MCPAnnotatedToolFactory.java](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/experimental/annotated/MCPAnnotatedToolFactory.html)
 
 ```java
 public class MyToolFactory extends MCPAnnotatedToolFactory {
@@ -86,10 +87,9 @@ Example:
 
 Thats all that is required.  Upon startup, MCP servers will start up and serve content over HTTP for the registered tools.  Calls to tools will be delegated to your instances of IMCPTool
 
-2. The infrastructure will handle generation of JSON input schema and conversion betwen JSON and basic Java types and 1-dimensional Arrays
-    1. For usage details, see: [IMCPToolFactory](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp/docs/javadoc/org/eclipse/mcp/IMCPToolFactory.html) 
-3. Declare your toolFactory as an org.eclipse.mcp.modelContextProtocolServer extension in your plugin.xml
-
+1. The infrastructure will handle generation of JSON input and output schema and conversion between JSON and basic Java types.
+2. Use jackson JSON annotations such as @JsonProperty and @JsonPropertyDescription as necessary
+3. Register your toolFactory using an org.eclipse.mcp.modelContextProtocolServer extension in your plugin.xml
 
 ### Future Considerations
 
