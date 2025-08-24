@@ -310,8 +310,9 @@ public class MCPAnnotatedToolFactory extends ToolFactory {
 			} else {
 				error = new McpError(new JSONRPCError(ErrorCodes.INTERNAL_ERROR, e.getTargetException().getLocalizedMessage(), e.getTargetException()));
 			}
-		}
-		catch (Exception e) {
+			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
+					"ToolFactory.apply(Map<String, Object>) threw InvocationTargetException", e);
+		} catch (Exception e) {
 			error = new McpError(new JSONRPCError(ErrorCodes.INTERNAL_ERROR, e.getLocalizedMessage(), e));
 			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, 
 					"ToolFactory.apply(Map<String, Object>) threw unexpected error", e) ;
