@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -26,6 +27,7 @@ import org.eclipse.mcp.builtins.json.Editor;
 import org.eclipse.mcp.builtins.json.Editors;
 import org.eclipse.mcp.builtins.json.Problems;
 import org.eclipse.mcp.builtins.json.Resources;
+import org.eclipse.mcp.builtins.json.Tasks;
 import org.eclipse.mcp.builtins.json.TextEditorSelection;
 import org.eclipse.mcp.builtins.json.TextReplacement;
 import org.eclipse.mcp.builtins.json.TextSelection;
@@ -479,15 +481,71 @@ patch`: `--- java/src/java/Main.java
 
      @Tool(title = "listProblems", description = "list Eclipse IDE compilation and configuration problems")
      public Problems listProblems(
-    		 @ToolArg(name = "resourceURI", description = "URI file in the Eclipse workspace")
+    		 @ToolArg(name = "resourceURI", description = "Eclipse workspace file URI")
+    		 String resourceURI,
+    		 @ToolArg(name = "severity", description = "One of ERROR, INFO or WARNING", required = false)
+    		 String severity) {
+    	 
+    	 Object resource = null;
+    	 if (resourceURI == null || resourceURI.isEmpty()) {
+    		 resource = ResourcesPlugin.getWorkspace().getRoot();
+    	 } else {
+    		 resource = Activator.getDefault().getEclipseResource(resourceURI);
+    	 }
+    	 
+    	 Integer markerSeverity = null;
+    	 if (severity != null && !severity.isEmpty()) {
+    		 if (severity.equals("ERROR")) {
+    			 markerSeverity = IMarker.SEVERITY_ERROR;
+    		 } else if (severity.equals("WARNING")) {
+    			 markerSeverity = IMarker.SEVERITY_WARNING;
+    		 } else if (severity.equals("INFO")) {
+    			 markerSeverity = IMarker.SEVERITY_INFO;
+    		 } else {
+    		 	 throw new MCPException("Severity was not ERROR, WARNING or INFO");
+    		 }
+    	 } else {
+    		 severity = null;
+    	 }
+
+    	 if (resource instanceof IResource) {
+    		return new Problems((IResource)resource, markerSeverity);
+    	 } else if (resource instanceof IEditorReference) {
+    		 IEditorPart part = ((IEditorReference)resource).getEditor(true);
+    		 if (part instanceof ITextEditor) {
+    			 return new Problems((ITextEditor)part);
+    		 }
+    	 }
+    	
+    	throw new MCPException("The resource URI could not be resolved");
+ 		
+     }
+     
+     @Tool(title = "listTasks", description = "list codebase locations containing TODO comments")
+     public Tasks listTasks(
+    		 @ToolArg(name = "resourceURI", description = "Eclipse workspace file URI", required = false)
     		 String resourceURI) {
     	 
-    	 RelativeFileAdapter adapter= new RelativeFileAdapter();
-    	 IResource resource = adapter.uriToEclipseObject(resourceURI);
+    	 Object resource = null;
+    	 if (resourceURI == null || resourceURI.isEmpty()) {
+    		 resource = ResourcesPlugin.getWorkspace().getRoot();
+    	 } else {
+    		 resource = Activator.getDefault().getEclipseResource(resourceURI);
+    	 }
+
     	 if (resource instanceof IResource) {
-    		return new Problems(resource);
+    		return new Tasks((IResource)resource);
     	 } else if (resource instanceof IEditorReference) {
-    		 return new Problems((IEditorReference) resource);
+    		 IEditorPart part = ((IEditorReference)resource).getEditor(true);
+    		 if (part == null) {
+    			 throw new MCPException("Unable to initialize editor");
+    		 } else if (part instanceof ITextEditor) {
+    			 return new Tasks((ITextEditor) part);
+    		 }
+    	 } else if (resource == null) {
+    		 throw new MCPException("URI did not resolve to file or editor");
+    	 } else {
+    		 throw new MCPException("Cound not resolve URI");
     	 }
     	
     	throw new MCPException("The resource URI could not be resolved");

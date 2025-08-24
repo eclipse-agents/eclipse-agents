@@ -66,17 +66,7 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 	public ResourceLink eclipseObjectToResourceLink(IEditorReference editor) {
 		IEditorPart part = editor.getEditor(true);
 		if (part instanceof ITextEditor) {
-			ITextEditor textEditor = (ITextEditor)editor;
-			IDocument document = textEditor.getDocumentProvider().getDocument(part.getEditorInput());
-		
-			return McpSchema.ResourceLink.builder()
-					.uri(eclipseObjectToURI(editor))
-					.name(editor.getTitle())
-					.description("Content of an Eclipse Text Editor")
-					.mimeType("text/plain")
-					.size((long)document.getLength())
-					.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0))
-					.build();
+			return eclipseObjectToResourceLink((ITextEditor)part);
 		} else {
 			System.err.println("not a text editor");
 		}

@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
+import org.eclipse.mcp.internal.Activator;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -55,18 +56,25 @@ public class Editor {
 			this.isDirty = editor.isDirty();
 
 			//TODO does active check may fail if Eclipse doesn't have focus
-			IWorkbench workbench = PlatformUI.getWorkbench();
-			if (workbench != null) {
-				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-				if (window != null) {
-					IWorkbenchPage page = window.getActivePage();
-					if (page != null) {
-						if (editor == page.getActiveEditor()) {
-							this.isActive = true;
+			Activator.getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					IWorkbench workbench = PlatformUI.getWorkbench();
+					if (workbench != null) {
+						IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+						if (window != null) {
+							IWorkbenchPage page = window.getActivePage();
+							if (page != null) {
+								if (editor == page.getActiveEditor()) {
+									Editor.this.isActive = true;
+								}
+							}
 						}
 					}
 				}
-			}
+			});
+
+			
 			
 			IEditorInput input = editor.getEditorInput();
 			input.getName();
