@@ -38,7 +38,7 @@ Users can use capabilities to enable/disable a collection of Tool, Recourse, Tem
     - Claude Code
     - Goose
     - Aider
-      - TODO style markers?
+      - TODO-style markers to trigger agent actions
 
 ## Preferences
 
@@ -91,21 +91,56 @@ Users can use capabilities to enable/disable a collection of Tool, Recourse, Tem
 
 ### BUILT IN
 
-- ✓ readResource(uri)
-  - Some agents will not read a resource without user intervention regardless of audience annotations, yet they will call tools
-  - accepts uri for console, editor or file
-- ✓ Consoles listConsoles()
-- ✓ Editors listEditors()
-- ✓ Problems listProblems(resourceURI) 
-  - accepts uri for workspace, project, folder or 
-  - TODO accept uri for editor
-- ✓ Selection currentSelection()
-- ✓ Resources listProjects()
-- ✓ Resources listChildResources(resourceURI, depth)
-- ✓ changeEditorText("editor://eclipse/{editor-tab-name}", TextChanges)
-- ✓ void closeEditor("editor://eclipse/{editor-tab-name}")
-- ✓ void openEditor(file://{absolute-or-workspace-relative-file-path")
-- ✓ void saveEditor("editor://eclipse/{editor-tab-name}")
+- ✓ public TextEditorSelection currentSelection()
+  - Return the text selection of active Eclipse IDE text editor
+- ✓ public Editors listEditors()
+  - List open Eclipse IDE text editors
+- ✓ public Consoles listConsoles()
+  - List open Eclipse IDE consoles
+- ✓ public Resources listProjects()
+  - List open Eclipse IDE projects
+- ✓ public Resources listChildResources
+  - List child resources of an Eclipse workspace, project or folder
+  - args
+    - String resourceURI: URI of an eclipse project or folder
+    - optional int depth: 0 for immediate children, 1 for children and grandchildren, 2 for infinite depth", required = false
+- ✓ public String readResource()
+  - Returns the contents of a file, editor, or console URI"
+  - args
+    - String uri: URI of an eclipse file, editor or console
+- 🚧 public void applyPatch()
+  - Apply a git unified diff format patch to ?workspace"
+  - args
+    - String patch: A unified diff format patch to to workspace root
+    - String resourceURI: uri to apply the patch to
+- ✓ public Editor openEditor
+  - open an Eclipse IDE editor on a file and set an initial text selection
+  - args
+    - fileUri: URI file in the Eclipse workspace
+    - optional int selectionOffset: offset of the selected text
+    - optional int selectionLength: length of the selected text
+- ✓ public void closeEditor()
+  - close an Eclipse IDE editor  
+  - args
+    - String editorUri: URI of an Eclipse editor
+- ✓ public boolean saveEditor()
+  - save any changes in the editor to file
+  - args
+    - String editorUri: URI of an Eclipse editor
+- 🚧 public boolean changeEditorText()
+  - Make one or more changes to an Eclipse text editor
+  - args
+    - String editorURI: URI of an Eclipse editor
+    - TextReplacement replacements: One or more text replacements to be applied in reverese offset order
+- ✓ public Problems listProblems()
+  - list Eclipse IDE compilation and configuration problems
+  - args
+    - String resourceURI: Eclipse workspace file URI or editor URI
+    - optional String severity:One of ERROR, INFO or WARNING
+- ✓ public Tasks listTasks()
+  - list codebase locations containing TODO comments
+  - args
+    - String resourceURI: Eclipse workspace file URI or editor URI
 
 ### Db2 for z/OS
 

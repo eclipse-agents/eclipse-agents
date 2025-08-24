@@ -10,36 +10,33 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
-import org.eclipse.mcp.MCPException;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Problems {
-	@JsonProperty(value = "problems")
-	public Marker[] problems = null;
+public class Tasks {
+	@JsonProperty(value = "tasks")
+	public Marker[] tasks = null;
 	
-	public Problems(IResource resource, Integer severity) {
+	public Tasks(IResource resource) {
 		try {
 			List<Marker> children = new ArrayList<Marker>();
-			for (IMarker marker: resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE)) {
-				if (severity == null || severity.equals(marker.getAttribute(IMarker.SEVERITY))) {
-					children.add(new Marker(marker));
-				}
+			for (IMarker marker: resource.findMarkers(IMarker.TASK, true, IResource.DEPTH_INFINITE)) {
+	    		children.add(new Marker(marker));
 			}	
-			problems = children.toArray(Marker[]::new);
+			tasks = children.toArray(Marker[]::new);
 
 		} catch (CoreException e) {
-			throw new MCPException(e);
+			e.printStackTrace();
 		}
 		
-		if (problems == null) {
-			problems = new Marker[0];
+		if (tasks == null) {
+			tasks = new Marker[0];
 		}
 	}
 
-	public Problems(ITextEditor editor) {
-		
+	public Tasks(ITextEditor editor) {
 		List<Marker> children = new ArrayList<Marker>();
 		IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 		IAnnotationModel model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput());
@@ -47,13 +44,12 @@ public class Problems {
 		while (iterator.hasNext()) {
 			Annotation annotation = iterator.next();
 			Marker child = new Marker(annotation, model.getPosition(annotation), document, editor);
-			if (Marker.TYPE.Problem.label().equals(child.type)) {
+			if (Marker.TYPE.Task.label().equals(child.type)) {
 				children.add(child);
 			}
 		}
 		
-		problems = children.toArray(Marker[]::new);
-
+		tasks = children.toArray(Marker[]::new);
 		
 	}
 }
