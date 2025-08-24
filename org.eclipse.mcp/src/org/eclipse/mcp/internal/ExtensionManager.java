@@ -22,18 +22,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.mcp.factory.IFactory;
-import org.eclipse.mcp.factory.IFactoryProvider;
-import org.eclipse.mcp.factory.IResourceFactory;
-import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.ToolFactory;
-
-import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
-import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
-import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
-import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.ResourceTemplate;
-import io.modelcontextprotocol.spec.McpSchema.Tool;
-
 
 /**
  * 
@@ -80,16 +68,6 @@ public class ExtensionManager {
 		String errorMessage = null;
 		Throwable contributorThrowable = null;
 
-		List<IResourceTemplateFactory> resourceTemplateFactories = new ArrayList<IResourceTemplateFactory>();
-		List<ToolFactory> toolFactories = new ArrayList<ToolFactory>();
-		List<IResourceFactory> resourceFactories = new ArrayList<IResourceFactory>();
-		
-		
-		List<ResourceTemplate> templates = new ArrayList<ResourceTemplate>();
-		Map<ResourceTemplate, SyncCompletionSpecification> templateCompletions = new HashMap<ResourceTemplate, SyncCompletionSpecification>();
-		Map<ResourceTemplate, SyncResourceSpecification> templateSpecifications = new HashMap<ResourceTemplate, SyncResourceSpecification>();
-		Map<Tool, SyncToolSpecification> toolSpecifications = new HashMap<Tool, SyncToolSpecification>();
-		
 		public Contributor(IConfigurationElement e) {
 			this.id =  e.getAttribute("id"); 
 			this.name = e.getAttribute("name");
@@ -121,59 +99,6 @@ public class ExtensionManager {
 						errorMessage = "Factory class " + e.getAttribute("class") + "failed instantiation";
 						contributorThrowable = ex;
 					}
-				}
-			}
-			
-			if (errorMessage == null) {
-				for (IFactory factory: factories) {
-					if (factory instanceof IResourceTemplateFactory) {
-						resourceTemplateFactories.add((IResourceTemplateFactory)factory);
-					} else if (factory instanceof IResourceFactory) {
-						resourceFactories.add((IResourceFactory)factory);
-					} else if (factory instanceof ToolFactory) {
-						toolFactories.add((ToolFactory)factory);
-					} else if (factory instanceof IFactoryProvider) {
-						resourceTemplateFactories.addAll(Arrays.asList(
-								((IFactoryProvider)factory).createResourceTemplateFactories()));
-						
-						resourceFactories.addAll(Arrays.asList(
-								((IFactoryProvider)factory).createResourceFactories()));
-						
-						toolFactories.addAll(Arrays.asList(
-								((IFactoryProvider)factory).createToolFactories()));
-					}
-				}
-				
-				try {
-					for (IFactory factory: factories) {
-						for (IResourceTemplateFactory templateFactory: resourceTemplateFactories) {
-							for (McpSchema.ResourceTemplate template: templateFactory.createResourceTemplates()) {
-								templates.add(template);
-								templateCompletions.put(template, templateFactory.createCompletionSpecification(template));
-								templateSpecifications.put(template, templateFactory.getResourceTemplateSpecification(template));
-							}
-						}
-						
-						if (factory instanceof IResourceFactory) {
-							//TODO ?
-						} else if (factory instanceof IResourceTemplateFactory) {
-							IResourceTemplateFactory templateFactory = (IResourceTemplateFactory)factory;
-							for (ResourceTemplate template: templateFactory.createResourceTemplates()) {
-								templateCompletions.put(template, templateFactory.createCompletionSpecification(template));
-								templateSpecifications.put(template, templateFactory.getResourceTemplateSpecification(template));
-							}
-						} else if (factory instanceof ToolFactory) {
-							ToolFactory toolFactory = (ToolFactory)factory;
-							Tool tool = toolFactory.createTool();
-							SyncToolSpecification spec = toolFactory.createSpec(tool);
-							toolSpecifications.put(tool, spec);
-						} else if (factory instanceof IFactoryProvider) {
-							
-						}
-					}
-				} catch (Exception ex) {
-					errorMessage = "Factory class " + e.getAttribute("class") + "failed setup";
-					contributorThrowable = ex;
 				}
 			}
 		}

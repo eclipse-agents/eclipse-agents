@@ -11,13 +11,14 @@ Contract with IBM Corp.
 
 import java.util.Hashtable;
 
+import org.eclipse.mcp.Activator;
 import org.eclipse.osgi.service.debug.DebugOptions;
 import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
 import org.osgi.framework.BundleContext;
 
 
-public class Tracer implements DebugOptionsListener {
+public class Tracer implements DebugOptionsListener, DebugTrace {
 
 
 	public static final String DEBUG = "/debug";
@@ -115,6 +116,7 @@ public class Tracer implements DebugOptionsListener {
 			sb.append(level.getLocation() + ": " + level.isActive() + "; ");
 		}
 		return sb.toString();
+		
 	}
 	
 	public static DebugTrace trace() {
@@ -122,5 +124,47 @@ public class Tracer implements DebugOptionsListener {
 			return nullTrace;
 		}
 		return trace;
+	}
+
+
+	@Override
+	public void trace(String option, String message) {
+		trace().trace(option, message);
+		Activator.getDefault().getServerManager().log(message, null);
+	}
+	@Override
+	public void trace(String option, String message, Throwable error) {
+		trace().trace(option, message, error);
+		Activator.getDefault().getServerManager().log(message, error);
+	}
+	
+	@Override
+	public void traceDumpStack(String option) {
+		trace().traceDumpStack(option);
+	}
+	
+	@Override
+	public void traceEntry(String option) {
+		trace().traceEntry(option);
+	}
+	
+	@Override
+	public void traceEntry(String option, Object methodArgument) {
+		trace().traceEntry(option, methodArgument);
+	}
+	
+	@Override
+	public void traceEntry(String option, Object[] methodArguments) {
+		trace().traceEntry(option, methodArguments);
+	}
+	
+	@Override
+	public void traceExit(String option) {
+		trace().traceExit(option);
+	}
+	
+	@Override
+	public void traceExit(String option, Object result) {
+		
 	}
 }

@@ -12,7 +12,7 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mcp.builtins.Activator;
+import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory.ResourceTemplate;
 

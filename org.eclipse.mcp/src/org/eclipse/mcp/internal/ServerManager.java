@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.factory.IFactory;
 import org.eclipse.mcp.internal.ExtensionManager.Contributor;
 import org.eclipse.mcp.internal.preferences.IPreferenceConstants;
@@ -15,6 +16,8 @@ import org.eclipse.ui.activities.ActivityManagerEvent;
 import org.eclipse.ui.activities.IActivity;
 import org.eclipse.ui.activities.IActivityManager;
 import org.eclipse.ui.activities.IActivityManagerListener;
+
+import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 
 public class ServerManager implements IPreferenceConstants, IActivityManagerListener {
 
@@ -79,7 +82,25 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 		stop();
 		start();
 	}
+	
 
+	public void log(String message, Throwable error) {
+		if (message != null) {
+			server.log(LoggingLevel.INFO, this, message);
+		}
+
+		if (error != null) {
+			server.log(error);
+		}
+	}
+	
+	public String getResourceContent(String uri) {
+		return server.getResourceContent(uri);
+	}
+	
+	public Object getEclipseResource(String uri) {
+		return server.getEclipseResource(uri);
+	}	
 
 	@Override
 	public void activityManagerChanged(ActivityManagerEvent event) {

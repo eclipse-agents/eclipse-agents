@@ -11,7 +11,7 @@ package org.eclipse.mcp.internal.preferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.mcp.internal.Activator;
+import org.eclipse.mcp.Activator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;

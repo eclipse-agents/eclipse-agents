@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
@@ -15,10 +14,11 @@ import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.SystemStartHere;
 import org.eclipse.rse.core.subsystems.ISubSystem;
 
+import com.ibm.ftt.resources.zos.zosphysical.IZOSDataSetMember;
 import com.ibm.ftt.rse.mvs.client.subsystems.IMVSFileSubSystem;
-import com.ibm.systemz.mcp.mvs.job.FetchPDSMemberContent;
 import com.ibm.systemz.mcp.mvs.job.QueryDataSetsJob;
 import com.ibm.systemz.mcp.mvs.job.QueryPDSMemberJob;
+import org.eclipse.mcp.Activator;
 
 
 
@@ -107,7 +107,10 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 				}
 				
 				if (pdsMemberSearchJobs.get(subSystem).getResult().isOK()) {
-					result.addAll(pdsMemberSearchJobs.get(subSystem).getResults());
+					for (IZOSDataSetMember member: pdsMemberSearchJobs.get(subSystem).getMembers()) {
+						result.add(member.getName());
+					}
+					
 				} else if (pdsMemberSearchJobs.get(subSystem).getResult().getSeverity() == IStatus.ERROR) {
 					throw new MCPException(pdsMemberSearchJobs.get(subSystem).getResult());
 				}
@@ -118,40 +121,9 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 
 	@Override
 	public String[] readResource(String url) {
-		String[] split = url.split("/");
-		if (split.length > 3) {
-			String system = split[split.length - 3];
-			String pds = split[split.length - 2];
-			String member = split[split.length - 1];
-			
-			if (member.indexOf(".") > 0) {
-				member = member.substring(0, member.indexOf("."));
-			}
-			
-			ISubSystem subSystem = findMvsSubsystem(system);
-			if (subSystem != null) {
-				FetchPDSMemberContent job = new FetchPDSMemberContent(subSystem);
-				job.setDataSetName(pds);
-				job.setDataSetMemberFilter(member);
-				job.schedule();
-				try {
-					job.join();
-				} catch (InterruptedException e) {
-					throw new MCPException(e);
-				}
-				
-				IStatus status = job.getResult();
-				if (status.isOK()) {
-					return job.getConetnt().toArray(String[]::new);
-				} else {
-					throw new MCPException(status);
-				}
-			} else {
-				throw new MCPException("Host not found: " + system);
-			}
-		}
-		
-		throw new MCPException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Malformed uri: " + url));
+		return new String[] {
+			Activator.getDefault().getResourceContent(url)
+		};
 	}
 	
 	private ISubSystem findMvsSubsystem(String systemName) {

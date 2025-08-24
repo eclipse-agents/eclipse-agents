@@ -20,7 +20,7 @@ import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
-import org.eclipse.mcp.builtins.Activator;
+import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.builtins.json.Console;
 import org.eclipse.mcp.builtins.json.Consoles;
 import org.eclipse.mcp.builtins.json.Editor;
