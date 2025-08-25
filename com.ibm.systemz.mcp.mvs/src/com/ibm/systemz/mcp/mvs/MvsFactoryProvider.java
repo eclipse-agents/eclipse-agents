@@ -15,24 +15,25 @@ public class MvsFactoryProvider implements IFactoryProvider {
 	});
 }
 
-@Override
-public IResourceFactory[] createResourceFactories() {
-	return new IResourceFactory[] {
-		new ResourceFactory()
-	};
-}
-
-@Override
-public IResourceTemplateFactory[] createResourceTemplateFactories() {
-	return new IResourceTemplateFactory[] {
-		new AnnotatedResourceTemplateFactory()
-	};
-}
-
-@Override
-public IResourceAdapter<?>[] createResourceAdapters() {
-	// TODO Auto-generated method stub
-	return null;
-}
+	@Override
+	public IResourceFactory[] createResourceFactories() {
+		return new IResourceFactory[] {
+			new ResourceFactory()
+		};
+	}
+	
+	@Override
+	public IResourceTemplateFactory[] createResourceTemplateFactories() {
+		return new IResourceTemplateFactory[] {
+			new AnnotatedResourceTemplateFactory()
+		};
+	}
+	
+	@Override
+	public IResourceAdapter<?>[] createResourceAdapters() {
+		return new IResourceAdapter[] {
+			new MvsResourceAdapter()
+		};
+	}
 
 }
