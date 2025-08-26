@@ -2,34 +2,26 @@ package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.mcp.factory.IFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceAdapter;
-import org.eclipse.mcp.factory.IResourceFactory;
-import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.ToolFactory;
-import org.eclipse.mcp.factory.ToolFactory.ToolVisibilityListener;
 import org.springaicommunity.mcp.provider.complete.SyncMcpCompletionProvider;
-import org.springaicommunity.mcp.provider.elicitation.SyncMcpElicitationProvider;
-import org.springaicommunity.mcp.provider.logging.SyncMcpLogginProvider;
-import org.springaicommunity.mcp.provider.progress.SyncMcpProgressProvider;
 import org.springaicommunity.mcp.provider.prompt.SyncMcpPromptProvider;
 import org.springaicommunity.mcp.provider.resource.SyncMcpResourceProvider;
-import org.springaicommunity.mcp.provider.sampling.SyncMcpSamplingProvider;
 import org.springaicommunity.mcp.provider.tool.SyncMcpToolProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncPromptSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServer;
@@ -38,73 +30,79 @@ import io.modelcontextprotocol.spec.McpError;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
-import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
+import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 import jakarta.servlet.Servlet;
 
-public class ManagedServer implements ToolVisibilityListener {
+public class MCPServer {
 
 	String name, version;
 	int port;
 	
 	// For dynamically adding/removing tools
 	boolean running = false;
-	Map<ToolFactory, McpSchema.Tool > toolMap = new HashMap<ToolFactory, McpSchema.Tool >();
-	Map<ToolFactory, SyncToolSpecification> toolSpecMap = new HashMap<ToolFactory, SyncToolSpecification>();
-	Map<ToolFactory, String> servedToolNamesMap = new HashMap<ToolFactory, String>();
-	List<IResourceAdapter<?>> resourceAdapters = new ArrayList<IResourceAdapter<?>>();
-	
-	List<IResourceTemplateFactory> resourceTemplateFactories;
-	List<ToolFactory> toolFactories;
-	List<IResourceFactory> resourceFactories;
-			
+
+
 	private boolean copyLogsToSysError = true; // Boolean.getBoolean("com.ibm.systemz.db2.mcp.copyLogsToSysError");
 
 	McpSyncServer syncServer;
 	QueuedThreadPool threadPool;
 	String url;
+	IFactoryProvider[] factories;
 	
-	SyncMcpCompletionProvider completions;
-	SyncMcpToolProvider tools;
-	SyncMcpLogginProvider loggers;
-	SyncMcpPromptProvider prompts;
-	SyncMcpResourceProvider resources;
-	SyncMcpElicitationProvider elicitors;
-	SyncMcpProgressProvider progressives;
-	SyncMcpSamplingProvider samplers;
+	List<SyncCompletionSpecification> completions;
+	List<SyncToolSpecification> tools;
+//	SyncMcpLogginProvider loggers;
+	List<SyncPromptSpecification> prompts;
+	List<SyncResourceSpecification> resources;
+//	SyncMcpElicitationProvider elicitors;
+//	SyncMcpProgressProvider progressives;
+//	SyncMcpSamplingProvider samplers;
+	
+	Set<SyncToolSpecification> removedTools;
+	Set<SyncResourceSpecification> dynamicResources;
+	List<IResourceAdapter<?>> resourceAdapters;
+	
 	
 	org.eclipse.jetty.server.Server jettyServer = null;
 	
-	public ManagedServer(String name, String version, int port, IFactory[] factories) {
+	public MCPServer(String name, String version, int port, IFactoryProvider[] factories) {
 		this.name = name;
 		this.version = version;
 		this.port = port;
+		this.factories = factories;
 		
-		List<Object> annotated = new ArrayList<Object>();
-		for (IFactory factory: factories) {
-			if (factory instanceof IFactoryProvider) {
-				for (Object o: ((IFactoryProvider)factory).getAnnotatedObjects()) {
-					annotated.add(o);
-				}
-			}
-		}
-		
-		completions = new SyncMcpCompletionProvider(annotated);
-		tools = new SyncMcpToolProvider(annotated);
-//		loggers = new SyncMcpLogginProvider(factoryList);
-		prompts = new SyncMcpPromptProvider(annotated);
-		resources = new SyncMcpResourceProvider(annotated);
-//		elicitors = new SyncMcpElicitationProvider(factoryList);
-//		progressives = new SyncMcpProgressProvider(factoryList);
-//		samplers = new SyncMcpSamplingProvider(factoryList);
-
+		removedTools = new HashSet<SyncToolSpecification>(); 
+		dynamicResources = new HashSet<SyncResourceSpecification>();
+		resourceAdapters = new ArrayList<IResourceAdapter<?>>();
 	}
 	
 	public void start() {
 	
+		removedTools.clear();
+		dynamicResources.clear();
+		resourceAdapters.clear();
 		
+		List<Object> annotated = new ArrayList<Object>();
+		for (IFactoryProvider factory: factories) {
+			for (Object o: factory.getAnnotatedObjects()) {
+				annotated.add(o);
+			}
+			resourceAdapters.addAll(Arrays.asList(factory.createResourceAdapters()));
+		}
+		
+		completions = new SyncMcpCompletionProvider(annotated).getCompleteSpecifications();
+		tools = new SyncMcpToolProvider(annotated).getToolSpecifications();
+//		loggers = new SyncMcpLogginProvider(factoryList);
+		prompts = new SyncMcpPromptProvider(annotated).getPromptSpecifications();
+		resources = new SyncMcpResourceProvider(annotated).getResourceSpecifications();
+//		elicitors = new SyncMcpElicitationProvider(factoryList);
+//		progressives = new SyncMcpProgressProvider(factoryList);
+//		samplers = new SyncMcpSamplingProvider(factoryList);
+
 		this.url = "http://localhost:" + port + "/sse";
 
+		
 		HttpServletSseServerTransportProvider transportProvider =
 			    new HttpServletSseServerTransportProvider(
 			        new ObjectMapper(), "/", "/sse");
@@ -122,10 +120,10 @@ public class ManagedServer implements ToolVisibilityListener {
 		this.syncServer = McpServer.sync(transportProvider)
 			    .serverInfo(name, version)
 			    .capabilities(capabilities)
-			    .tools(tools.getToolSpecifications())
-	            .resources(resources.getResourceSpecifications())
-			    .completions(completions.getCompleteSpecifications())
-			    .prompts(prompts.getPromptSpecifications())
+			    .tools(tools)
+	            .resources(resources)
+			    .completions(completions)
+			    .prompts(prompts)
 			    .build();
 	        
 	        
@@ -133,14 +131,10 @@ public class ManagedServer implements ToolVisibilityListener {
 	
 		running = true;
 
-		
-//		for (IResourceFactory resourceFactory: resourceFactories) {
-//			try {
-//				resourceFactory.initialize(new ResourceManager(this, resourceFactory));
-//			} catch(Exception ex) {
-//				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Failed to initialize resource factory: " + resourceFactory.getClass().getCanonicalName(), ex);
-//			}
-//		}
+		for (IFactoryProvider factory: factories) {
+			factory.initialize(new MCPServices(this));
+			factory.createResourceAdapters();
+		}
 
 		syncServer.notifyResourcesListChanged();
 	
@@ -177,10 +171,6 @@ public class ManagedServer implements ToolVisibilityListener {
 	}
 	
 	public void stop() {
-		running = false;
-		for (ToolFactory toolFactory: toolSpecMap.keySet()) {
-			toolFactory.removeVisibilityListener(this);
-		}
 
 		if (syncServer != null) {
 			syncServer.closeGracefully();
@@ -195,19 +185,10 @@ public class ManagedServer implements ToolVisibilityListener {
 		}
 	}
 
-	public String getResourceContent(String uri) {
+	public IResourceAdapter<?> getResourceAdapter(String uri) {
 		for (IResourceAdapter<?> adapter: resourceAdapters) {
-			if (uri.startsWith(adapter.getUniqueTemplatePrefix())) {
-				return adapter.uriToResourceContent(uri);
-			}
-		}
-		return null;
-	}
-	
-	public Object getEclipseResource(String uri) {
-		for (IResourceAdapter<?> adapter: resourceAdapters) {
-			if (uri.startsWith(adapter.getUniqueTemplatePrefix())) {
-				return adapter.uriToEclipseObject(uri);
+			if (new DefaultMcpUriTemplateManager(adapter.getTemplate()).matches(uri)) {
+				return adapter;
 			}
 		}
 		return null;
@@ -247,33 +228,67 @@ public class ManagedServer implements ToolVisibilityListener {
 		}
 		
 	}
+	
 
-	@Override
-	public void visibilityChanged(ToolFactory toolFactory) {
-		if (running) {
-			
-			McpSchema.Tool tool = toolMap.get(toolFactory);
-			SyncToolSpecification toolSpec = toolSpecMap.get(toolFactory);
-			
-			if (tool != null && toolSpec != null) {
-				// the tool factory was not activity disabled at server start time
-				
-				if (toolFactory.isVisible() &&
-						!servedToolNamesMap.containsKey(toolFactory)) {
-					
-					// factory wishes to be visible but is not currently served
-					syncServer.addTool(toolSpec);
-					servedToolNamesMap.put(toolFactory, tool.name());
-
-				} else if (!toolFactory.isVisible() &&
-						servedToolNamesMap.containsKey(toolFactory)) {
-					
-					// factory wishes to be invisible but is currently served
-					syncServer.removeTool(tool.name());
-					servedToolNamesMap.remove(toolFactory);
-				}
+	public boolean getVisibility(String toolName) {
+		for (SyncToolSpecification tool: removedTools) {
+			if (tool.tool().name().equals(toolName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean setVisibility(String toolName, boolean visible) {
+		SyncToolSpecification match = null;
+		for (SyncToolSpecification tool: removedTools) {
+			if (tool.tool().name().equals(toolName)) {
+				match = tool;
+				break;
 			}
 		}
 		
+		if (match != null) {
+			if (removedTools.contains(match) && visible) {
+				removedTools.remove(match);
+				syncServer.addTool(match);
+				syncServer.notifyToolsListChanged();
+				return true;
+			} else if (!removedTools.contains(match) && !visible) {
+				removedTools.add(match);
+				syncServer.removeTool(toolName);
+				syncServer.notifyToolsListChanged();
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	public boolean addResource(SyncResourceSpecification spec) {
+		for (SyncResourceSpecification existing: dynamicResources) {
+			if (existing.resource().uri().equals(spec.resource().uri())) {
+				// do nothing
+				return false;
+			}
+		}
+		
+		dynamicResources.add(spec);
+		syncServer.addResource(spec);
+		syncServer.notifyResourcesListChanged();
+		return true;
+	}
+
+	public boolean removeResource(String uri) {
+		for (SyncResourceSpecification existing: dynamicResources) {
+			if (existing.resource().uri().equals(uri)) {
+				dynamicResources.remove(existing);
+				syncServer.removeResource(uri);
+				syncServer.notifyResourcesListChanged();
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

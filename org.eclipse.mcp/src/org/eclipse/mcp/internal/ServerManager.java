@@ -8,7 +8,8 @@ import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.mcp.Activator;
-import org.eclipse.mcp.factory.IFactory;
+import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.mcp.internal.ExtensionManager.Contributor;
 import org.eclipse.mcp.internal.preferences.IPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
@@ -21,7 +22,7 @@ import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 
 public class ServerManager implements IPreferenceConstants, IActivityManagerListener {
 
-	private ManagedServer server = null;
+	private MCPServer server = null;
 	private String name, description;
 	
 	Set<String> activityIds;
@@ -38,17 +39,18 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 	
 	public void start() {
 		Tracer.trace().trace(Tracer.DEBUG, "Starting"); //$NON-NLS-1$
-		Set<Contributor> contributors = new HashSet<Contributor>();
-		activityIds.clear();
+		
 		server = null;
 
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		IActivityManager activites = PlatformUI.getWorkbench().getActivitySupport().getActivityManager();
+		
+		activityIds.clear();
+		
 		if (store.getBoolean(P_SERVER_ENABLED)) {
 			int port = store.getInt(P_SERVER_HTTP_PORT);
 			
-			List<IFactory> factories = new ArrayList<IFactory>();
-			
+			Set<Contributor> contributors = new HashSet<Contributor>();
 			for (ExtensionManager.Contributor contributor: Activator.getDefault().getExtensionManager().getContributors()) {
 				if (contributor.getActivityId() == null) {
 					contributors.add(contributor);
@@ -61,11 +63,12 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 				}
 			}
 			
+			List<IFactoryProvider> factories = new ArrayList<IFactoryProvider>();
 			for (Contributor contributor: contributors) {
-				factories.addAll(Arrays.asList(contributor.getFactories()));
+				factories.addAll(Arrays.asList(contributor.getFactoryProviders()));
 			}
 			
-			server = new ManagedServer(name, description, port, factories.toArray(IFactory[]::new));
+			server = new MCPServer(name, description, port, factories.toArray(IFactoryProvider[]::new));
 			server.start();
 		};
 		
@@ -95,11 +98,19 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 	}
 	
 	public String getResourceContent(String uri) {
-		return server.getResourceContent(uri);
+		IResourceAdapter<?> adapter =  server.getResourceAdapter(uri);
+		if (adapter != null) {
+			return adapter.uriToResourceContent(uri);
+		}
+		return null;
 	}
 	
 	public Object getEclipseResource(String uri) {
-		return server.getEclipseResource(uri);
+		IResourceAdapter<?> adapter =  server.getResourceAdapter(uri);
+		if (adapter != null) {
+			return adapter.uriToEclipseObject(uri);
+		}
+		return null;
 	}	
 
 	@Override

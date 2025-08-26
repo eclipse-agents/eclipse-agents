@@ -16,8 +16,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mcp.builtins.BuiltinFactoryProvider;
-import org.eclipse.mcp.factory.IFactory;
-import org.eclipse.mcp.internal.ManagedServer;
+import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.internal.MCPServer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -64,7 +64,7 @@ public final class MCPServerTest {
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
 
-		ManagedServer server = new ManagedServer("junit", "junit", 3028, new IFactory[] {
+		MCPServer server = new MCPServer("junit", "junit", 3028, new IFactoryProvider[] {
 				new BuiltinFactoryProvider()
 		});
 		

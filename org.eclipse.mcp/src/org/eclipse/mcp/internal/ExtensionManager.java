@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.mcp.factory.IFactory;
+import org.eclipse.mcp.factory.IFactoryProvider;
 
 /**
  * 
@@ -62,7 +62,7 @@ public class ExtensionManager {
 	public class Contributor {
 
 		String id, name, description, provider, activityId;
-		List<IFactory> factories;
+		List<IFactoryProvider> factories;
 		String errorMessage = null;
 		Throwable contributorThrowable = null;
 
@@ -72,22 +72,22 @@ public class ExtensionManager {
 			this.description = e.getAttribute("description");
 			this.provider = e.getAttribute("provider");
 			this.activityId = e.getAttribute("activityId");
-			factories = new ArrayList<IFactory>();
+			factories = new ArrayList<IFactoryProvider>();
 			
 			if (getId() == null || getId().isBlank()) {
-				errorMessage = "Missing Tool id";
+				errorMessage = "Missing contributor id";
 			} else if (getName() == null || getName().isBlank()) {
-				errorMessage = "Missing Tool name";
+				errorMessage = "Missing contributor name";
 			}
 			
 			if (errorMessage == null) {
 				for (IConfigurationElement childElement: e.getChildren("factory")) {
 					try {
 						Object impl = childElement.createExecutableExtension("class");
-						if (impl instanceof IFactory) {
-							factories.add((IFactory)impl);
+						if (impl instanceof IFactoryProvider) {
+							factories.add((IFactoryProvider)impl);
 						} else {
-							errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactory";
+							errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactoryProvider";
 						}
 					} catch (CoreException ex) {
 						errorMessage = "Factory class " + e.getAttribute("class") + "failed instantiation";
@@ -117,8 +117,8 @@ public class ExtensionManager {
 			return activityId;
 		}
 
-		public IFactory[] getFactories() {
-			return factories.toArray(IFactory[]::new);
+		public IFactoryProvider[] getFactoryProviders() {
+			return factories.toArray(IFactoryProvider[]::new);
 		}
 	}
 	

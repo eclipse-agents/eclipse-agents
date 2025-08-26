@@ -1,5 +1,6 @@
 package org.eclipse.mcp.builtins;
 
+import org.eclipse.mcp.IMCPServices;
 import org.eclipse.mcp.builtin.resource.AbsoluteFileAdapter;
 import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
@@ -9,16 +10,13 @@ import org.eclipse.mcp.builtin.resource.templates.Templates;
 import org.eclipse.mcp.builtins.tools.BuiltinAnnotatedToolsFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceAdapter;
-import org.eclipse.mcp.factory.IResourceFactory;
 
 public class BuiltinFactoryProvider implements IFactoryProvider {
 
-
-	@Override
-	public IResourceFactory[] createResourceFactories() {
-		return  new IResourceFactory[] {
-				new Editors()
-		};
+	Editors editors;
+	
+	public BuiltinFactoryProvider() {
+		editors = new Editors();
 	}
 
 
@@ -38,6 +36,12 @@ public class BuiltinFactoryProvider implements IFactoryProvider {
 			new BuiltinAnnotatedToolsFactory(),
 			new Templates()
 		};
+	}
+
+
+	@Override
+	public void initialize(IMCPServices services) {
+		editors.initialize(services);
 	}
 
 }
