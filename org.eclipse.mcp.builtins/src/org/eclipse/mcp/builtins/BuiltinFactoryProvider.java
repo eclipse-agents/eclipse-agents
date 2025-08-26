@@ -5,22 +5,14 @@ import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 import org.eclipse.mcp.builtin.resource.factory.Editors;
-import org.eclipse.mcp.builtin.resource.templates.EditorTemplates;
-import org.eclipse.mcp.builtin.resource.templates.FileTemplates;
+import org.eclipse.mcp.builtin.resource.templates.Templates;
 import org.eclipse.mcp.builtins.tools.BuiltinAnnotatedToolsFactory;
-import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.mcp.factory.IResourceFactory;
-import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.ToolFactory;
 
 public class BuiltinFactoryProvider implements IFactoryProvider {
 
-	@Override
-	public ToolFactory[] createToolFactories() {
-		return MCPAnnotatedToolFactory.createToolFactories(BuiltinAnnotatedToolsFactory.class);
-	}
 
 	@Override
 	public IResourceFactory[] createResourceFactories() {
@@ -29,13 +21,6 @@ public class BuiltinFactoryProvider implements IFactoryProvider {
 		};
 	}
 
-	@Override
-	public IResourceTemplateFactory[] createResourceTemplateFactories() {
-		return new IResourceTemplateFactory[] {
-				new EditorTemplates(),
-				new FileTemplates()
-		};
-	}
 
 	@Override
 	public IResourceAdapter<?>[] createResourceAdapters() {
@@ -44,6 +29,14 @@ public class BuiltinFactoryProvider implements IFactoryProvider {
 			new EditorAdapter(),
 			new RelativeFileAdapter(),
 			new AbsoluteFileAdapter()
+		};
+	}
+
+	@Override
+	public Object[] getAnnotatedObjects() {
+		return new Object[] {
+			new BuiltinAnnotatedToolsFactory(),
+			new Templates()
 		};
 	}
 

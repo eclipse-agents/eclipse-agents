@@ -1,23 +1,12 @@
 package org.eclipse.mcp.factory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.internal.Tracer;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.victools.jsonschema.generator.Option;
-import com.github.victools.jsonschema.generator.OptionPreset;
-import com.github.victools.jsonschema.generator.SchemaGenerator;
-import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
-import com.github.victools.jsonschema.generator.SchemaVersion;
-import com.github.victools.jsonschema.module.jackson.JacksonModule;
-import com.github.victools.jsonschema.module.jackson.JacksonOption;
 
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
@@ -84,7 +73,7 @@ public abstract class ToolFactory implements IFactory {
 	 * @return For simplistic responses return String or String[]
 	 * @throws MCPException
 	 */
-	public abstract Object apply(Map<String, Object> args) throws MCPException;
+	public abstract Object apply(Map<String, Object> args);
 
 	/**
 	 * May be used to dynamically add/remove this tool to the server.
@@ -114,31 +103,5 @@ public abstract class ToolFactory implements IFactory {
 	
 	public final boolean isVisible() {
 		return visible;
-	}
-	
-	protected JsonNode generateJsonSchema(Class<?> c) {
-		JacksonOption[] options = Arrays.asList(
-				JacksonOption.RESPECT_JSONPROPERTY_ORDER,
-	            JacksonOption.RESPECT_JSONPROPERTY_REQUIRED,
-	            JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY).toArray(JacksonOption[]::new);;
-//	            JacksonOption.FLATTENED_ENUMS_FROM_JSONPROPERTY,
-//	            JacksonOption.INCLUDE_ONLY_JSONPROPERTY_ANNOTATED_METHODS,
-//	            JacksonOption.IGNORE_PROPERTY_NAMING_STRATEGY,
-//	            JacksonOption.ALWAYS_REF_SUBTYPES,
-//	            JacksonOption.INLINE_TRANSFORMED_SUBTYPES,
-//	            JacksonOption.SKIP_SUBTYPE_LOOKUP,
-//	            JacksonOption.IGNORE_TYPE_INFO_TRANSFORM,
-//	            JacksonOption.JSONIDENTITY_REFERENCE_ALWAYS_AS_ID);
-		
-	    new JacksonModule(options);
-		var configBuilder = new SchemaGeneratorConfigBuilder(
-				SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON)
-                .without(Option.SCHEMA_VERSION_INDICATOR);
-		
-		configBuilder.with(new JacksonModule(options));
-        
-		SchemaGenerator generator = new SchemaGenerator(configBuilder.build());
-		ObjectNode result =  generator.generateSchema(c);
-		return result;
 	}
 }

@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JOptionPane;
-
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
@@ -19,6 +17,14 @@ import org.eclipse.mcp.factory.IResourceFactory;
 import org.eclipse.mcp.factory.IResourceTemplateFactory;
 import org.eclipse.mcp.factory.ToolFactory;
 import org.eclipse.mcp.factory.ToolFactory.ToolVisibilityListener;
+import org.springaicommunity.mcp.provider.complete.SyncMcpCompletionProvider;
+import org.springaicommunity.mcp.provider.elicitation.SyncMcpElicitationProvider;
+import org.springaicommunity.mcp.provider.logging.SyncMcpLogginProvider;
+import org.springaicommunity.mcp.provider.progress.SyncMcpProgressProvider;
+import org.springaicommunity.mcp.provider.prompt.SyncMcpPromptProvider;
+import org.springaicommunity.mcp.provider.resource.SyncMcpResourceProvider;
+import org.springaicommunity.mcp.provider.sampling.SyncMcpSamplingProvider;
+import org.springaicommunity.mcp.provider.tool.SyncMcpToolProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -32,6 +38,7 @@ import io.modelcontextprotocol.spec.McpError;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
+import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import jakarta.servlet.Servlet;
 
@@ -57,6 +64,15 @@ public class ManagedServer implements ToolVisibilityListener {
 	QueuedThreadPool threadPool;
 	String url;
 	
+	SyncMcpCompletionProvider completions;
+	SyncMcpToolProvider tools;
+	SyncMcpLogginProvider loggers;
+	SyncMcpPromptProvider prompts;
+	SyncMcpResourceProvider resources;
+	SyncMcpElicitationProvider elicitors;
+	SyncMcpProgressProvider progressives;
+	SyncMcpSamplingProvider samplers;
+	
 	org.eclipse.jetty.server.Server jettyServer = null;
 	
 	public ManagedServer(String name, String version, int port, IFactory[] factories) {
@@ -64,71 +80,34 @@ public class ManagedServer implements ToolVisibilityListener {
 		this.version = version;
 		this.port = port;
 		
-		resourceTemplateFactories = new ArrayList<IResourceTemplateFactory>();
-		toolFactories = new ArrayList<ToolFactory>();
-		resourceFactories = new ArrayList<IResourceFactory>();
-		
+		List<Object> annotated = new ArrayList<Object>();
 		for (IFactory factory: factories) {
-			try {
-				if (factory instanceof IResourceTemplateFactory) {
-					resourceTemplateFactories.add((IResourceTemplateFactory)factory);
-				} else if (factory instanceof IResourceFactory) {
-					resourceFactories.add((IResourceFactory)factory);
-				} else if (factory instanceof ToolFactory) {
-					toolFactories.add((ToolFactory)factory);
-				} else if (factory instanceof IResourceAdapter) {
-					resourceAdapters.add((IResourceAdapter<?>)factory);
-				} else if (factory instanceof IFactoryProvider) {
-					resourceTemplateFactories.addAll(Arrays.asList(
-							((IFactoryProvider)factory).createResourceTemplateFactories()));
-					
-					resourceFactories.addAll(Arrays.asList(
-							((IFactoryProvider)factory).createResourceFactories()));
-					
-					toolFactories.addAll(Arrays.asList(
-							((IFactoryProvider)factory).createToolFactories()));
-					
-					resourceAdapters.addAll(Arrays.asList(
-							((IFactoryProvider)factory).createResourceAdapters()));
+			if (factory instanceof IFactoryProvider) {
+				for (Object o: ((IFactoryProvider)factory).getAnnotatedObjects()) {
+					annotated.add(o);
 				}
-			} catch (Exception e) {
-				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Failed to load factory: " + factory.getClass().getCanonicalName(), e);
 			}
 		}
 		
-		for (ToolFactory toolFactory: toolFactories) {
-			try {
-				toolFactory.addVisibilityListener(this);
-			} catch (Exception e) {
-				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Failed to add visibility listener: " + toolFactory.getClass().getCanonicalName(), e);
-			}
-		}
+		completions = new SyncMcpCompletionProvider(annotated);
+		tools = new SyncMcpToolProvider(annotated);
+//		loggers = new SyncMcpLogginProvider(factoryList);
+		prompts = new SyncMcpPromptProvider(annotated);
+		resources = new SyncMcpResourceProvider(annotated);
+//		elicitors = new SyncMcpElicitationProvider(factoryList);
+//		progressives = new SyncMcpProgressProvider(factoryList);
+//		samplers = new SyncMcpSamplingProvider(factoryList);
+
 	}
 	
 	public void start() {
 	
+		
 		this.url = "http://localhost:" + port + "/sse";
 
 		HttpServletSseServerTransportProvider transportProvider =
 			    new HttpServletSseServerTransportProvider(
 			        new ObjectMapper(), "/", "/sse");
-	
-		List<McpSchema.ResourceTemplate> templates = new ArrayList<McpSchema.ResourceTemplate>();
-		List<SyncCompletionSpecification> completions = new ArrayList<SyncCompletionSpecification>();
-		List<SyncResourceSpecification> templateResourceSpecs = new ArrayList<SyncResourceSpecification>();
-
-	
-		for (IResourceTemplateFactory templateFactory: resourceTemplateFactories) {
-			try {
-				for (McpSchema.ResourceTemplate template: templateFactory.createResourceTemplates()) {
-					templates.add(template);
-					completions.add(templateFactory.createCompletionSpecification(template));
-					templateResourceSpecs.add(templateFactory.getResourceTemplateSpecification(template));
-				}
-			} catch (Exception e) {
-				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Failed to initialize template factory: " + templateFactory.getClass().getCanonicalName(), e);
-			}
-		}
 		
 
 		ServerCapabilities capabilities = ServerCapabilities.builder().resources(true, true) // Enable resource support
@@ -143,44 +122,25 @@ public class ManagedServer implements ToolVisibilityListener {
 		this.syncServer = McpServer.sync(transportProvider)
 			    .serverInfo(name, version)
 			    .capabilities(capabilities)
-			    .resourceTemplates(templates.toArray(McpSchema.ResourceTemplate[]::new))
-			    .completions(completions)
+			    .tools(tools.getToolSpecifications())
+	            .resources(resources.getResourceSpecifications())
+			    .completions(completions.getCompleteSpecifications())
+			    .prompts(prompts.getPromptSpecifications())
 			    .build();
-		
+	        
+	        
 		log(LoggingLevel.INFO, this, url);
 	
 		running = true;
-		for (ToolFactory toolFactory: toolFactories) {
-			
-			try {
-				McpSchema.Tool tool = toolFactory.createTool();
-				toolMap.put(toolFactory, tool);
-				System.out.println(tool.inputSchema());
-				System.out.println(tool.outputSchema());
-				
-				SyncToolSpecification spec = toolFactory.createSpec(tool);
-				toolSpecMap.put(toolFactory, spec);
-				
-				if (toolFactory.isVisible()) {
-					syncServer.addTool(spec);
-					servedToolNamesMap.put(toolFactory, tool.name());
-				}
-			} catch (Exception ex) {
-				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Failed to initialize tool factory: " + toolFactory.getClass().getCanonicalName(), ex);
-			}
-		}
+
 		
-		for (IResourceFactory resourceFactory: resourceFactories) {
-			try {
-				resourceFactory.initialize(new ResourceManager(this, resourceFactory));
-			} catch(Exception ex) {
-				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Failed to initialize resource factory: " + resourceFactory.getClass().getCanonicalName(), ex);
-			}
-		}
-		
-		for (SyncResourceSpecification spec: templateResourceSpecs) {
-			syncServer.addResource(spec);
-		}
+//		for (IResourceFactory resourceFactory: resourceFactories) {
+//			try {
+//				resourceFactory.initialize(new ResourceManager(this, resourceFactory));
+//			} catch(Exception ex) {
+//				Tracer.trace().trace(Tracer.IMPLEMENTATIONS, "Failed to initialize resource factory: " + resourceFactory.getClass().getCanonicalName(), ex);
+//			}
+//		}
 
 		syncServer.notifyResourcesListChanged();
 	

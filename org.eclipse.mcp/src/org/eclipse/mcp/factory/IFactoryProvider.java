@@ -5,11 +5,10 @@ package org.eclipse.mcp.factory;
  */
 public interface IFactoryProvider extends IFactory {
 
-	public ToolFactory[] createToolFactories();
 	
 	public IResourceFactory[] createResourceFactories();
 	
-	public IResourceTemplateFactory[] createResourceTemplateFactories();
-	
 	public IResourceAdapter<?>[] createResourceAdapters();
+	
+	public Object[] getAnnotatedObjects();
 }
