@@ -9,7 +9,7 @@ import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
  * Each template prefix must be unique or the adapter will be ignored
  * @param <T> the type of Eclipse object the adapter can transform URIs into
  */
-public interface IResourceAdapter<T> extends IFactory {
+public interface IResourceAdapter<T> {
 
 	public String getTemplate();
 	
@@ -26,7 +26,7 @@ public interface IResourceAdapter<T> extends IFactory {
 	public String eclipseObjectToResourceContent(T object);
 	
 	public default String uriToResourceContent(String uri) {
-		T object =  uriToEclipseObject(uri);
+		T object =  this.uriToEclipseObject(uri);
 		if (object != null) {
 			return eclipseObjectToResourceContent(object);
 		}

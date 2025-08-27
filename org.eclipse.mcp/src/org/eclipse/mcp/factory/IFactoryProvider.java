@@ -1,15 +1,16 @@
 package org.eclipse.mcp.factory;
 
+import org.eclipse.mcp.IMCPServices;
+
 /**
  * Convenience for creating multiple factories programmatically
  */
-public interface IFactoryProvider extends IFactory {
+public interface IFactoryProvider {
 
-	public ToolFactory[] createToolFactories();
-	
-	public IResourceFactory[] createResourceFactories();
-	
-	public IResourceTemplateFactory[] createResourceTemplateFactories();
-	
 	public IResourceAdapter<?>[] createResourceAdapters();
+	
+	public Object[] getAnnotatedObjects();
+	
+	public abstract void initialize(IMCPServices services);
+
 }

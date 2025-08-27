@@ -29,11 +29,11 @@ public class Editor {
 	String name;
 	
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The contents of the text editor")
-	McpSchema.ResourceLink buffer;
+	@JsonPropertyDescription("If the editor is a text editor, the contents of the text editor")
+	McpSchema.ResourceLink textEditor;
 	
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The file being edited containing the last saved changes")
+	@JsonPropertyDescription("If the editor is open on a file, the file being edited")
 	McpSchema.ResourceLink file;
 	
 	@JsonProperty
@@ -41,7 +41,7 @@ public class Editor {
 	boolean isActive;
 	
 	@JsonProperty
-	@JsonPropertyDescription("Whether text editor contains unsaved changes")
+	@JsonPropertyDescription("Whether editor contains unsaved changes")
 	boolean isDirty;
 	
 	public Editor() {
@@ -67,6 +67,7 @@ public class Editor {
 							if (page != null) {
 								if (editor == page.getActiveEditor()) {
 									Editor.this.isActive = true;
+									System.out.println("isActive: " + Editor.this.isActive);
 								}
 							}
 						}
@@ -74,8 +75,6 @@ public class Editor {
 				}
 			});
 
-			
-			
 			IEditorInput input = editor.getEditorInput();
 			input.getName();
 			
@@ -85,7 +84,7 @@ public class Editor {
 			}
 			
 			if (editor instanceof ITextEditor) {
-				buffer = new EditorAdapter().eclipseObjectToResourceLink((ITextEditor)editor);
+				textEditor = new EditorAdapter().eclipseObjectToResourceLink((ITextEditor)editor);
 			}
 		}
 	}
@@ -97,9 +96,5 @@ public class Editor {
 			this.name = reference.getTitle();
 			this.isDirty = reference.isDirty();
 		}
-	}
-	
-	public boolean isValid() {
-		return file != null && buffer != null;
 	}
 }

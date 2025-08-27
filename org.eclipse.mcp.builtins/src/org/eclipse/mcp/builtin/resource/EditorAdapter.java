@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.mcp.builtins.Activator;
 import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -100,39 +101,42 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 
 	@Override
 	public String eclipseObjectToResourceContent(IEditorReference ref) {
-		String result = "";
-		IEditorPart part = ref.getEditor(true);
-		if (part instanceof ITextEditor) {
-			ITextEditor textEditor = (ITextEditor)part;
-			IDocument document = textEditor.getDocumentProvider().getDocument(part.getEditorInput());
-			result = document.get();
-		} else {
-			try {
-				IEditorInput input = ref.getEditorInput();
-				if (input instanceof IFileEditorInput) {
-					IFile file = ((IFileEditorInput)input).getFile();
-					
-					try (InputStreamReader reader = new InputStreamReader(
-							file.getContents(), file.getCharset())) {
-					       
-						BufferedReader breader = new BufferedReader(reader);
-						result = breader.lines().collect(Collectors.joining("\n")); //$NON-NLS-1$
-						
-					}catch (UnsupportedEncodingException e) {
+		StringBuffer result = new StringBuffer();
+		
+		Activator.getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IEditorPart part = ref.getEditor(true);
+				if (part instanceof ITextEditor) {
+					ITextEditor textEditor = (ITextEditor)part;
+					IDocument document = textEditor.getDocumentProvider().getDocument(part.getEditorInput());
+					result.append(document.get());
+				} else {
+					try {
+						IEditorInput input = ref.getEditorInput();
+						if (input instanceof IFileEditorInput) {
+							IFile file = ((IFileEditorInput)input).getFile();
+							
+							try (InputStreamReader reader = new InputStreamReader(
+									file.getContents(), file.getCharset())) {
+							       
+								BufferedReader breader = new BufferedReader(reader);
+								result.append(breader.lines().collect(Collectors.joining("\n"))); //$NON-NLS-1$
+								
+							}catch (UnsupportedEncodingException e) {
+								e.printStackTrace();
+							} catch (CoreException e) {
+								e.printStackTrace();
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+						}
+					} catch (PartInitException e) {
 						e.printStackTrace();
-					} catch (CoreException e) {
-						e.printStackTrace();
-					} catch (IOException e1) {
-						e1.printStackTrace();
 					}
 				}
-			} catch (PartInitException e) {
-				e.printStackTrace();
 			}
-			System.err.println("not a text editor");
-		}
-		return result;
+		});
+		return result.toString();
 	}
-
-
 }

@@ -16,8 +16,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mcp.builtins.BuiltinFactoryProvider;
-import org.eclipse.mcp.factory.IFactory;
-import org.eclipse.mcp.internal.ManagedServer;
+import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.internal.MCPServer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -64,7 +64,7 @@ public final class MCPServerTest {
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
 
-		ManagedServer server = new ManagedServer("junit", "junit", 3028, new IFactory[] {
+		MCPServer server = new MCPServer("junit", "junit", 3028, new IFactoryProvider[] {
 				new BuiltinFactoryProvider()
 		});
 		
@@ -224,35 +224,21 @@ public final class MCPServerTest {
 {
    "editor":{
       "name":"HelloWorld.java",
-      "resource":{
+      "textEditor":{
          "type":"resource_link",
          "name":"HelloWorld.java",
          "uri":"eclipse://editor/HelloWorld.java",
          "description":"Content of an Eclipse Text Editor",
          "mimeType":"text/plain",
-         "size":124,
-         "annotations":{
-            "audience":[
-               "assistant",
-               "user"
-            ],
-            "priority":1.0
-         }
+         "size":124
       },
       "file":{
          "type":"resource_link",
          "name":"HelloWorld.java",
-         "uri":"file:/Users/jflicke/junit-workspace/Project/HelloWorld.java",
-         "description":"Content of an file in an Eclipse workspace",
+         "uri":"file://workspace/Project/HelloWorld.java",
+         "description":"Eclipse workspace file",
          "mimeType":"text/plain",
-         "size":124,
-         "annotations":{
-            "audience":[
-               "assistant",
-               "user"
-            ],
-            "priority":1.0
-         }
+         "size":124
       },
       "isActive":true,
       "isDirty":false
@@ -291,37 +277,23 @@ public final class MCPServerTest {
    "editors":[
       {
          "name":"HelloWorld.java",
-         "resource":{
+         "textEditor":{
             "type":"resource_link",
             "name":"HelloWorld.java",
             "uri":"eclipse://editor/HelloWorld.java",
             "description":"Content of an Eclipse Text Editor",
             "mimeType":"text/plain",
-            "size":124,
-            "annotations":{
-               "audience":[
-                  "assistant",
-                  "user"
-               ],
-               "priority":1.0
-            }
+            "size":124
          },
          "file":{
             "type":"resource_link",
             "name":"HelloWorld.java",
-            "uri":"file:/Users/jflicke/junit-workspace/Project/HelloWorld.java",
-            "description":"Content of an file in an Eclipse workspace",
+            "uri":"file://workspace/Project/HelloWorld.java",
+            "description":"Eclipse workspace file",
             "mimeType":"text/plain",
-            "size":124,
-            "annotations":{
-               "audience":[
-                  "assistant",
-                  "user"
-               ],
-               "priority":1.0
-            }
+            "size":124
          },
-         "isActive":false,
+         "isActive":true,
          "isDirty":false
       }
    ]
@@ -389,7 +361,7 @@ public final class MCPServerTest {
 //				Seems to be a local class loading issue as this works outside of eclipse, and works outside of junit
 
 
-				ReadResourceResult result = client.readResource(new ReadResourceRequest("file://eclipse/Project/HelloWorld.java"));
+				ReadResourceResult result = client.readResource(new ReadResourceRequest("file://workspace/Project/HelloWorld.java"));
 				System.err.println(result);
 				
 			}

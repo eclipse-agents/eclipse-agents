@@ -9,7 +9,6 @@
 package org.eclipse.mcp.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +19,7 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
-import org.eclipse.mcp.factory.IFactory;
+import org.eclipse.mcp.factory.IFactoryProvider;
 
 /**
  * 
@@ -64,7 +62,7 @@ public class ExtensionManager {
 	public class Contributor {
 
 		String id, name, description, provider, activityId;
-		List<IFactory> factories;
+		List<IFactoryProvider> factories;
 		String errorMessage = null;
 		Throwable contributorThrowable = null;
 
@@ -74,29 +72,25 @@ public class ExtensionManager {
 			this.description = e.getAttribute("description");
 			this.provider = e.getAttribute("provider");
 			this.activityId = e.getAttribute("activityId");
-			factories = new ArrayList<IFactory>();
+			factories = new ArrayList<IFactoryProvider>();
 			
 			if (getId() == null || getId().isBlank()) {
-				errorMessage = "Missing Tool id";
+				errorMessage = "Missing contributor id";
 			} else if (getName() == null || getName().isBlank()) {
-				errorMessage = "Missing Tool name";
+				errorMessage = "Missing contributor name";
 			}
 			
 			if (errorMessage == null) {
 				for (IConfigurationElement childElement: e.getChildren("factory")) {
 					try {
 						Object impl = childElement.createExecutableExtension("class");
-						if (impl instanceof MCPAnnotatedToolFactory) {
-							//TODO 
-							factories.addAll(Arrays.asList(
-									MCPAnnotatedToolFactory.createToolFactories(impl.getClass())));
-						} else if (impl instanceof IFactory) {
-							factories.add((IFactory)impl);
+						if (impl instanceof IFactoryProvider) {
+							factories.add((IFactoryProvider)impl);
 						} else {
-							errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactory";
+							errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactoryProvider";
 						}
 					} catch (CoreException ex) {
-						errorMessage = "Factory class " + e.getAttribute("class") + "failed instantiation";
+						errorMessage = "Factory class " + e.getAttribute("class") + " failed instantiation";
 						contributorThrowable = ex;
 					}
 				}
@@ -123,13 +117,13 @@ public class ExtensionManager {
 			return activityId;
 		}
 
-		public IFactory[] getFactories() {
-			return factories.toArray(IFactory[]::new);
+		public IFactoryProvider[] getFactoryProviders() {
+			return factories.toArray(IFactoryProvider[]::new);
 		}
 	}
 	
 	private void trace(IConfigurationElement extensionElement, String message, Throwable t) {
-		String identifier = extensionElement.getAttribute("id");
+		 String identifier = extensionElement.getAttribute("id");
 		if (identifier == null) {
 			identifier = extensionElement.getNamespaceIdentifier();
 		}
@@ -137,9 +131,9 @@ public class ExtensionManager {
 		String output = "[" + identifier +"]:: " + message;
 		
 		if (t != null) {
-			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output, t);
+			Tracer.trace().trace(Tracer.EXTENTIONS, output, t);
 		} else {
-			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output);
+			Tracer.trace().trace(Tracer.EXTENTIONS, output);
 		}
 	}
 }
