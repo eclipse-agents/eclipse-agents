@@ -22,11 +22,15 @@ public class Tracer implements DebugOptionsListener, DebugTrace {
 
 
 	public static final String DEBUG = "/debug";
-	public static final String IMPLEMENTATIONS = "/debug/implementations";
+	public static final String EXTENTIONS = "/debug/extensions";
+	public static final String PLATFORM = "/debug/extensions/platform";
+	public static final String OTHERS = "/debug/extensions/others";
 	
 	public enum OPTION {
 		DEBUG("/debug"),
-		IMPLEMENTATIONS("/debug/implementations");
+		EXTENTIONS("/debug/extensions"),
+		PLATFORM("/debug/extensions/platform"),
+		OTHERS("org.eclipse.mcp/debug/extensions/others");
 		
 		private String location;
 		private String fullPath;

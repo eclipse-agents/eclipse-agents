@@ -24,6 +24,7 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 
 	private MCPServer server = null;
 	private String name, description;
+	boolean isRunning = false;
 	
 	Set<String> activityIds;
 	
@@ -70,12 +71,14 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 			
 			server = new MCPServer(name, description, port, factories.toArray(IFactoryProvider[]::new));
 			server.start();
+			isRunning = true;
 		};
 		
 	}
 	
 	public void stop() {
 		Tracer.trace().trace(Tracer.DEBUG, "Stopping"); //$NON-NLS-1$
+		isRunning = false;
 		if (server != null) {
 			server.stop();
 		}
@@ -84,6 +87,10 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 	public void forceRestart() {
 		stop();
 		start();
+	}
+	
+	public boolean isRunning() {
+		return server != null && isRunning;
 	}
 	
 

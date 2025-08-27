@@ -12,7 +12,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
@@ -91,10 +90,7 @@ public class BuiltinAnnotatedToolsFactory {
 		for (IWorkbenchWindow ww : PlatformUI.getWorkbench().getWorkbenchWindows()) {
 			for (IWorkbenchPage page : ww.getPages()) {
 				for (IEditorReference reference : page.getEditorReferences()) {
-					Editor editor = new Editor(reference);
-					if (editor.isValid()) {
-						result.add(new Editor(reference));
-					}
+					result.add(new Editor(reference));
 				}
 			}
 		}
@@ -251,8 +247,6 @@ public class BuiltinAnnotatedToolsFactory {
 						page.getActivePart();
 
 					} catch (PartInitException e) {
-						throw new MCPException(e);
-					} catch (CoreException e) {
 						throw new MCPException(e);
 					}
 				}

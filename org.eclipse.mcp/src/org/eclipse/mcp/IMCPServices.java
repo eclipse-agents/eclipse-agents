@@ -1,9 +1,17 @@
 package org.eclipse.mcp;
 
+import org.eclipse.mcp.internal.Tracer;
+import org.eclipse.osgi.service.debug.DebugTrace;
+
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 
 public interface IMCPServices {
 
+	/**
+	 * The option argument extensions must use when using MCP's DebugTrace
+	 */
+	public final static String EXTENSIONS_TRACE_OPTION = Tracer.OTHERS;
+	
 	/**
 	 * Adds a resource to the server.  
 	 * Can be used to dynamically make resources available based on state of IDE.
@@ -36,4 +44,11 @@ public interface IMCPServices {
 	 * @return true only if the tool availability was changed
 	 */
 	public boolean setToolVisibility(String toolName, boolean isVisible);
+	
+	/**
+	 * Send messages to Eclipse tracer and MCP logger.
+	 * Use <code>EXTENSIONS_TRACE_OPTION</code> as the option parameter
+	 * @return
+	 */
+	public DebugTrace getTracer();
 }

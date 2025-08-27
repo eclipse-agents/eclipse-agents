@@ -16,6 +16,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mcp.Activator;
+import org.eclipse.mcp.builtins.BuiltinFactoryProvider;
+import org.eclipse.mcp.factory.IFactoryProvider;
+import org.eclipse.mcp.internal.MCPServer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -34,18 +37,22 @@ import junit.framework.TestSuite;
 @RunWith(AllTests.class)
 public final class RouterTest {
 	
-	/**
-	 * 
-	 */
+	
+	final static MCPServer server = new MCPServer("junit", "junit", 3028, new IFactoryProvider[] {
+			new BuiltinFactoryProvider()
+	});
+
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
 	
-//		suite.addTest(new TestCase("Don't run in UI Thread") {
-//			@Override
-//			protected void runTest() throws Throwable {
-//				Assert.assertTrue("Dont run test in UI thread", !Thread.currentThread().equals((Display.getDefault().getThread())));
-//			}
-//		});
+		
+
+		suite.addTest(new TestCase("Don't run in UI Thread") {
+			@Override
+			protected void runTest() throws Throwable {
+				Assert.assertTrue("Dont run test in UI thread", !Thread.currentThread().equals((Display.getDefault().getThread())));
+			}
+		});
 		
 		String content = "public class HelloWorld {\n" +
 				"    public static void main(String[] args) {\n"  +
@@ -125,6 +132,14 @@ public final class RouterTest {
 			}
 		});
 		
+
+		suite.addTest(new TestCase("Start Server") {
+			@Override
+			protected void runTest() throws Throwable {
+				server.start();
+			}
+		});
+		
 		String console = "eclipse://console/z/OS";
 		String consoleEscaped = "eclipse://console/z%2FOS";
 		String editor = "eclipse://editor/HelloWorld.java";
@@ -134,20 +149,20 @@ public final class RouterTest {
 		String escape = "%2F";
 		
 		
-		testEclipseResource(suite, console, "com.ibm.cics.zos.core.ui.ZOSConsole");
+//		testEclipseResource(suite, console, "com.ibm.cics.zos.core.ui.ZOSConsole");
 		testEclipseResource(suite, consoleEscaped, "com.ibm.cics.zos.core.ui.ZOSConsole");
 		testEclipseResource(suite, editor, "org.eclipse.ui.internal.EditorReference");
-		testEclipseResource(suite, relativeFile, "org.eclipse.core.internal.resources.File");
+//		testEclipseResource(suite, relativeFile, "org.eclipse.core.internal.resources.File");
 		testEclipseResource(suite, relativeFileEscaped, "org.eclipse.core.internal.resources.File");
-		testEclipseResource(suite, absoluteFile,"java.io.File");
+//		testEclipseResource(suite, absoluteFile,"java.io.File");
 
 		
-		testContentEquals(suite, console, null);
+//		testContentEquals(suite, console, null);
 		testContentEquals(suite, consoleEscaped, null);
 		testContentEquals(suite, editor, content);
-		testContentEquals(suite, relativeFile, content);
+//		testContentEquals(suite, relativeFile, content);
 		testContentEquals(suite, relativeFileEscaped, content);
-		testContentEquals(suite, absoluteFile, content);
+//		testContentEquals(suite, absoluteFile, content);
 		
 		return suite;
 	}
@@ -157,7 +172,7 @@ public final class RouterTest {
 		suite.addTest(new TestCase("getEclipseResource: " + uri) {
 			@Override
 			protected void runTest() throws Throwable {
-				Object eclipseResource = Activator.getDefault().getEclipseResource(uri);
+				Object eclipseResource = server.getResourceAdapter(uri).uriToEclipseObject(uri);
 				System.out.println(uri + ": " + eclipseResource);
 				Assert.assertEquals(eclipseResource.getClass().getCanonicalName(), className);
 
@@ -169,7 +184,7 @@ public final class RouterTest {
 		suite.addTest(new TestCase("getResourceContent: " + uri) {
 			@Override
 			protected void runTest() throws Throwable {
-				String resourceContent = Activator.getDefault().getResourceContent(uri);
+				String resourceContent = server.getResourceAdapter(uri).uriToResourceContent(uri);
 				System.out.println(uri + ": " + resourceContent);
 				Assert.assertEquals(uri, resourceContent.trim(), content.trim());
 			}

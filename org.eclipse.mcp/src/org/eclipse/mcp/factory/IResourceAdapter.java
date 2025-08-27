@@ -26,7 +26,7 @@ public interface IResourceAdapter<T> {
 	public String eclipseObjectToResourceContent(T object);
 	
 	public default String uriToResourceContent(String uri) {
-		T object =  uriToEclipseObject(uri);
+		T object =  this.uriToEclipseObject(uri);
 		if (object != null) {
 			return eclipseObjectToResourceContent(object);
 		}

@@ -90,7 +90,7 @@ public class ExtensionManager {
 							errorMessage = "Factory class " + e.getAttribute("class") + " not instanceof IMCPFactoryProvider";
 						}
 					} catch (CoreException ex) {
-						errorMessage = "Factory class " + e.getAttribute("class") + "failed instantiation";
+						errorMessage = "Factory class " + e.getAttribute("class") + " failed instantiation";
 						contributorThrowable = ex;
 					}
 				}
@@ -123,7 +123,7 @@ public class ExtensionManager {
 	}
 	
 	private void trace(IConfigurationElement extensionElement, String message, Throwable t) {
-		String identifier = extensionElement.getAttribute("id");
+		 String identifier = extensionElement.getAttribute("id");
 		if (identifier == null) {
 			identifier = extensionElement.getNamespaceIdentifier();
 		}
@@ -131,9 +131,9 @@ public class ExtensionManager {
 		String output = "[" + identifier +"]:: " + message;
 		
 		if (t != null) {
-			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output, t);
+			Tracer.trace().trace(Tracer.EXTENTIONS, output, t);
 		} else {
-			Tracer.trace().trace(Tracer.IMPLEMENTATIONS, output);
+			Tracer.trace().trace(Tracer.EXTENTIONS, output);
 		}
 	}
 }

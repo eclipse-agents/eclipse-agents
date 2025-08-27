@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.eclipse.mcp.IMCPServices;
 import org.eclipse.mcp.builtin.resource.templates.Templates;
+import org.eclipse.mcp.internal.Tracer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPageListener;
@@ -36,7 +37,7 @@ public class Editors  {
 	
 	Set<String> editorNames = new HashSet<String>();
 	
-	IWorkbenchPart lastActivePart;
+	IEditorPart lastActiveEditor;
 	
 	Set<String> resourceURIs = new HashSet<String>();
 	SyncResourceSpecification editorTemplateSpec;
@@ -81,7 +82,12 @@ public class Editors  {
 		partListener = new IPartListener() {
 			@Override
 			public void partActivated(IWorkbenchPart part) {
-				lastActivePart = part;
+				if (part instanceof IEditorPart) {
+					lastActiveEditor = (IEditorPart)part;
+					if (!editorNames.contains(part.getTitle())) {
+						addResource((ITextEditor)part);
+					}
+				}
 			}
 			
 			@Override
@@ -89,14 +95,15 @@ public class Editors  {
 			
 			@Override
 			public void partClosed(IWorkbenchPart part) {
-				if (part instanceof IEditorPart) {
-					removeResource((IEditorPart)part);
+				if (part instanceof ITextEditor) {
+					removeResource((ITextEditor)part);
 				}
 			}
 			
 			@Override
 			public void partDeactivated(IWorkbenchPart part) {
 				// do nothing
+				System.out.println("DEACTIVATE: " + part.getTitle());
 			}
 			
 			@Override
@@ -138,7 +145,7 @@ public class Editors  {
 	}
 	
 	private void addResource(ITextEditor part) {
-		if (!editorNames.contains(part.getTitle())) {
+		if (this.services != null && !editorNames.contains(part.getTitle())) {
 			editorNames.add(part.getTitle());
 			
 			Resource resource = McpSchema.Resource.builder()
@@ -150,16 +157,21 @@ public class Editors  {
 
 			SyncResourceSpecification spec = new SyncResourceSpecification(resource, editorTemplateSpec.readHandler());
 			services.addResource(spec);
+			
+			Tracer.trace().trace(Tracer.PLATFORM, "Adding Text Editor Resource: " + resource.uri());
+			
 		}
 	}
 	
 	
-	private void removeResource(IWorkbenchPart part) {
-		if (editorNames.contains(part.getTitle())) {
+	private void removeResource(ITextEditor part) {
+		if (this.services != null && editorNames.contains(part.getTitle())) {
 			editorNames.remove(part.getTitle());
 			
 			String uri = "eclipse://editor/" + part.getTitle();
 			services.removeResource(uri);
+			
+			Tracer.trace().trace(Tracer.PLATFORM, "Removing Text Editor Resource: " + uri);
 		}
 	}
 }

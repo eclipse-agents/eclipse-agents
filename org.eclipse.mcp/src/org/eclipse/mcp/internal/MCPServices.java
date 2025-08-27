@@ -1,6 +1,7 @@
 package org.eclipse.mcp.internal;
 
 import org.eclipse.mcp.IMCPServices;
+import org.eclipse.osgi.service.debug.DebugTrace;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncResourceSpecification;
 
@@ -30,5 +31,10 @@ public class MCPServices implements IMCPServices {
 	@Override
 	public boolean setToolVisibility(String toolName, boolean isVisible) {
 		return server.setVisibility(toolName, isVisible);
+	}
+
+	@Override
+	public DebugTrace getTracer() {
+		return Tracer.trace();
 	}
 }
