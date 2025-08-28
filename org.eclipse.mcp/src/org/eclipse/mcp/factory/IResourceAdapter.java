@@ -1,6 +1,7 @@
 package org.eclipse.mcp.factory;
 
-import io.modelcontextprotocol.spec.McpSchema;
+import org.eclipse.mcp.Schema.Files;
+
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 
 /**
@@ -9,33 +10,26 @@ import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
  * Each template prefix must be unique or the adapter will be ignored
  * @param <T> the type of Eclipse object the adapter can transform URIs into
  */
-public interface IResourceAdapter<T> {
+public interface IResourceAdapter<T, U> {
 
+	public IResourceAdapter<T, U> fromUri(String uri);
+	
+	public IResourceAdapter<T, U> fromModel(T object);
+	
+	public boolean supportsChildren();
+	
+	public Files getChildren(int depth);
+	
 	public String getTemplate();
 	
-	public String getUniqueTemplatePrefix();
+	public T getModel();
 	
-	public T uriToEclipseObject(String uri);
+	public U toJson();
 	
-	public Object eclipseObjectToJsonObject(T object);
+	public ResourceLink toResourceLink();
 	
-	public ResourceLink eclipseObjectToResourceLink(T object);
+	public String toUri();
 	
-	public String eclipseObjectToURI(T object);
-	
-	public String eclipseObjectToResourceContent(T object);
-	
-	public default String uriToResourceContent(String uri) {
-		T object =  this.uriToEclipseObject(uri);
-		if (object != null) {
-			return eclipseObjectToResourceContent(object);
-		}
-		return null;
-	}
-	
-	public default void addAnnotations(McpSchema.ResourceLink.Builder builder) {
-		//TODO if (preference)
-		
-//		builder.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0));
-	}
+	public String toContent();
+
 }

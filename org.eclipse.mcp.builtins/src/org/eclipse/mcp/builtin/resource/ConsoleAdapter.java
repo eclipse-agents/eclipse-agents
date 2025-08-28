@@ -1,85 +1,124 @@
 package org.eclipse.mcp.builtin.resource;
 
 import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.Schema.Files;
+import org.eclipse.mcp.builtins.Schema.Console;
+import org.eclipse.mcp.builtins.Schema.Consoles;
 import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.TextConsole;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
+import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
-public class ConsoleAdapter implements IResourceAdapter<IConsole> {
+public class ConsoleAdapter implements IResourceAdapter<IConsole, Console> {
 
 	final String template = "eclipse://console/{name}";
+	final String prefix = template.substring(0, template.indexOf("{"));
+	IConsole console = null;
+	
+	public ConsoleAdapter() {}
+	
+	public ConsoleAdapter(IConsole console) {
+		this.console = console;
+	}
+	
+	public ConsoleAdapter(String uri) {
+		DefaultMcpUriTemplateManager tm = new DefaultMcpUriTemplateManager(template);
+		if (tm.matches(uri)) {
+			Map<String, String> variables = tm.extractVariableValues(uri);
+			String name = variables.get("name");
+			name = URLDecoder.decode(name, StandardCharsets.UTF_8);
+
+			IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+			for (IConsole console: manager.getConsoles()) {
+				if (console.getName().equals(name)) {
+					this.console = console;
+				}
+			}
+		}
+		
+		if (console == null) {
+			throw new MCPException("uri not resolved: " + uri);
+		}
+	}
 
 	@Override
 	public String getTemplate() {
 		return template;
 	}
-
+	
 	@Override
-	public String getUniqueTemplatePrefix() {
-		return template.substring(0, template.indexOf("{"));
+	public ConsoleAdapter fromUri(String uri) {
+		return new ConsoleAdapter(uri);
 	}
 
 	@Override
-	public IConsole uriToEclipseObject(String uri) {
-		IConsole result = null;
-		if (uri.startsWith(getUniqueTemplatePrefix())) {
-			String name = uri.substring(getUniqueTemplatePrefix().length());
-			IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-			for (IConsole console: manager.getConsoles()) {
-				if (console.getName().equals(name)) {
-					result = console;
-				}
-			}
-			if (result == null) {
-				name = URLDecoder.decode(name);
-				for (IConsole console: manager.getConsoles()) {
-					if (console.getName().equals(name)) {
-						result = console;
-					}
-				}
-			}
-		}
-		return result;
+	public ConsoleAdapter fromModel(IConsole console) {
+		return new ConsoleAdapter(console);
 	}
 
 	@Override
-	public Object eclipseObjectToJsonObject(IConsole object) {
-		// TODO Auto-generated method stub
+	public boolean supportsChildren() {
+		return false;
+	}
+
+	@Override
+	public Files getChildren(int depth) {
 		return null;
 	}
 
 	@Override
-	public ResourceLink eclipseObjectToResourceLink(IConsole console) {
-		McpSchema.ResourceLink.Builder builder =  McpSchema.ResourceLink.builder()
-				.uri(eclipseObjectToURI(console))
+	public IConsole getModel() {
+		return console;
+	}
+
+	@Override
+	public Console toJson() {
+		return new Console(console.getName(), console.getType(), toUri());
+	}
+
+	@Override
+	public ResourceLink toResourceLink() {
+		return McpSchema.ResourceLink.builder()
+				.uri(toUri())
 				.name(console.getName())
 				.description("Content of an Eclipse IDE console")
-				.mimeType("text/plain");
-		
-		addAnnotations(builder);
-		
-		return builder.build();
-
+				.mimeType("text/plain")
+				.build();
 	}
 
 	@Override
-	public String eclipseObjectToURI(IConsole console) {
-		return getUniqueTemplatePrefix() + console.getName();
+	public String toUri() {
+		return prefix + URLEncoder.encode(console.getName(), StandardCharsets.UTF_8);
 	}
 
 	@Override
-	public String eclipseObjectToResourceContent(IConsole object) {
-		
-		
-		//TODO
-		
-
-		return null;
+	public String toContent() {
+		if (console instanceof TextConsole) {
+			return ((TextConsole)console).getDocument().get();
+		}
+		return "...";
+	}
+	
+	public static Consoles getConsoles() {
+		List<Console> consoles = new ArrayList<Console>();
+		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+		for (IConsole console : manager.getConsoles()) {
+			ConsoleAdapter adapter = new ConsoleAdapter(console);
+			consoles.add(adapter.toJson());
+		}
+		return new Consoles(consoles.toArray(Console[]::new));
 	}
 
 }

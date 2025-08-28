@@ -15,8 +15,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mcp.Activator;
-import org.eclipse.mcp.builtins.BuiltinFactoryProvider;
+import org.eclipse.mcp.builtins.FactoryProvider;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.internal.MCPServer;
 import org.eclipse.swt.widgets.Display;
@@ -39,7 +38,7 @@ public final class RouterTest {
 	
 	
 	final static MCPServer server = new MCPServer("junit", "junit", 3028, new IFactoryProvider[] {
-			new BuiltinFactoryProvider()
+			new FactoryProvider()
 	});
 
 	public static TestSuite suite() {
@@ -172,7 +171,7 @@ public final class RouterTest {
 		suite.addTest(new TestCase("getEclipseResource: " + uri) {
 			@Override
 			protected void runTest() throws Throwable {
-				Object eclipseResource = server.getResourceAdapter(uri).uriToEclipseObject(uri);
+				Object eclipseResource = server.getResourceAdapter(uri).getModel();
 				System.out.println(uri + ": " + eclipseResource);
 				Assert.assertEquals(eclipseResource.getClass().getCanonicalName(), className);
 
@@ -184,7 +183,7 @@ public final class RouterTest {
 		suite.addTest(new TestCase("getResourceContent: " + uri) {
 			@Override
 			protected void runTest() throws Throwable {
-				String resourceContent = server.getResourceAdapter(uri).uriToResourceContent(uri);
+				String resourceContent = server.getResourceAdapter(uri).toContent();
 				System.out.println(uri + ": " + resourceContent);
 				Assert.assertEquals(uri, resourceContent.trim(), content.trim());
 			}

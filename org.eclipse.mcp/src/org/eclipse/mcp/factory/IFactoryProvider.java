@@ -7,7 +7,7 @@ import org.eclipse.mcp.IMCPServices;
  */
 public interface IFactoryProvider {
 
-	public IResourceAdapter<?>[] createResourceAdapters();
+	public IResourceAdapter<?, ?>[] createResourceAdapters();
 	
 	public Object[] getAnnotatedObjects();
 	

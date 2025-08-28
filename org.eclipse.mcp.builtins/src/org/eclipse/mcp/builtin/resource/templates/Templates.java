@@ -38,12 +38,16 @@ public class Templates {
     		uri = "eclipse://editor/{name}", 
             name = "Eclipse IDE Text Editor", 
             description = "Content of an Eclipse Text Editor")
-	public String getEditorContent(String name) {		
-		return new EditorAdapter().uriToResourceContent("eclipse://editor/" + name);
+	public String getEditorContent(String name) {
+    	
+    	EditorAdapter adapter = new EditorAdapter("eclipse://editor/" + name);
+		return adapter.toContent();
+
 	}
     
     @McpComplete(uri="eclipse://editor/{name}")
 	public List<String> completeName(CompleteArgument name) {
+    	
     	List<String> result = new ArrayList<String>();
 		for (IWorkbenchWindow ww: PlatformUI.getWorkbench().getWorkbenchWindows()) {
 			for (IWorkbenchPage page: ww.getPages()) {
@@ -60,11 +64,13 @@ public class Templates {
     		name = "Eclipse Workspace File",
     		description = "Content of an file in an Eclipse workspace")
     public String getWorkspaceFileContent(String project, String projectRelativePath) {
+    	
+    	
     	String uri = "file://workspace/" + 
     			URLDecoder.decode(project) + "/" + 
     			URLDecoder.decode(projectRelativePath);
-    	
-    	return new RelativeFileAdapter().uriToResourceContent(uri);
+    	RelativeFileAdapter adapter = new RelativeFileAdapter(uri);
+    	return adapter.toContent();
 	}
     
     @McpComplete(uri = "file://workspace/{project}/{projectRelativePath}")

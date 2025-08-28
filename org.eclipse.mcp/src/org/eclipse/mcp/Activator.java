@@ -83,14 +83,6 @@ public class Activator extends AbstractUIPlugin {
 		Tracer.trace().trace(Tracer.DEBUG, "MCP Server Restart Requested"); //$NON-NLS-1$
 		serverManager.forceRestart();
 	}
-	
-	public String getResourceContent(String uri) {
-		return serverManager.getResourceContent(uri);
-	}
-	
-	public Object getEclipseResource(String uri) {
-		return serverManager.getEclipseResource(uri);
-	}
 
 	/**
 	 * Returns the shared instance
