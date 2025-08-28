@@ -48,7 +48,7 @@ public class Schema {
 		@JsonProperty
 		File[] files,
 	
-		@JsonPropertyDescription("The actual depth of the search, may differ from input")
+		@JsonPropertyDescription("The actual depth searched, may differ from input")
 		@JsonProperty
 		DEPTH depthSearched) {
 		

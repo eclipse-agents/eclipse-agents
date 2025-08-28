@@ -22,6 +22,9 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
+/**
+ * support for resource template: eclipse://console/{name}
+ */
 public class ConsoleAdapter implements IResourceAdapter<IConsole, Console> {
 
 	final String template = "eclipse://console/{name}";

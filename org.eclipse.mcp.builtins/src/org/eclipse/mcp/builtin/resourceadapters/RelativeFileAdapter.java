@@ -34,6 +34,9 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
+/**
+ * support for resource template: file://workspace/{relativePath}
+ */
 public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
 	
 	final String template = "file://workspace/{relativePath}";
