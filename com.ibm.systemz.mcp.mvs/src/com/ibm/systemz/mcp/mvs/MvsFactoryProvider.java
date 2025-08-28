@@ -1,39 +1,28 @@
 package com.ibm.systemz.mcp.mvs;
 
+import org.eclipse.mcp.IMCPServices;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceAdapter;
-import org.eclipse.mcp.factory.IResourceFactory;
-import org.eclipse.mcp.factory.IResourceTemplateFactory;
-import org.eclipse.mcp.factory.ToolFactory;
 
 public class MvsFactoryProvider implements IFactoryProvider {
 
 	@Override
-	public ToolFactory[] createToolFactories() {
-		return AnnotatedToolFactory.createToolFactories(new Class<?>[] {
-			AnnotatedToolFactory.class
-	});
-}
+	public IResourceAdapter<?>[] createResourceAdapters() {
+		// TODO Auto-generated method stub
+		return new IResourceAdapter[] { new MvsResourceAdapter() };
+	}
 
 	@Override
-	public IResourceFactory[] createResourceFactories() {
-		return new IResourceFactory[] {
-			new ResourceFactory()
+	public Object[] getAnnotatedObjects() {
+		return new Object[] {
+				new Templates()
 		};
 	}
-	
+
 	@Override
-	public IResourceTemplateFactory[] createResourceTemplateFactories() {
-		return new IResourceTemplateFactory[] {
-			new AnnotatedResourceTemplateFactory()
-		};
+	public void initialize(IMCPServices services) {
 	}
-	
-	@Override
-	public IResourceAdapter<?>[] createResourceAdapters() {
-		return new IResourceAdapter[] {
-			new MvsResourceAdapter()
-		};
-	}
+
+
 
 }

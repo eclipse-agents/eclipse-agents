@@ -8,24 +8,21 @@ import java.util.Map;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory;
-import org.eclipse.mcp.experimental.annotated.MCPAnnotatedResourceTemplateFactory.ResourceTemplate;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.SystemStartHere;
 import org.eclipse.rse.core.subsystems.ISubSystem;
+import org.springaicommunity.mcp.annotation.McpComplete;
+import org.springaicommunity.mcp.annotation.McpResource;
 
 import com.ibm.ftt.resources.zos.zosphysical.IZOSDataSetMember;
 import com.ibm.ftt.rse.mvs.client.subsystems.IMVSFileSubSystem;
 import com.ibm.systemz.mcp.mvs.job.QueryDataSetsJob;
 import com.ibm.systemz.mcp.mvs.job.QueryPDSMemberJob;
-import org.eclipse.mcp.Activator;
 
+import io.modelcontextprotocol.spec.McpSchema.CompleteRequest.CompleteArgument;
+import io.modelcontextprotocol.spec.McpSchema.CompleteRequest.CompleteContext;
 
-
-@ResourceTemplate (name = "PDS Member", 
-		description = "A file that is a member of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set (PDS)",
-		uriTemplate = "file://mvs/{host}/{pds}/{member}")
-public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTemplateFactory {
+public class Templates {
 
 	Map<ISubSystem, QueryDataSetsJob> dataSetSearchJobs = new HashMap<ISubSystem, QueryDataSetsJob>();
 	Map<ISubSystem, String> dataSetSearchFilters = new HashMap<ISubSystem, String>();
@@ -34,23 +31,37 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 	Map<ISubSystem, String> pdsMemberSearchFilters = new HashMap<ISubSystem, String>();
 	
 	
-	@Override
-	public List<String> completionReq(String argumentName, String argumentValue, String uri, Map<String, String> arguments) {
-		List<String> result = new ArrayList<String>();
+	public Templates() {
 		
-		if (argumentName.equals("host")) {
+	}
+
+    @McpResource(
+    		uri = "file://mvs/{host}/{pds}/{member}", 
+            name = "PDS Member", 
+            description = "A file that is a member of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set (PDS)")
+	public String getPDSMemberContent(String host, String pds, String member) {		
+		return new MvsResourceAdapter().uriToResourceContent("file://mvs/" + host + "/" + pds + "/" + member);
+	}
+    
+    @McpComplete(uri = "file://mvs/{host}/{pds}/{member}")
+   	public List<String> completeRelativePath(
+   			CompleteArgument argument, CompleteContext context) {
+    	
+List<String> result = new ArrayList<String>();
+		
+		if (argument.name().equals("host")) {
 		
 			for (IHost host : SystemStartHere.getConnections()) {
 				if (host.getSystemType().getId().equals("com.ibm.etools.zos.system")) { //$NON-NLS-1$
 					result.add(host.getHostName());
 				}
 			}
-		} else if (argumentName.equals("pds")) {
+		} else if (argument.name().equals("pds")) {
 			
-			ISubSystem subSystem = findMvsSubsystem(arguments.get("host"));
+			ISubSystem subSystem = findMvsSubsystem(context.arguments().get("host"));
 			
 			if (subSystem != null) {
-				dataSetSearchFilters.put(subSystem, argumentValue);
+				dataSetSearchFilters.put(subSystem, argument.value());
 
 				if (!dataSetSearchJobs.containsKey(subSystem)) {
 					dataSetSearchJobs.put(subSystem, new QueryDataSetsJob(subSystem));
@@ -61,7 +72,7 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 					dataSetSearchJobs.get(subSystem).cancel();
 				}
 				
-				dataSetSearchJobs.get(subSystem).setFilter(argumentValue);
+				dataSetSearchJobs.get(subSystem).setFilter(argument.value());
 				dataSetSearchJobs.get(subSystem).schedule();
 				try {
 					dataSetSearchJobs.get(subSystem).join();
@@ -76,12 +87,12 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 					throw new MCPException(dataSetSearchJobs.get(subSystem).getResult());
 				}
 			}
-		} else if (argumentName.equals("member")) {
+		} else if (argument.name().equals("member")) {
 
-			ISubSystem subSystem = findMvsSubsystem(arguments.get("host"));
+			ISubSystem subSystem = findMvsSubsystem(context.arguments().get("host"));
 			
 			if (subSystem != null) {
-				pdsMemberSearchFilters.put(subSystem, argumentValue);
+				pdsMemberSearchFilters.put(subSystem, argument.value());
 
 				if (!pdsMemberSearchJobs.containsKey(subSystem)) {
 					pdsMemberSearchJobs.put(subSystem, new QueryPDSMemberJob(subSystem));
@@ -92,11 +103,11 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 					pdsMemberSearchJobs.get(subSystem).cancel();
 				}
 				
-				pdsMemberSearchJobs.get(subSystem).setDataSetName(arguments.get("pds"));
-				if (argumentValue.endsWith("*")) {
-					pdsMemberSearchJobs.get(subSystem).setDataSetMemberFilter(argumentValue);
+				pdsMemberSearchJobs.get(subSystem).setDataSetName(context.arguments().get("pds"));
+				if (argument.value().endsWith("*")) {
+					pdsMemberSearchJobs.get(subSystem).setDataSetMemberFilter(argument.value());
 				} else {
-					pdsMemberSearchJobs.get(subSystem).setDataSetMemberFilter(argumentValue + "*");
+					pdsMemberSearchJobs.get(subSystem).setDataSetMemberFilter(argument.value() + "*");
 				}
 				
 				pdsMemberSearchJobs.get(subSystem).schedule();
@@ -117,16 +128,9 @@ public class AnnotatedResourceTemplateFactory extends MCPAnnotatedResourceTempla
 			}
 		}
 		return result;
-	}
-
-	@Override
-	public String[] readResource(String url) {
-		return new String[] {
-			Activator.getDefault().getResourceContent(url)
-		};
-	}
-	
-	private ISubSystem findMvsSubsystem(String systemName) {
+   	}
+    
+    private ISubSystem findMvsSubsystem(String systemName) {
 		for (IHost host : SystemStartHere.getConnections()) {
 			if (host.getSystemType().getId().equals("com.ibm.etools.zos.system")) { //$NON-NLS-1$
 				if (host.getHostName().equals(systemName)) {

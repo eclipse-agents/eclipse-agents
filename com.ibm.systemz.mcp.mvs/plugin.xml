@@ -27,19 +27,5 @@
    
    </extension>
    
-   <extension
-         point="org.eclipse.ui.propertyPages">
-      <page
-            id="com.ibm.systemz.mcp.mvs.properties.samplePropertyPage"
-            name="Sample Page"
-            class="com.ibm.systemz.mcp.mvs.properties.SamplePropertyPage"
-            nameFilter="*.*">
-         <enabledWhen>
-            <instanceof
-                  value="org.eclipse.core.resources.IFile">
-            </instanceof>
-         </enabledWhen>
-      </page>
-   </extension>
 
 </plugin>
