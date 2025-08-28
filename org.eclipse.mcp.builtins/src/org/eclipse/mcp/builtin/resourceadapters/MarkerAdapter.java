@@ -28,6 +28,9 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 
+/**
+ * support for Problem and Task markers
+ */
 public class MarkerAdapter implements IResourceAdapter<IMarker, Marker> {
 	
 	TYPE type;

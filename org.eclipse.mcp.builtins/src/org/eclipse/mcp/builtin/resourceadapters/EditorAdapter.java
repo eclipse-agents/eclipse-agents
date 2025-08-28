@@ -45,6 +45,9 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
+/**
+ * support for resource template: eclipse://editor/{name}
+ */
 public class EditorAdapter implements IResourceAdapter<IEditorReference, Editor> {
 
 	final String template = "eclipse://editor/{name}";
