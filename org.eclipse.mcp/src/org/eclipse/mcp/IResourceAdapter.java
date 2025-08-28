@@ -1,5 +1,6 @@
-package org.eclipse.mcp.factory;
+package org.eclipse.mcp;
 
+import org.eclipse.mcp.Schema.DEPTH;
 import org.eclipse.mcp.Schema.Files;
 
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
@@ -18,9 +19,9 @@ public interface IResourceAdapter<T, U> {
 	
 	public boolean supportsChildren();
 	
-	public Files getChildren(int depth);
+	public Files getChildren(DEPTH depth);
 	
-	public String getTemplate();
+	public String[] getTemplates();
 	
 	public T getModel();
 	

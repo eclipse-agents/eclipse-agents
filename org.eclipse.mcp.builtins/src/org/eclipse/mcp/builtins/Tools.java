@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtins.tools;
+package org.eclipse.mcp.builtins;
 
 
 import java.util.Arrays;
@@ -11,14 +11,13 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.mcp.Activator;
+import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
-import org.eclipse.mcp.builtin.resource.EditorAdapter;
-import org.eclipse.mcp.builtin.resource.MarkerAdapter;
-import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
-import org.eclipse.mcp.builtins.Schema;
-import org.eclipse.mcp.factory.IResourceAdapter;
-//import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
+import org.eclipse.mcp.Schema.DEPTH;
+import org.eclipse.mcp.builtin.resourceadapters.ConsoleAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.EditorAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.MarkerAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.RelativeFileAdapter;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -33,7 +32,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springaicommunity.mcp.annotation.McpToolParam;
 
-public class BuiltinAnnotatedToolsFactory {
+public class Tools {
 
 
 	@McpTool(name = "currentSelection", 
@@ -75,7 +74,7 @@ public class BuiltinAnnotatedToolsFactory {
 					title = "List Projects"))
 	public Schema.Files listProjects() {
 		RelativeFileAdapter adapter = new RelativeFileAdapter(ResourcesPlugin.getWorkspace().getRoot());
-		return adapter.getChildren(0);
+		return adapter.getChildren(DEPTH.CHILDREN);
 	}
 
 	@McpTool(name = "listChildResources",
@@ -87,9 +86,9 @@ public class BuiltinAnnotatedToolsFactory {
 					description = "URI of an eclipse project or folder") 
 					String resourceURI,
 			@McpToolParam(
-					description = "0 for immediate children, 1 for children and grandchildren, 2 for infinite depth", 
+					description = "CHILDREN, GRANDCHILDREN or INFINITE", 
 					required = false) 
-					int depth) {
+					DEPTH depth) {
 
 		IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(resourceURI);
 		

@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resource;
+package org.eclipse.mcp.builtin.resourceadapters;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,7 +12,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.Schema.DEPTH;
 import org.eclipse.mcp.Schema.Files;
 import org.eclipse.mcp.builtins.Schema.Marker;
 import org.eclipse.mcp.builtins.Schema.PRIORITY;
@@ -20,7 +22,6 @@ import org.eclipse.mcp.builtins.Schema.Problems;
 import org.eclipse.mcp.builtins.Schema.SEVERITY;
 import org.eclipse.mcp.builtins.Schema.TYPE;
 import org.eclipse.mcp.builtins.Schema.Tasks;
-import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
@@ -100,12 +101,12 @@ public class MarkerAdapter implements IResourceAdapter<IMarker, Marker> {
 	}
 
 	@Override
-	public Files getChildren(int depth) {
+	public Files getChildren(DEPTH depth) {
 		return null;
 	}
 
 	@Override
-	public String getTemplate() {
+	public String[] getTemplates() {
 		throw new MCPException("Not supported");
 	}
 

@@ -1,21 +1,18 @@
 package org.eclipse.mcp.builtins;
 
+import org.eclipse.mcp.IFactoryProvider;
 import org.eclipse.mcp.IMCPServices;
-import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
-import org.eclipse.mcp.builtin.resource.EditorAdapter;
-import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
-import org.eclipse.mcp.builtin.resource.factory.Editors;
-import org.eclipse.mcp.builtin.resource.templates.Templates;
-import org.eclipse.mcp.builtins.tools.BuiltinAnnotatedToolsFactory;
-import org.eclipse.mcp.factory.IFactoryProvider;
-import org.eclipse.mcp.factory.IResourceAdapter;
+import org.eclipse.mcp.IResourceAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.ConsoleAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.EditorAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.RelativeFileAdapter;
 
 public class FactoryProvider implements IFactoryProvider {
 
-	Editors editors;
+	ResourceController editors;
 	
 	public FactoryProvider() {
-		editors = new Editors();
+		editors = new ResourceController();
 	}
 
 
@@ -32,8 +29,8 @@ public class FactoryProvider implements IFactoryProvider {
 	@Override
 	public Object[] getAnnotatedObjects() {
 		return new Object[] {
-			new BuiltinAnnotatedToolsFactory(),
-			new Templates()
+			new Tools(),
+			new ResaourceTemplates()
 		};
 	}
 

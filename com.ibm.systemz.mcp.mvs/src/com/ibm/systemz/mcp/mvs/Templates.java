@@ -40,14 +40,14 @@ public class Templates {
             name = "PDS Member", 
             description = "A file that is a member of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set (PDS)")
 	public String getPDSMemberContent(String host, String pds, String member) {		
-		return new MvsResourceAdapter().uriToResourceContent("file://mvs/" + host + "/" + pds + "/" + member);
+		return new MvsResourceAdapter().fromUri("file://mvs/" + host + "/" + pds + "/" + member).toContent();
 	}
     
     @McpComplete(uri = "file://mvs/{host}/{pds}/{member}")
    	public List<String> completeRelativePath(
    			CompleteArgument argument, CompleteContext context) {
     	
-List<String> result = new ArrayList<String>();
+    	List<String> result = new ArrayList<String>();
 		
 		if (argument.name().equals("host")) {
 		
@@ -64,7 +64,9 @@ List<String> result = new ArrayList<String>();
 				dataSetSearchFilters.put(subSystem, argument.value());
 
 				if (!dataSetSearchJobs.containsKey(subSystem)) {
-					dataSetSearchJobs.put(subSystem, new QueryDataSetsJob(subSystem));
+					String pattern = argument.value();
+					pattern = pattern.endsWith("*") ? pattern : pattern + "*";
+					dataSetSearchJobs.put(subSystem, new QueryDataSetsJob(subSystem, pattern));
 				}
 				
 				//TODO should we add some throttling here?
@@ -77,12 +79,12 @@ List<String> result = new ArrayList<String>();
 				try {
 					dataSetSearchJobs.get(subSystem).join();
 				} catch (InterruptedException e) {
-					System.out.println(e.getLocalizedMessage());
 					throw new MCPException(e);
 				}
 				
 				if (dataSetSearchJobs.get(subSystem).getResult().isOK()) {
-					result.addAll(dataSetSearchJobs.get(subSystem).getResults());
+					result.addAll(dataSetSearchJobs.get(subSystem).getResults().stream()
+							.map(p->p.getName()).toList());
 				} else if (dataSetSearchJobs.get(subSystem).getResult().getSeverity() == IStatus.ERROR) {
 					throw new MCPException(dataSetSearchJobs.get(subSystem).getResult());
 				}

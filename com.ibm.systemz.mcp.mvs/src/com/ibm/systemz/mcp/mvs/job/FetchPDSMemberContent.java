@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -14,7 +12,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.rse.core.subsystems.ISubSystem;
 
 import com.ibm.ftt.resource.utils.PBResourceUtils;
 import com.ibm.ftt.resources.zos.zosphysical.IZOSDataSetMember;

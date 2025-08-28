@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resource;
+package org.eclipse.mcp.builtin.resourceadapters;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,10 +24,11 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.Schema.DEPTH;
 import org.eclipse.mcp.Schema.File;
 import org.eclipse.mcp.Schema.Files;
-import org.eclipse.mcp.factory.IResourceAdapter;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
@@ -70,8 +71,8 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
 	}
 
 	@Override
-	public String getTemplate() {
-		return template;
+	public String[] getTemplates() {
+		return new String[] { template };
 	}
 	
 	@Override
@@ -90,11 +91,13 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
 	}
 
 	@Override
-	public Files getChildren(int depth) {
+	public Files getChildren(DEPTH depth) {
 		
 		List<File> children = new ArrayList<File>();
-		depth = Math.max(0, Math.min(2, depth));
-
+		if (depth == null) {
+			depth = DEPTH.CHILDREN;
+		}
+		
 		if (resource instanceof IContainer) {
 			try {
 				for (IResource child: ((IContainer)resource).members()) {
@@ -106,14 +109,14 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
 							}
 							return true;
 						}
-					}, depth, false);
+					}, depth.value(), false);
 				}
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		return new Files(children.toArray(File[]::new));
+		return new Files(children.toArray(File[]::new), depth);
 	}
 
 	@Override

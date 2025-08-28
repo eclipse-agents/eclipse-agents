@@ -34,13 +34,14 @@ public class QueryDataSetsJob extends Job {
 	ISubSystem subSystem;
 	
 	int DATASET_COUNT_THRESHOLD = 100;
-	List<String> results;
+	List<IZOSDataSet> results;
 	
-	public QueryDataSetsJob(ISubSystem subSystem){
+	public QueryDataSetsJob(ISubSystem subSystem, String pattern){
 		super("Model Context Protocol (MVS)");
 
 		this.subSystem = subSystem;
-		this.results = new ArrayList<String>();
+		this.filter = pattern;
+		this.results = new ArrayList<IZOSDataSet>();
 	}
 
 	@Override
@@ -128,7 +129,7 @@ public class QueryDataSetsJob extends Job {
 		}
 		for (IAdaptable member: members) {
 			if (member instanceof IZOSDataSet) {
-				results.add(((IZOSDataSet)member).getName());
+				results.add((IZOSDataSet)member);
 			}
 		}
 
@@ -154,7 +155,7 @@ public class QueryDataSetsJob extends Job {
  		this.filter = filter.toUpperCase();
  	}
 
- 	public List<String> getResults() {
+ 	public List<IZOSDataSet> getResults() {
  		return results;
  	}
 

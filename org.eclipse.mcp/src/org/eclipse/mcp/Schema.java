@@ -10,6 +10,21 @@ import io.modelcontextprotocol.spec.McpSchema;
 
 public class Schema {
 
+	public enum DEPTH { 
+		CHILDREN(0), 
+		GRANDCHILDREN(1), 
+		INFINITE(2);
+		
+		int value;
+		private DEPTH(int value) {
+			this.value = value;
+		}
+		
+		public int value() {
+			return value;
+		}
+	};
+	
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonClassDescription("Element of an hierarchical file system")
@@ -21,7 +36,7 @@ public class Schema {
 		@JsonPropertyDescription("Folders may have children")
 		@JsonProperty
 		boolean isFolder,
-
+		
 		@JsonProperty
 		McpSchema.ResourceLink uri) {
 	}
@@ -31,7 +46,11 @@ public class Schema {
 	public record Files (
 
 		@JsonProperty
-		File[] files) {
+		File[] files,
+	
+		@JsonPropertyDescription("The actual depth of the search, may differ from input")
+		@JsonProperty
+		DEPTH depthSearched) {
 		
 	}
 }

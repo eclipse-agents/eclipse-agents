@@ -1,12 +1,12 @@
-package org.eclipse.mcp.builtin.resource.factory;
+package org.eclipse.mcp.builtins;
 
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.mcp.IMCPServices;
-import org.eclipse.mcp.builtin.resource.templates.Templates;
 import org.eclipse.mcp.internal.Tracer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -27,7 +27,7 @@ import io.modelcontextprotocol.spec.McpSchema.Resource;
 /**
  * Synchronizes availability of one ""eclipse://editor/{name}" MCP resource for each open Eclipse editor
  */
-public class Editors  {
+public class ResourceController  {
 
 	IMCPServices services;
 	
@@ -42,10 +42,10 @@ public class Editors  {
 	Set<String> resourceURIs = new HashSet<String>();
 	SyncResourceSpecification editorTemplateSpec;
 
-	public Editors() {
+	public ResourceController() {
 		super();
 		
-		SyncMcpResourceProvider provider = new SyncMcpResourceProvider(Arrays.asList(new Templates()));
+		SyncMcpResourceProvider provider = new SyncMcpResourceProvider(Arrays.asList(new ResaourceTemplates()));
 		for (SyncResourceSpecification spec: provider.getResourceSpecifications()) {
 			if (spec.resource().uri().equals("eclipse://editor/{name}")) {
 				editorTemplateSpec = spec;
@@ -154,7 +154,7 @@ public class Editors  {
 			
 			Resource resource = McpSchema.Resource.builder()
 				.name(part.getTitle())
-				.uri("eclipse://editor/"+ URLEncoder.encode(part.getTitle()))
+				.uri("eclipse://editor/"+ URLEncoder.encode(part.getTitle(), StandardCharsets.UTF_8))
 				.description(part.getTitleToolTip())
 				.mimeType("text/plain")
 				.build();
