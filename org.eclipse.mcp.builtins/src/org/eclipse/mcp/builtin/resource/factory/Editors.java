@@ -37,7 +37,7 @@ public class Editors  {
 	
 	Set<String> editorNames = new HashSet<String>();
 	
-	IEditorPart lastActiveEditor;
+	ITextEditor lastActiveTextEditor;
 	
 	Set<String> resourceURIs = new HashSet<String>();
 	SyncResourceSpecification editorTemplateSpec;
@@ -82,8 +82,8 @@ public class Editors  {
 		partListener = new IPartListener() {
 			@Override
 			public void partActivated(IWorkbenchPart part) {
-				if (part instanceof IEditorPart) {
-					lastActiveEditor = (IEditorPart)part;
+				if (part instanceof ITextEditor) {
+					lastActiveTextEditor = (ITextEditor)part;
 					if (!editorNames.contains(part.getTitle())) {
 						addResource((ITextEditor)part);
 					}
@@ -97,6 +97,10 @@ public class Editors  {
 			public void partClosed(IWorkbenchPart part) {
 				if (part instanceof ITextEditor) {
 					removeResource((ITextEditor)part);
+				}
+				
+				if (part == lastActiveTextEditor) {
+					lastActiveTextEditor = null;
 				}
 			}
 			
