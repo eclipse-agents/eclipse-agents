@@ -1,6 +1,5 @@
 package org.eclipse.mcp.factory;
 
-import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 
 /**
@@ -11,31 +10,24 @@ import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
  */
 public interface IResourceAdapter<T> {
 
+	public IResourceAdapter<T> fromUri(String uri);
+	
+	public IResourceAdapter<T> fromModel(T object);
+	
+	public boolean supportsChildren();
+	
+	public IResourceAdapter<T>[] getChildren(int depth);
+	
 	public String getTemplate();
 	
-	public String getUniqueTemplatePrefix();
+	public T getModel();
 	
-	public T uriToEclipseObject(String uri);
+	public Object toJson();
 	
-	public Object eclipseObjectToJsonObject(T object);
+	public ResourceLink toResourceLink();
 	
-	public ResourceLink eclipseObjectToResourceLink(T object);
+	public String toUri();
 	
-	public String eclipseObjectToURI(T object);
-	
-	public String eclipseObjectToResourceContent(T object);
-	
-	public default String uriToResourceContent(String uri) {
-		T object =  this.uriToEclipseObject(uri);
-		if (object != null) {
-			return eclipseObjectToResourceContent(object);
-		}
-		return null;
-	}
-	
-	public default void addAnnotations(McpSchema.ResourceLink.Builder builder) {
-		//TODO if (preference)
-		
-//		builder.annotations(new Annotations(Arrays.asList(Role.ASSISTANT, Role.USER), 1.0));
-	}
+	public String toContent();
+
 }

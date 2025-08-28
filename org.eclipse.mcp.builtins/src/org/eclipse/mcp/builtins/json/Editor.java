@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.fasterxml.jackson.annotation.JsonClassDescription;
@@ -29,8 +30,8 @@ public class Editor {
 	String name;
 	
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("If the editor is a text editor, the contents of the text editor")
-	McpSchema.ResourceLink textEditor;
+	@JsonPropertyDescription("An Eclipse IDE Editor")
+	McpSchema.ResourceLink editor;
 	
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("If the editor is open on a file, the file being edited")
@@ -48,12 +49,12 @@ public class Editor {
 		super();
 	}
 
-	public Editor(IEditorPart editor) {
+	public Editor(IEditorPart editorPart) {
 		super();
 		
 		if (editor != null) {
-			this.name = editor.getTitle();
-			this.isDirty = editor.isDirty();
+			this.name = editorPart.getTitle();
+			this.isDirty = editorPart.isDirty();
 
 			//TODO does active check may fail if Eclipse doesn't have focus
 			Activator.getDisplay().syncExec(new Runnable() {
@@ -65,7 +66,7 @@ public class Editor {
 						if (window != null) {
 							IWorkbenchPage page = window.getActivePage();
 							if (page != null) {
-								if (editor == page.getActiveEditor()) {
+								if (editorPart == page.getActiveEditor()) {
 									Editor.this.isActive = true;
 									System.out.println("isActive: " + Editor.this.isActive);
 								}
@@ -75,17 +76,16 @@ public class Editor {
 				}
 			});
 
-			IEditorInput input = editor.getEditorInput();
+			IEditorInput input = editorPart.getEditorInput();
 			input.getName();
 			
 			if (input instanceof IFileEditorInput) {
 				IFile ifile = ((IFileEditorInput)input).getFile();
-				file = new RelativeFileAdapter().eclipseObjectToResourceLink((IResource)ifile);
+				file = new RelativeFileAdapter((IResource)ifile).toResourceLink();
 			}
 			
-			if (editor instanceof ITextEditor) {
-				textEditor = new EditorAdapter().eclipseObjectToResourceLink((ITextEditor)editor);
-			}
+			editor = new EditorAdapter().fromEditorName(name).toResourceLink();
+
 		}
 	}
 
@@ -95,6 +95,7 @@ public class Editor {
 		if (reference.getEditor(false) == null) {
 			this.name = reference.getTitle();
 			this.isDirty = reference.isDirty();
+			this.editor = new EditorAdapter(reference).toResourceLink();
 		}
 	}
 }

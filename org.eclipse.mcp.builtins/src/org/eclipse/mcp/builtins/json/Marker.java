@@ -2,19 +2,15 @@ package org.eclipse.mcp.builtins.json;
 
 import java.util.Map;
 
-import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -87,7 +83,7 @@ public class Marker {
 		
 		try {
 			processMarker(marker);
-			resource_link = new RelativeFileAdapter().eclipseObjectToResourceLink(marker.getResource());
+			resource_link = new RelativeFileAdapter(marker.getResource()).toResourceLink();
 		} catch (Exception e) {
 			throw new MCPException(e);
 		}
@@ -120,7 +116,7 @@ public class Marker {
 			charStart = position.offset;
 			charEnd = position.getOffset() + position.getLength();
 			lineNumber = document.getLineOfOffset(position.getOffset());
-			resource_link = new EditorAdapter().eclipseObjectToResourceLink(editor);
+			resource_link = new EditorAdapter().fromEditorName(editor.getTitle()).toResourceLink();
 		} catch (Exception e) {
 			throw new MCPException(e);
 		}

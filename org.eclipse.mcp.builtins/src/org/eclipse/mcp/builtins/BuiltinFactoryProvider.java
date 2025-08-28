@@ -1,7 +1,6 @@
 package org.eclipse.mcp.builtins;
 
 import org.eclipse.mcp.IMCPServices;
-import org.eclipse.mcp.builtin.resource.AbsoluteFileAdapter;
 import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
@@ -25,8 +24,8 @@ public class BuiltinFactoryProvider implements IFactoryProvider {
 		return new IResourceAdapter[] {
 			new ConsoleAdapter(),
 			new EditorAdapter(),
-			new RelativeFileAdapter(),
-			new AbsoluteFileAdapter()
+			new RelativeFileAdapter()
+//			new AbsoluteFileAdapter()
 		};
 	}
 

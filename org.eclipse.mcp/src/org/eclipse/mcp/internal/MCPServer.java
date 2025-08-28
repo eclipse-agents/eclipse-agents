@@ -188,7 +188,7 @@ public class MCPServer {
 	public IResourceAdapter<?> getResourceAdapter(String uri) {
 		for (IResourceAdapter<?> adapter: resourceAdapters) {
 			if (new DefaultMcpUriTemplateManager(adapter.getTemplate()).matches(uri)) {
-				return adapter;
+				return adapter.fromUri(uri);
 			}
 		}
 		return null;

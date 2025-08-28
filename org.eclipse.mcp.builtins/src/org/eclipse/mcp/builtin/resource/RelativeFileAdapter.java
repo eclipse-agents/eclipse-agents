@@ -4,73 +4,132 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.builtins.json.Resource;
 import org.eclipse.mcp.factory.IResourceAdapter;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
+import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
 public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 	
-	final String template = "file://workspace/{relative-path}";
-	boolean includeAnnotations = false;
+	final String template = "file://workspace/{relativePath}";
+	final String prefix = template.substring(0, template.indexOf("{"));
+	IResource resource;
+	
+	public RelativeFileAdapter() {}
+
+	public RelativeFileAdapter(IResource resource) {
+		this.resource = resource;
+	}
+	
+	public RelativeFileAdapter(String uri) {
+		DefaultMcpUriTemplateManager tm = new DefaultMcpUriTemplateManager(template);
+		if (tm.matches(uri)) {
+			Map<String, String> variables = tm.extractVariableValues(uri);
+			String relativePath = variables.get("relativePath");
+			
+			if (relativePath == null || relativePath.isBlank()) {
+				resource = ResourcesPlugin.getWorkspace().getRoot();
+			} else {
+				IWorkspace workspace = ResourcesPlugin.getWorkspace();
+				resource = workspace.getRoot().findMember(relativePath);
+				
+				if (resource == null) {
+					relativePath = URLDecoder.decode(relativePath);
+					resource = workspace.getRoot().findMember(relativePath);
+				}
+			}
+		}
+		
+		if (resource == null) {
+			throw new MCPException("uri not resolved: " + uri);
+		}
+	}
 
 	@Override
 	public String getTemplate() {
 		return template;
 	}
-
+	
 	@Override
-	public String getUniqueTemplatePrefix() {
-		return template.substring(0, template.indexOf("{"));
+	public IResourceAdapter<IResource> fromUri(String uri) {
+		return new RelativeFileAdapter(uri);
 	}
 
 	@Override
-	public IResource uriToEclipseObject(String uri) {
-		IResource resource = null;
-		if (uri.equals(getUniqueTemplatePrefix())) {
-			return ResourcesPlugin.getWorkspace().getRoot();
-		} else if (uri.startsWith(getUniqueTemplatePrefix())) {
-			String relativePath = uri.substring(getUniqueTemplatePrefix().length());
-			IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			resource = workspace.getRoot().findMember(relativePath);
-			
-			if (resource == null) {
-				relativePath = URLDecoder.decode(relativePath);
-				resource = workspace.getRoot().findMember(relativePath);
+	public IResourceAdapter<IResource> fromModel(IResource console) {
+		return new RelativeFileAdapter(console);
+	}
+
+	@Override
+	public boolean supportsChildren() {
+		return resource instanceof IContainer;
+	}
+
+	@Override
+	public IResourceAdapter<IResource>[] getChildren(int depth) {
+		
+		List<RelativeFileAdapter> children = new ArrayList<RelativeFileAdapter>();
+		depth = Math.max(0, Math.min(2, depth));
+
+		if (resource instanceof IContainer) {
+			try {
+				for (IResource child: ((IContainer)resource).members()) {
+					child.accept(new IResourceVisitor() {
+						@Override
+						public boolean visit(IResource child) throws CoreException {
+							if (child != resource) {
+								children.add(new RelativeFileAdapter(child));
+							}
+							return true;
+						}
+					}, depth, false);
+				}
+			} catch (CoreException e) {
+				e.printStackTrace();
 			}
 		}
+		
+		return children.toArray(RelativeFileAdapter[]::new);
+	}
+
+	@Override
+	public IResource getModel() {
 		return resource;
 	}
 
 	@Override
-	public Object eclipseObjectToJsonObject(IResource object) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object toJson() {
+		return new Resource(resource);
 	}
 
 	@Override
-	public ResourceLink eclipseObjectToResourceLink(IResource resource) {
-
+	public ResourceLink toResourceLink() {
 		McpSchema.ResourceLink.Builder builder =  McpSchema.ResourceLink.builder()
-				.uri(eclipseObjectToURI(resource))
+				.uri(toUri())
 				.name(resource.getName());
-		
-		addAnnotations(builder);
 				
-		
 		if (resource instanceof IFile) {
 			builder.description("Eclipse workspace file");
 			builder.mimeType("text/plain");
@@ -92,15 +151,17 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 		}
 
 		return builder.build();
+		
 	}
 
 	@Override
-	public String eclipseObjectToURI(IResource resource) {
-		return getUniqueTemplatePrefix() + resource.getFullPath().toPortableString().substring(1);
+	public String toUri() {
+		return prefix + URLEncoder.encode( resource.getFullPath().toPortableString().substring(1));
 	}
 
 	@Override
-	public String eclipseObjectToResourceContent(IResource resource) {
+	public String toContent() {
+		
 		String content = null;
 		if (resource instanceof IFile) {
 			try {

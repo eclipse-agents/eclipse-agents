@@ -108,7 +108,7 @@ public class BuiltinAnnotatedToolsFactory {
 		List<Console> result = new ArrayList<Console>();
 		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
 		for (IConsole console : manager.getConsoles()) {
-			result.add(new Console(console.getName(), console.hashCode(), console.getType()));
+			result.add(new Console(console));
 		}
 		Consoles consoles = new Consoles();
 		consoles.consoles = result.toArray(new Console[0]);
@@ -209,8 +209,8 @@ public class BuiltinAnnotatedToolsFactory {
 					required = false) 
 					int selectionLength) {
 
-		RelativeFileAdapter adapter = new RelativeFileAdapter();
-		IResource resource = adapter.uriToEclipseObject(fileUri);
+		RelativeFileAdapter adapter = new RelativeFileAdapter(fileUri);
+		IResource resource = adapter.getModel();
 		final Editor[] result = new Editor[] { null };
 
 		if (resource instanceof IFile) {
@@ -266,8 +266,8 @@ public class BuiltinAnnotatedToolsFactory {
 			@McpToolParam(
 				description = "URI of an open Eclipse editor") 
 				String editorUri) {
-		EditorAdapter adapter = new EditorAdapter();
-		final IEditorReference reference = adapter.uriToEclipseObject(editorUri);
+		EditorAdapter adapter = new EditorAdapter(editorUri);
+		final IEditorReference reference = adapter.getModel();
 
 		// TODO close just the editor, not all editors on editor's file
 		Activator.getDisplay().syncExec(new Runnable() {
@@ -286,8 +286,8 @@ public class BuiltinAnnotatedToolsFactory {
 			@McpToolParam(
 			description = "URI of an open Eclipse editor") 
 			String editorUri) {
-		EditorAdapter adapter = new EditorAdapter();
-		final IEditorReference reference = adapter.uriToEclipseObject(editorUri);
+		EditorAdapter adapter = new EditorAdapter(editorUri);
+		final IEditorReference reference = adapter.getModel();
 		boolean[] result = new boolean[] { false };
 		if (reference != null) {
 			if (reference.isDirty()) {
@@ -325,8 +325,8 @@ public class BuiltinAnnotatedToolsFactory {
 			@McpToolParam(description = "One or more text replacements to be applied in order") 
 			TextReplacement[] replacements) {
 
-		EditorAdapter adapter = new EditorAdapter();
-		final IEditorReference reference = adapter.uriToEclipseObject(editorURI);
+		EditorAdapter adapter = new EditorAdapter(editorURI);
+		final IEditorReference reference = adapter.getModel();
 		boolean[] result = new boolean[] { false };
 
 		// TODO apply changes in reverse order

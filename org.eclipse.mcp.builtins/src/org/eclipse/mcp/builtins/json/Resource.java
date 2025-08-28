@@ -21,8 +21,8 @@ public class Resource {
 	
 	public Resource(IResource resource) {
 		this.name = resource.getName();
-		RelativeFileAdapter ra = new RelativeFileAdapter();
-		this.workspace_uri = ra.eclipseObjectToResourceLink(resource);
+		RelativeFileAdapter adapter = new RelativeFileAdapter(resource);
+		this.workspace_uri = adapter.toResourceLink();
 		
 		if (resource instanceof IFile) {
 			isFolder = false;

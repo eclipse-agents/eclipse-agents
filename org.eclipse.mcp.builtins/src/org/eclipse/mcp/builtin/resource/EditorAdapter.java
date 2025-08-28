@@ -4,12 +4,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.builtins.Activator;
+import org.eclipse.mcp.builtins.json.Editor;
 import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -23,97 +28,130 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
+import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
 public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 
 	final String template = "eclipse://editor/{name}";
+	final String prefix = template.substring(0, template.indexOf("{"));
+	IEditorReference editorReference = null;
+	
+	public EditorAdapter() {}
 
-	@Override
-	public String getTemplate() {
-		return template;
+	public EditorAdapter(IEditorReference editorReference) {
+		this.editorReference = editorReference;
 	}
+	
+	public EditorAdapter(String uri) {
+		DefaultMcpUriTemplateManager tm = new DefaultMcpUriTemplateManager(template);
+		if (tm.matches(uri)) {
+			Map<String, String> variables = tm.extractVariableValues(uri);
+			String name = variables.get("name");
+			name = URLDecoder.decode(name);
 
-	@Override
-	public String getUniqueTemplatePrefix() {
-		return template.substring(0, template.indexOf("{"));
-	}
-
-	@Override
-	public IEditorReference uriToEclipseObject(String uri) {
-		if (uri.startsWith(getUniqueTemplatePrefix())) {
-			String name = uri.substring(getUniqueTemplatePrefix().length());
 			for (IWorkbenchWindow window: PlatformUI.getWorkbench().getWorkbenchWindows()) {
 				for (IWorkbenchPage page: window.getPages()) {
 					for (IEditorReference reference: page.getEditorReferences()) {
 						if (reference.getName().equals(name)) {
-							return reference;
+							this.editorReference = reference;
 						}
 					}
 				}
 			}
 		}
-		return null;
-	}
-
-	@Override
-	public Object eclipseObjectToJsonObject(IEditorReference object) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ResourceLink eclipseObjectToResourceLink(IEditorReference editor) {
-		IEditorPart part = editor.getEditor(true);
-		if (part instanceof ITextEditor) {
-			return eclipseObjectToResourceLink((ITextEditor)part);
-		} else {
-			System.err.println("not a text editor");
+		
+		if (editorReference == null) {
+			throw new MCPException("uri not resolved: " + uri);
 		}
-		return null;
-	}
-	
-
-	public ResourceLink eclipseObjectToResourceLink(ITextEditor textEditor) {
-		textEditor.getDocumentProvider();
-		textEditor.getEditorInput();
-		IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
-		
-		McpSchema.ResourceLink.Builder builder = McpSchema.ResourceLink.builder()
-				.uri(toURI(textEditor.getTitle()))
-				.name(textEditor.getTitle())
-				.description("Content of an Eclipse Text Editor")
-				.mimeType("text/plain")
-				.size((long)document.getLength());
-		
-		addAnnotations(builder);
-		
-		return builder.build();
 	}
 
 	@Override
-	public String eclipseObjectToURI(IEditorReference ref) {
-		return toURI(ref.getTitle());
+	public String getTemplate() {
+		return template;
 	}
 	
-	public String toURI(String editorTitle) {
-		return getUniqueTemplatePrefix() + editorTitle;
+	@Override
+	public IResourceAdapter<IEditorReference> fromUri(String uri) {
+		return new EditorAdapter(uri);
+	}
+	
+	public IResourceAdapter<IEditorReference> fromEditorName(String name) {
+		return new EditorAdapter(prefix + URLEncoder.encode(name));
 	}
 
 	@Override
-	public String eclipseObjectToResourceContent(IEditorReference ref) {
-		StringBuffer result = new StringBuffer();
+	public IResourceAdapter<IEditorReference> fromModel(IEditorReference console) {
+		return new EditorAdapter(console);
+	}
+
+	@Override
+	public boolean supportsChildren() {
+		return false;
+	}
+
+	@Override
+	public IResourceAdapter<IEditorReference>[] getChildren(int depth) {
+		return new EditorAdapter[0];
+	}
+
+	@Override
+	public IEditorReference getModel() {
+		return editorReference;
+	}
+
+	@Override
+	public Object toJson() {
+		return new Editor(editorReference);
+	}
+
+	@Override
+	public ResourceLink toResourceLink() {
+		McpSchema.ResourceLink.Builder builder =  McpSchema.ResourceLink.builder();
+		
+		builder
+			.uri(toUri())
+			.name(editorReference.getTitle())
+			.description("Content of an Eclipse IDE Editor");
 		
 		Activator.getDisplay().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				IEditorPart part = ref.getEditor(true);
+				IEditorPart part = editorReference.getEditor(false);
+				if (part instanceof ITextEditor) {
+					ITextEditor textEditor = (ITextEditor)part;
+					IDocument document = textEditor.getDocumentProvider().getDocument(part.getEditorInput());
+					
+					builder
+						.mimeType("text/plain")
+						.size((long)document.getLength());
+				} 
+			}
+		});
+
+		return builder.build();
+		
+	}
+
+	@Override
+	public String toUri() {
+		return prefix + URLEncoder.encode(editorReference.getTitle());
+	}
+
+	@Override
+	public String toContent() {
+		
+		StringBuffer result = new StringBuffer();
+		Activator.getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IEditorPart part = editorReference.getEditor(true);
 				if (part instanceof ITextEditor) {
 					ITextEditor textEditor = (ITextEditor)part;
 					IDocument document = textEditor.getDocumentProvider().getDocument(part.getEditorInput());
 					result.append(document.get());
 				} else {
 					try {
-						IEditorInput input = ref.getEditorInput();
+						IEditorInput input = editorReference.getEditorInput();
 						if (input instanceof IFileEditorInput) {
 							IFile file = ((IFileEditorInput)input).getFile();
 							

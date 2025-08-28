@@ -23,13 +23,6 @@ public class Console {
 		this.name = console.getName();
 		this.type = console.getType();
 		
-		this.uri = new ConsoleAdapter().getUniqueTemplatePrefix() + name;
-	}
-	
-	public Console(String name, int id, String type) {
-		super();
-		this.name = name;
-		this.type = type;
-		this.uri = new ConsoleAdapter().getUniqueTemplatePrefix() + name;
+		this.uri = new ConsoleAdapter(console).toUri();
 	}
 }
