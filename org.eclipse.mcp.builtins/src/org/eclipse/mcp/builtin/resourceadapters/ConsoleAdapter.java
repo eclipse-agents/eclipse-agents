@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resource;
+package org.eclipse.mcp.builtin.resourceadapters;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.Schema.DEPTH;
 import org.eclipse.mcp.Schema.Files;
 import org.eclipse.mcp.builtins.Schema.Console;
 import org.eclipse.mcp.builtins.Schema.Consoles;
-import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -54,8 +55,8 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole, Console> {
 	}
 
 	@Override
-	public String getTemplate() {
-		return template;
+	public String[] getTemplates() {
+		return new String[] { template };
 	}
 	
 	@Override
@@ -74,7 +75,7 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole, Console> {
 	}
 
 	@Override
-	public Files getChildren(int depth) {
+	public Files getChildren(DEPTH depth) {
 		return null;
 	}
 

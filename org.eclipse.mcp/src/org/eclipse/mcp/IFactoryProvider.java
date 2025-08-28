@@ -1,6 +1,4 @@
-package org.eclipse.mcp.factory;
-
-import org.eclipse.mcp.IMCPServices;
+package org.eclipse.mcp;
 
 /**
  * Convenience for creating multiple factories programmatically

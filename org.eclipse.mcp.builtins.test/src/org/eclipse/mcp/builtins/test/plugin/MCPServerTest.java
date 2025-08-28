@@ -15,8 +15,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mcp.IFactoryProvider;
 import org.eclipse.mcp.builtins.FactoryProvider;
-import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.internal.MCPServer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -224,18 +224,18 @@ public final class MCPServerTest {
 {
    "editor":{
       "name":"HelloWorld.java",
-      "textEditor":{
+      "editor":{
          "type":"resource_link",
          "name":"HelloWorld.java",
          "uri":"eclipse://editor/HelloWorld.java",
-         "description":"Content of an Eclipse Text Editor",
+         "description":"Content of an Eclipse IDE Editor",
          "mimeType":"text/plain",
          "size":124
       },
       "file":{
          "type":"resource_link",
          "name":"HelloWorld.java",
-         "uri":"file://workspace/Project/HelloWorld.java",
+         "uri":"file://workspace/Project%2FHelloWorld.java",
          "description":"Eclipse workspace file",
          "mimeType":"text/plain",
          "size":124
@@ -277,18 +277,18 @@ public final class MCPServerTest {
    "editors":[
       {
          "name":"HelloWorld.java",
-         "textEditor":{
+         "editor":{
             "type":"resource_link",
             "name":"HelloWorld.java",
             "uri":"eclipse://editor/HelloWorld.java",
-            "description":"Content of an Eclipse Text Editor",
+            "description":"Content of an Eclipse IDE Editor",
             "mimeType":"text/plain",
             "size":124
          },
          "file":{
             "type":"resource_link",
             "name":"HelloWorld.java",
-            "uri":"file://workspace/Project/HelloWorld.java",
+            "uri":"file://workspace/Project%2FHelloWorld.java",
             "description":"Eclipse workspace file",
             "mimeType":"text/plain",
             "size":124

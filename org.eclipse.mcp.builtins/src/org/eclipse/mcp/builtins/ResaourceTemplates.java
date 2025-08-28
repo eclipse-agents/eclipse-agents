@@ -1,6 +1,7 @@
-package org.eclipse.mcp.builtin.resource.templates;
+package org.eclipse.mcp.builtins;
 
-import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +17,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.content.IContentTypeManager;
-import org.eclipse.mcp.builtin.resource.EditorAdapter;
-import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.EditorAdapter;
+import org.eclipse.mcp.builtin.resourceadapters.RelativeFileAdapter;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -28,9 +29,9 @@ import org.springaicommunity.mcp.annotation.McpResource;
 import io.modelcontextprotocol.spec.McpSchema.CompleteRequest.CompleteArgument;
 import io.modelcontextprotocol.spec.McpSchema.CompleteRequest.CompleteContext;
 
-public class Templates {
+public class ResaourceTemplates {
 
-	public Templates() {
+	public ResaourceTemplates() {
 		
 	}
 
@@ -65,10 +66,9 @@ public class Templates {
     		description = "Content of an file in an Eclipse workspace")
     public String getWorkspaceFileContent(String project, String projectRelativePath) {
     	
-    	
+    	// condense from 2 variables to 1 variable
     	String uri = "file://workspace/" + 
-    			URLDecoder.decode(project) + "/" + 
-    			URLDecoder.decode(projectRelativePath);
+    			URLEncoder.encode(project + "/" + projectRelativePath, StandardCharsets.UTF_8);
     	RelativeFileAdapter adapter = new RelativeFileAdapter(uri);
     	return adapter.toContent();
 	}
@@ -112,7 +112,6 @@ public class Templates {
 							}
 						}
 						if (resource instanceof IContainer && files.size() < 50) {
-							IContainer container = (IContainer)resource;
 							return true; //!container.isHidden() && !container.isPhantom();
 						}
 						return false;

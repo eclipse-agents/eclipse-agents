@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resource;
+package org.eclipse.mcp.builtin.resourceadapters;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,14 +20,15 @@ import org.eclipse.jface.text.IMarkSelection;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.Schema.DEPTH;
 import org.eclipse.mcp.Schema.Files;
 import org.eclipse.mcp.builtins.Activator;
 import org.eclipse.mcp.builtins.Schema.Editor;
 import org.eclipse.mcp.builtins.Schema.Editors;
 import org.eclipse.mcp.builtins.Schema.TextEditorSelection;
 import org.eclipse.mcp.builtins.Schema.TextSelection;
-import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -80,8 +81,8 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference, Editor>
 	}
 
 	@Override
-	public String getTemplate() {
-		return template;
+	public String[] getTemplates() {
+		return new String[] { template };
 	}
 	
 	@Override
@@ -100,7 +101,7 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference, Editor>
 	}
 
 	@Override
-	public Files getChildren(int depth) {
+	public Files getChildren(DEPTH depth) {
 		return null;
 	}
 

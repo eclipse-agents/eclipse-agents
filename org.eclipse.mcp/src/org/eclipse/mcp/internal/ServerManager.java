@@ -8,8 +8,8 @@ import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.mcp.Activator;
-import org.eclipse.mcp.factory.IFactoryProvider;
-import org.eclipse.mcp.factory.IResourceAdapter;
+import org.eclipse.mcp.IFactoryProvider;
+import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.internal.ExtensionManager.Contributor;
 import org.eclipse.mcp.internal.preferences.IPreferenceConstants;
 import org.eclipse.ui.PlatformUI;

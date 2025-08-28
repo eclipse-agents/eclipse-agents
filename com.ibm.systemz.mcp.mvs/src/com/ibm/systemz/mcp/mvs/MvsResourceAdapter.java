@@ -1,153 +1,134 @@
 package com.ibm.systemz.mcp.mvs;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
-import org.eclipse.mcp.builtins.json.Resource;
-import org.eclipse.mcp.factory.IResourceAdapter;
+import org.eclipse.mcp.Schema.DEPTH;
+import org.eclipse.mcp.Schema.File;
+import org.eclipse.mcp.Schema.Files;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.SystemStartHere;
 import org.eclipse.rse.core.subsystems.ISubSystem;
 
+import com.ibm.ftt.resources.core.physical.IPhysicalContainer;
+import com.ibm.ftt.resources.core.physical.IPhysicalFile;
+import com.ibm.ftt.resources.core.physical.IPhysicalResource;
+import com.ibm.ftt.resources.zos.zosphysical.IZOSCatalog;
+import com.ibm.ftt.resources.zos.zosphysical.IZOSDataSet;
 import com.ibm.ftt.resources.zos.zosphysical.IZOSDataSetMember;
+import com.ibm.ftt.resources.zos.zosphysical.IZOSDataSetMemberGeneration;
+import com.ibm.ftt.resources.zos.zosphysical.IZOSGenerationDataGroup;
+import com.ibm.ftt.resources.zos.zosphysical.IZOSPartitionedDataSet;
+import com.ibm.ftt.resources.zos.zosphysical.IZOSSequentialDataSet;
+import com.ibm.ftt.resources.zos.zosphysical.IZOSVsamDataSet;
 import com.ibm.ftt.rse.mvs.client.subsystems.IMVSFileSubSystem;
 import com.ibm.systemz.mcp.mvs.job.FetchPDSMemberContent;
+import com.ibm.systemz.mcp.mvs.job.QueryDataSetsJob;
 import com.ibm.systemz.mcp.mvs.job.QueryPDSMemberJob;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
-public class MvsResourceAdapter implements IResourceAdapter<IZOSDataSetMember> {
+public class MvsResourceAdapter implements IResourceAdapter<IPhysicalResource, File> {
 
-	final String template = "file://mvs/{host}/{pds}/{member}";
+	final String[] templates = new String[] {
+			"file://mvs/{host}",
+			"file://mvs/{host}/{pds}",
+			"file://mvs/{host}/{pds}/{member}"
+	};
 	
 	
 	String host, pds, member;
+	IPhysicalResource resource = null;
+	IPhysicalResource parent = null;
 	
 	public MvsResourceAdapter() {}
 
-	public MvsResourceAdapter(IZOSDataSetMember member) {
-		this.dsMember = member;
+	public MvsResourceAdapter(IPhysicalResource resource) {
+		this(null, resource);
+	}
+	
+	public MvsResourceAdapter(ISubSystem subSystem, IPhysicalResource resource) {
+		this.resource = resource;
+		
+		if (subSystem != null) {
+			this.host = subSystem.getHost().getName();
+		}
+
+		if (resource instanceof IZOSDataSetMember) {
+			this.member = resource.getName();
+			this.pds = resource.getParent().getName();
+		} else if (resource instanceof IZOSPartitionedDataSet) {
+			this.pds = resource.getName();
+		}
 	}
 	
 	public MvsResourceAdapter(String uri) {
-		String[] split = uri.split("/");
-		if (split.length > 3) {
-			String system = split[split.length - 3];
-			String pds = split[split.length - 2];
-			String member = split[split.length - 1];
-			
-			if (member.indexOf(".") > 0) {
-				member = member.substring(0, member.indexOf("."));
-			}
-			
-			ISubSystem subSystem = findMvsSubsystem(system);
-			if (subSystem != null) {
-				QueryPDSMemberJob job = new QueryPDSMemberJob(subSystem);
-				job.setDataSetName(pds);
-				job.setDataSetMemberFilter(member);
-				job.schedule();
-				try {
-					job.join();
-				} catch (InterruptedException e) {
-					throw new MCPException(e);
-				}
-				
-				IStatus status = job.getResult();
-				if (status.isOK()) {
-					return job.getMembers().getFirst();
-				} else {
-					throw new MCPException(status);
-				}
-			} else {
-				throw new MCPException("Host not found: " + system);
+		for (String template: templates) {
+			DefaultMcpUriTemplateManager tm = new DefaultMcpUriTemplateManager(template);
+			if (tm.matches(uri)) {
+				Map<String, String> variables = tm.extractVariableValues(uri);
+				this.host = variables.get("host");
+				this.pds = variables.get("pds");
+				this.member = variables.get("member");
+				break;
 			}
 		}
-		
-		throw new MCPException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Malformed uri: " + uri));
-
 	}
 
 	@Override
-	public String getTemplate() {
-		return template;
+	public String[] getTemplates() {
+		return templates;
 	}
 	
 	@Override
-	public IResourceAdapter<IResource> fromUri(String uri) {
-		return new RelativeFileAdapter(uri);
+	public MvsResourceAdapter fromUri(String uri) {
+		return new MvsResourceAdapter(uri);
 	}
 
 	@Override
-	public IResourceAdapter<IResource> fromModel(IResource console) {
-		return new RelativeFileAdapter(console);
+	public MvsResourceAdapter fromModel(IPhysicalResource resource) {
+		return new MvsResourceAdapter(resource);
 	}
 
 	@Override
 	public boolean supportsChildren() {
-		return resource instanceof IContainer;
+		return lazyLoadResource() instanceof IPhysicalContainer;
 	}
 
 	@Override
-	public IResourceAdapter<IResource>[] getChildren(int depth) {
-		
-		List<RelativeFileAdapter> children = new ArrayList<RelativeFileAdapter>();
-		depth = Math.max(0, Math.min(2, depth));
-
-		if (resource instanceof IContainer) {
-			try {
-				for (IResource child: ((IContainer)resource).members()) {
-					child.accept(new IResourceVisitor() {
-						@Override
-						public boolean visit(IResource child) throws CoreException {
-							if (child != resource) {
-								children.add(new RelativeFileAdapter(child));
-							}
-							return true;
-						}
-					}, depth, false);
+	public Files getChildren(DEPTH depth) {
+		List<File> files = new ArrayList<File>();
+		IPhysicalResource resource = lazyLoadResource();
+		if (resource != null) {
+			if (resource instanceof IZOSPartitionedDataSet) {
+				ISubSystem subSystem = findMvsSubsystem(host);
+				if (subSystem != null) {
+					List<IZOSDataSetMember> members = findPDSMember(subSystem, pds, "*");
+					for (IZOSDataSetMember member: members) {
+						files.add(new MvsResourceAdapter(subSystem, member).toJson());
+					}
 				}
-			} catch (CoreException e) {
-				e.printStackTrace();
 			}
 		}
-		
-		return children.toArray(RelativeFileAdapter[]::new);
+		return new Files(files.toArray(File[]::new), DEPTH.CHILDREN);
 	}
 
 	@Override
-	public IResource getModel() {
+	public IPhysicalResource getModel() {
 		return resource;
 	}
 
 	@Override
-	public Object toJson() {
-		return new Resource(resource);
+	public File toJson() {
+		return new File(resource.getName(), resource instanceof IPhysicalContainer, toResourceLink());
 	}
 
 	@Override
@@ -156,132 +137,100 @@ public class MvsResourceAdapter implements IResourceAdapter<IZOSDataSetMember> {
 				.uri(toUri())
 				.name(resource.getName());
 				
-		if (resource instanceof IFile) {
-			builder.description("Eclipse workspace file");
+		if (resource instanceof IPhysicalFile) {
 			builder.mimeType("text/plain");
-
-			try {
-				IFileStore store = EFS.getStore(resource.getLocationURI());
-				IFileInfo info = store.fetchInfo();
-				builder.size(info.getLength());
-				
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-		} else if (resource instanceof IProject) {
-			builder.description("Eclipse workspace project");
-		} else if (resource instanceof IWorkspaceRoot) {
-			builder.description("Eclipse workspace root");
-		} else if (resource instanceof IFolder) {
-			builder.description("Eclipse workspace folder");
 		}
+		
+		resource.getResourceType();
+		
+		if (resource instanceof	IZOSGenerationDataGroup) {
+			builder.description("Generation Data Group");
+		} else if (resource instanceof IZOSPartitionedDataSet) {
+			builder.description("Partitioned Data Set");
+		} else if (resource instanceof IZOSCatalog) {
+			builder.description("Catalog");
+		} else if (resource instanceof IZOSDataSetMember) {
+			builder.description("Data Set Member");
+		} else if (resource instanceof IZOSDataSetMemberGeneration) {
+			builder.description("Data Set Member Generation");
+		} else if (resource instanceof IZOSSequentialDataSet) {
+			builder.description("Sequential Data Set");
+		} else if (resource instanceof IZOSVsamDataSet) {
+			builder.description("VSAM Data Set");
+		}
+		
+		//TODO
+//		builder.size(info.getLength());
 
 		return builder.build();
-		
 	}
 
 	@Override
 	public String toUri() {
-		return "file://workspace/" + URLEncoder.encode( resource.getFullPath().toPortableString().substring(1));
+		if (host != null) {
+			if (pds != null) {
+				if (member != null) {
+					return "file://mvs/" +
+							URLEncoder.encode(host, StandardCharsets.UTF_8) + "/" +
+							URLEncoder.encode(pds, StandardCharsets.UTF_8) + "/" +
+									URLEncoder.encode(member, StandardCharsets.UTF_8);
+				} else {
+					return "file://mvs/" +
+							URLEncoder.encode(host, StandardCharsets.UTF_8) + "/" +
+							URLEncoder.encode(pds, StandardCharsets.UTF_8);
+				}
+			} else {
+				return "file://mvs/" +
+						URLEncoder.encode(host, StandardCharsets.UTF_8);
+			}
+		}
+		throw new MCPException("host not found");
 	}
 
 	@Override
 	public String toContent() {
+		IPhysicalResource resource = lazyLoadResource();
 		
-		String content = null;
-		if (resource instanceof IFile) {
+		if (resource instanceof IZOSDataSetMember) {
+			FetchPDSMemberContent fetchJob = new FetchPDSMemberContent((IZOSDataSetMember)resource);
 			try {
-				InputStreamReader reader = new InputStreamReader(((IFile)resource).getContents());
-				BufferedReader breader = new BufferedReader(reader);
-				content = breader.lines().collect(Collectors.joining("\n")); //$NON-NLS-1$
-				breader.close();
-			} catch (CoreException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return content;
-	}
-	
-
-	@Override
-	public IZOSDataSetMember uriToEclipseObject(String uri) {
-		String[] split = uri.split("/");
-		if (split.length > 3) {
-			String system = split[split.length - 3];
-			String pds = split[split.length - 2];
-			String member = split[split.length - 1];
-			
-			if (member.indexOf(".") > 0) {
-				member = member.substring(0, member.indexOf("."));
+				fetchJob.schedule();
+				fetchJob.join();
+			} catch (InterruptedException e) {
+				throw new MCPException(e);
 			}
 			
-			ISubSystem subSystem = findMvsSubsystem(system);
-			if (subSystem != null) {
-				QueryPDSMemberJob job = new QueryPDSMemberJob(subSystem);
-				job.setDataSetName(pds);
-				job.setDataSetMemberFilter(member);
-				job.schedule();
-				try {
-					job.join();
-				} catch (InterruptedException e) {
-					throw new MCPException(e);
-				}
-				
-				IStatus status = job.getResult();
-				if (status.isOK()) {
-					return job.getMembers().getFirst();
-				} else {
-					throw new MCPException(status);
-				}
+			if (fetchJob.getResult().isOK()) {
+				return fetchJob.getContent();
 			} else {
-				throw new MCPException("Host not found: " + system);
+				throw new MCPException(fetchJob.getResult());
 			}
 		}
 		
-		throw new MCPException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Malformed uri: " + uri));
-
-	}
-
-	@Override
-	public Object eclipseObjectToJsonObject(IZOSDataSetMember member) {
 		return null;
 	}
 
-	@Override
-	public ResourceLink eclipseObjectToResourceLink(IZOSDataSetMember member) {
-		return null;
-	}
 
-	@Override
-	public String eclipseObjectToURI(IZOSDataSetMember member) {
-		//TODO
-		String connectionName = "???";
-		return getUniqueTemplatePrefix() + connectionName + "/" + member.getDataset().getName() + member.getName();
-	}
-
-	@Override
-	public String eclipseObjectToResourceContent(IZOSDataSetMember member) {	
-		FetchPDSMemberContent fetchJob = new FetchPDSMemberContent(member);
-		try {
-			fetchJob.schedule();
-			fetchJob.join();
-		} catch (InterruptedException e) {
-			throw new MCPException(e);
+	public IPhysicalResource lazyLoadResource() {
+		if (resource == null) {
+			if (host != null) {
+				ISubSystem subSystem = findMvsSubsystem(host);
+				
+				if (pds != null && member != null) {
+					resource = findPDSMember(subSystem, pds, member).getFirst();
+				} else if (pds != null) {
+					resource = findPDS(subSystem, pds).getFirst();
+				}
+			}
 		}
 		
-		if (fetchJob.getResult().isOK()) {
-			return fetchJob.getContent();
-		} else {
-			throw new MCPException(fetchJob.getResult());
-		}
+		return resource;
 	}
 	
-	public static  ISubSystem findMvsSubsystem(String systemName) {
+	public static  ISubSystem findMvsSubsystem(String hostName) {
 		for (IHost host : SystemStartHere.getConnections()) {
 			if (host.getSystemType().getId().equals("com.ibm.etools.zos.system")) { //$NON-NLS-1$
-				if (host.getHostName().equals(systemName)) {
+				if (host.getHostName().equals(hostName)) {
 
 					for (ISubSystem subSystem: host.getSubSystems()) {
 						if (subSystem instanceof IMVSFileSubSystem) {
@@ -293,4 +242,42 @@ public class MvsResourceAdapter implements IResourceAdapter<IZOSDataSetMember> {
 		}
 		return null;
 	}
+	
+	public static List<IZOSDataSet> findPDS(ISubSystem subSystem, String pdsName) {
+		QueryDataSetsJob dataSetSearchJobs = new QueryDataSetsJob(subSystem, pdsName);
+		dataSetSearchJobs.setFilter(pdsName);
+		dataSetSearchJobs.schedule();
+		try {
+			dataSetSearchJobs.join();
+		} catch (InterruptedException e) {
+			throw new MCPException(e);
+		}
+		
+		if (dataSetSearchJobs.getResult().isOK()) {
+			return dataSetSearchJobs.getResults();
+		} else {
+			throw new MCPException(dataSetSearchJobs.getResult());
+		}
+	}
+	
+	public static List<IZOSDataSetMember> findPDSMember(ISubSystem subSystem, String pdsName, String memberName) {
+
+		QueryPDSMemberJob job = new QueryPDSMemberJob(subSystem);
+		job.setDataSetName(pdsName);
+		job.setDataSetMemberFilter(memberName);
+		job.schedule();
+		try {
+			job.join();
+		} catch (InterruptedException e) {
+			throw new MCPException(e);
+		}
+		
+		IStatus status = job.getResult();
+		if (status.isOK()) {
+			return job.getMembers();
+		} else {
+			throw new MCPException(status);
+		}
+	}
+	
 }

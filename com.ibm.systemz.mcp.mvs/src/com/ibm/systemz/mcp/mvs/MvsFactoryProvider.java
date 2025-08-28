@@ -1,14 +1,13 @@
 package com.ibm.systemz.mcp.mvs;
 
+import org.eclipse.mcp.IFactoryProvider;
 import org.eclipse.mcp.IMCPServices;
-import org.eclipse.mcp.factory.IFactoryProvider;
-import org.eclipse.mcp.factory.IResourceAdapter;
+import org.eclipse.mcp.IResourceAdapter;
 
 public class MvsFactoryProvider implements IFactoryProvider {
 
 	@Override
-	public IResourceAdapter<?>[] createResourceAdapters() {
-		// TODO Auto-generated method stub
+	public IResourceAdapter<?, ?>[] createResourceAdapters() {
 		return new IResourceAdapter[] { new MvsResourceAdapter() };
 	}
 
@@ -22,7 +21,4 @@ public class MvsFactoryProvider implements IFactoryProvider {
 	@Override
 	public void initialize(IMCPServices services) {
 	}
-
-
-
 }

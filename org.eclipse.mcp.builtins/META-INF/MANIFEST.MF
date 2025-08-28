@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: MCP Builtins
 Bundle-SymbolicName: org.eclipse.mcp.builtins;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Export-Package: org.eclipse.mcp.builtin.resource,
+Export-Package: org.eclipse.mcp.builtin.resourceadapters,
  org.eclipse.mcp.builtins
 Bundle-Activator: org.eclipse.mcp.builtins.Activator
 Require-Bundle: org.eclipse.ui,

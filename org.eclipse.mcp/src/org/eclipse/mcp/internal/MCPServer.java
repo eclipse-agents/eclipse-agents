@@ -10,8 +10,8 @@ import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.mcp.factory.IFactoryProvider;
-import org.eclipse.mcp.factory.IResourceAdapter;
+import org.eclipse.mcp.IFactoryProvider;
+import org.eclipse.mcp.IResourceAdapter;
 import org.springaicommunity.mcp.provider.complete.SyncMcpCompletionProvider;
 import org.springaicommunity.mcp.provider.prompt.SyncMcpPromptProvider;
 import org.springaicommunity.mcp.provider.resource.SyncMcpResourceProvider;
@@ -187,8 +187,10 @@ public class MCPServer {
 
 	public IResourceAdapter<?, ?> getResourceAdapter(String uri) {
 		for (IResourceAdapter<?, ?> adapter: resourceAdapters) {
-			if (new DefaultMcpUriTemplateManager(adapter.getTemplate()).matches(uri)) {
-				return adapter.fromUri(uri);
+			for (String template: adapter.getTemplates()) {
+				if (new DefaultMcpUriTemplateManager(template).matches(uri)) {
+					return adapter.fromUri(uri);
+				}
 			}
 		}
 		return null;
