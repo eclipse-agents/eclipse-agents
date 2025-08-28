@@ -10,17 +10,17 @@ import org.eclipse.mcp.builtins.tools.BuiltinAnnotatedToolsFactory;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.factory.IResourceAdapter;
 
-public class BuiltinFactoryProvider implements IFactoryProvider {
+public class FactoryProvider implements IFactoryProvider {
 
 	Editors editors;
 	
-	public BuiltinFactoryProvider() {
+	public FactoryProvider() {
 		editors = new Editors();
 	}
 
 
 	@Override
-	public IResourceAdapter<?>[] createResourceAdapters() {
+	public IResourceAdapter<?, ?>[] createResourceAdapters() {
 		return new IResourceAdapter[] {
 			new ConsoleAdapter(),
 			new EditorAdapter(),

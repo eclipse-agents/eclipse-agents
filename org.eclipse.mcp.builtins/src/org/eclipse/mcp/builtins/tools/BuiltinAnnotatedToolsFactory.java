@@ -1,49 +1,33 @@
 package org.eclipse.mcp.builtins.tools;
 
-import java.io.File;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.builtin.resource.ConsoleAdapter;
 import org.eclipse.mcp.builtin.resource.EditorAdapter;
+import org.eclipse.mcp.builtin.resource.MarkerAdapter;
 import org.eclipse.mcp.builtin.resource.RelativeFileAdapter;
-import org.eclipse.mcp.builtins.json.Console;
-import org.eclipse.mcp.builtins.json.Consoles;
-import org.eclipse.mcp.builtins.json.Editor;
-import org.eclipse.mcp.builtins.json.Editors;
-import org.eclipse.mcp.builtins.json.Problems;
-import org.eclipse.mcp.builtins.json.Resources;
-import org.eclipse.mcp.builtins.json.Tasks;
-import org.eclipse.mcp.builtins.json.TextEditorSelection;
-import org.eclipse.mcp.builtins.json.TextReplacement;
-import org.eclipse.mcp.builtins.json.TextSelection;
+import org.eclipse.mcp.builtins.Schema;
+import org.eclipse.mcp.factory.IResourceAdapter;
 //import org.eclipse.mcp.experimental.annotated.MCPAnnotatedToolFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.springaicommunity.mcp.annotation.McpTool;
@@ -56,80 +40,49 @@ public class BuiltinAnnotatedToolsFactory {
 			description = "Return the active Eclipse IDE text editor and its selected text", 
 			annotations = @McpTool.McpAnnotations(
 					title = "Currrent Selection"))
-	public TextEditorSelection currentSelection() {
-		final TextEditorSelection selection = new TextEditorSelection();
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				IWorkbench workbench = PlatformUI.getWorkbench();
-				if (workbench != null) {
-					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-					if (window != null) {
-						IWorkbenchPage page = window.getActivePage();
-						if (page != null && page.getActiveEditor() != null) {
-							selection.editor = new Editor(page.getActiveEditor());
-							selection.textSelection = new TextSelection(
-									page.getActiveEditor().getEditorSite().getSelectionProvider().getSelection());
-						}
-					}
-				}
-			}
-		});
+	public Schema.TextEditorSelection currentSelection() {
+		
+		
+		IEditorPart activePart = EditorAdapter.getActiveEditor();
+		if (activePart != null) {
+			EditorAdapter adapter = new EditorAdapter().fromEditorName(activePart.getTitle());
+			return adapter.getEditorSelection();
+		}
 
-		return selection;
+		return null;
 	}
 
 	@McpTool(name = "listEditors", 
 			description = "List open Eclipse IDE text editors", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Editors"))
-	public Editors listEditors() {
-		Editors editors = new Editors();
-		List<Editor> result = new ArrayList<Editor>();
-
-		for (IWorkbenchWindow ww : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-			for (IWorkbenchPage page : ww.getPages()) {
-				for (IEditorReference reference : page.getEditorReferences()) {
-					result.add(new Editor(reference));
-				}
-			}
-		}
-
-		editors.editors = result.toArray(new Editor[0]);
-		return editors;
+	public Schema.Editors listEditors() {
+		return EditorAdapter.getEditors();
 	}
 
 	@McpTool(name = "listConsoles",
 			description = "List open Eclipse IDE consoles", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Consoles"))
-	public Consoles listConsoles() {
+	public Schema.Consoles listConsoles() {
 
-		List<Console> result = new ArrayList<Console>();
-		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-		for (IConsole console : manager.getConsoles()) {
-			result.add(new Console(console));
-		}
-		Consoles consoles = new Consoles();
-		consoles.consoles = result.toArray(new Console[0]);
-		return consoles;
+		return ConsoleAdapter.getConsoles();
 	}
 
 	@McpTool(name = "listProjects", 
 			description = "List open Eclipse IDE projects", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Projects"))
-	public Resources listProjects() {
-
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		return new Resources(workspace.getRoot(), 0);
+	public Schema.Files listProjects() {
+		RelativeFileAdapter adapter = new RelativeFileAdapter(ResourcesPlugin.getWorkspace().getRoot());
+		return adapter.getChildren(0);
 	}
 
 	@McpTool(name = "listChildResources",
 			description = "List child resources of an Eclipse workspace, project or folder URI", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Child Resources"))
-	public Resources listChildResources(
+	public Schema.Files listChildResources(
 			@McpToolParam(
 					description = "URI of an eclipse project or folder") 
 					String resourceURI,
@@ -138,23 +91,15 @@ public class BuiltinAnnotatedToolsFactory {
 					required = false) 
 					int depth) {
 
-		Object resolved = Activator.getDefault().getEclipseResource(resourceURI);
-		if (resolved == null) {
-			throw new MCPException("The uri could not be resolved");
-		} else if (resolved instanceof IContainer) {
-			return new Resources((IContainer) resolved, depth);
-		} else if (resolved instanceof IFile) {
-			throw new MCPException("the resource is a file.  Only folders can have children");
-		} else if (resolved instanceof File) {
-			if (!((File) resolved).isFile()) {
-				// TODO
-				throw new MCPException("Absolute file paths not supported at this time");
-			} else {
-				throw new MCPException("the resource is a file.  Only folders can have children");
-			}
-		} else {
-			throw new MCPException("No text content could be read from that resource");
+		IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(resourceURI);
+		
+		if (adapter == null) {
+			throw new MCPException("The uri could not be resolved: " + resourceURI);
+		} else if (!adapter.supportsChildren()) {
+			throw new MCPException("The uri does not support children: " + resourceURI);
 		}
+		
+		return adapter.getChildren(depth);
 	}
 
 	@McpTool(name = "readResource", 
@@ -166,23 +111,13 @@ public class BuiltinAnnotatedToolsFactory {
 					description = "URI of an eclipse file, editor or console") 
 					String uri) {
 
-		String result = Activator.getDefault().getResourceContent(uri);
-		if (result == null) {
-			Object resolved = Activator.getDefault().getEclipseResource(uri);
-			if (resolved == null) {
-				throw new MCPException("The uri could not be resolved");
-			} else if (resolved instanceof IContainer) {
-				throw new MCPException("The URI resolved to a folder or project.  Only files can be read");
-			} else if (resolved instanceof File) {
-				if (!((File) resolved).isFile()) {
-					throw new MCPException("The URI resolved to a folder.  Only files can be read");
-				}
-			} else {
-				throw new MCPException("No text content could be read from that resource");
-			}
-			throw new MCPException("No text content could be read from that resource");
+		IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(uri);
+	
+		if (adapter == null) {
+			throw new MCPException("The uri could not be resolved");
 		}
-		return result;
+		
+		return adapter.toContent();
 	}
 
 	/**
@@ -196,7 +131,7 @@ public class BuiltinAnnotatedToolsFactory {
 			description = "open an Eclipse IDE editor on a file URI and set an initial text selection", 
 			annotations = @McpTool.McpAnnotations(
 					title = "Open Editor"))
-	public Editor openEditor(
+	public Schema.Editor openEditor(
 			@McpToolParam(
 					description = "Eclipse workspace file uri") 
 					String fileUri,
@@ -211,7 +146,7 @@ public class BuiltinAnnotatedToolsFactory {
 
 		RelativeFileAdapter adapter = new RelativeFileAdapter(fileUri);
 		IResource resource = adapter.getModel();
-		final Editor[] result = new Editor[] { null };
+		final Schema.Editor[] result = new Schema.Editor[] { null };
 
 		if (resource instanceof IFile) {
 			Display.getDefault().syncExec(new Runnable() {
@@ -223,7 +158,7 @@ public class BuiltinAnnotatedToolsFactory {
 						part.dispose();
 
 						IEditorPart editor = IDE.openEditor(page, (IFile) resource, true);
-						result[0] = new Editor(editor);
+						result[0] = new EditorAdapter().fromEditorName(editor.getTitle()).toJson();
 
 						if (editor instanceof ITextEditor) {
 							try {
@@ -323,17 +258,17 @@ public class BuiltinAnnotatedToolsFactory {
 			@McpToolParam(description = "Open Eclipse editor URI") 
 			String editorURI,
 			@McpToolParam(description = "One or more text replacements to be applied in order") 
-			TextReplacement[] replacements) {
+			Schema.TextReplacement[] replacements) {
 
 		EditorAdapter adapter = new EditorAdapter(editorURI);
 		final IEditorReference reference = adapter.getModel();
 		boolean[] result = new boolean[] { false };
 
 		// TODO apply changes in reverse order
-		Arrays.sort(replacements, new Comparator<TextReplacement>() {
+		Arrays.sort(replacements, new Comparator<Schema.TextReplacement>() {
 			@Override
-			public int compare(TextReplacement o1, TextReplacement o2) {
-				return o2.offset - o1.offset;
+			public int compare(Schema.TextReplacement o1, Schema.TextReplacement o2) {
+				return o2.offset() - o1.offset();
 			}
 
 		});
@@ -355,8 +290,8 @@ public class BuiltinAnnotatedToolsFactory {
 							}
 
 							try {
-								for (TextReplacement replacement : replacements) {
-									document.replace(replacement.offset, replacement.length, replacement.text);
+								for (Schema.TextReplacement replacement : replacements) {
+									document.replace(replacement.offset(), replacement.length(), replacement.text());
 								}
 								result[0] = true;
 							} catch (BadLocationException ble) {
@@ -387,7 +322,7 @@ public class BuiltinAnnotatedToolsFactory {
 			description = "list Eclipse IDE compilation and configuration problems", 
 			annotations = @McpTool.McpAnnotations(
 				title = "List Problems"))
-	public Problems listProblems(
+	public Schema.Problems listProblems(
 			@McpToolParam(
 				description = "Eclipse workspace file or editor URI")
 				String resourceURI,
@@ -396,73 +331,62 @@ public class BuiltinAnnotatedToolsFactory {
 				required = false) 
 				String severity) {
 
-		Object resource = null;
+		//TODO severity
+
 		if (resourceURI == null || resourceURI.isEmpty()) {
-			resource = ResourcesPlugin.getWorkspace().getRoot();
+			return MarkerAdapter.getProblems(ResourcesPlugin.getWorkspace().getRoot());
 		} else {
-			resource = Activator.getDefault().getEclipseResource(resourceURI);
-		}
-
-		Integer markerSeverity = null;
-		if (severity != null && !severity.isEmpty()) {
-			if (severity.equals("ERROR")) {
-				markerSeverity = IMarker.SEVERITY_ERROR;
-			} else if (severity.equals("WARNING")) {
-				markerSeverity = IMarker.SEVERITY_WARNING;
-			} else if (severity.equals("INFO")) {
-				markerSeverity = IMarker.SEVERITY_INFO;
+			IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(resourceURI);
+			if (adapter instanceof RelativeFileAdapter) {
+				return MarkerAdapter.getProblems(((RelativeFileAdapter)adapter).getModel());
+			} else if (adapter instanceof EditorAdapter) {
+				IEditorReference reference = ((EditorAdapter)adapter).getModel();
+				IEditorPart part = reference.getEditor(true);
+				if (part != null) {
+					if (part instanceof ITextEditor) {
+						return MarkerAdapter.getProblems((ITextEditor)part);
+					} else {
+						throw new MCPException("Editor is not a text editor");
+					}
+				} else {
+					throw new MCPException("Unable to initialize editor");
+				}
 			} else {
-				throw new MCPException("Severity was not ERROR, WARNING or INFO");
-			}
-		} else {
-			markerSeverity = IMarker.SEVERITY_ERROR;
-		}
-
-		if (resource instanceof IResource) {
-			return new Problems((IResource) resource, markerSeverity);
-		} else if (resource instanceof IEditorReference) {
-			IEditorPart part = ((IEditorReference) resource).getEditor(true);
-			if (part instanceof ITextEditor) {
-				return new Problems((ITextEditor) part);
+				throw new MCPException("The resource URI is not a file or editor");
 			}
 		}
-
-		throw new MCPException("The resource URI could not be resolved");
-
 	}
 
 	@McpTool (name = "listTasks", 
 			description = "list codebase locations of tasks including TODO comments", 
 			annotations = @McpTool.McpAnnotations(title = "List Tasks"))
-	public Tasks listTasks(
+	public Schema.Tasks listTasks(
 			@McpToolParam(description = "Eclipse workspace file or editor URI", 
 			required = false) 
 			String resourceURI) {
 
-		Object resource = null;
 		if (resourceURI == null || resourceURI.isEmpty()) {
-			resource = ResourcesPlugin.getWorkspace().getRoot();
+			return MarkerAdapter.getTasks(ResourcesPlugin.getWorkspace().getRoot());
 		} else {
-			resource = Activator.getDefault().getEclipseResource(resourceURI);
-		}
-
-		if (resource instanceof IResource) {
-			return new Tasks((IResource) resource);
-		} else if (resource instanceof IEditorReference) {
-			IEditorPart part = ((IEditorReference) resource).getEditor(true);
-			if (part == null) {
-				throw new MCPException("Unable to initialize editor");
-			} else if (part instanceof ITextEditor) {
-				return new Tasks((ITextEditor) part);
+			IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(resourceURI);
+			if (adapter instanceof RelativeFileAdapter) {
+				return MarkerAdapter.getTasks(((RelativeFileAdapter)adapter).getModel());
+			} else if (adapter instanceof EditorAdapter) {
+				IEditorReference reference = ((EditorAdapter)adapter).getModel();
+				IEditorPart part = reference.getEditor(true);
+				if (part != null) {
+					if (part instanceof ITextEditor) {
+						return MarkerAdapter.getTasks((ITextEditor)part);
+					} else {
+						throw new MCPException("Editor is not a text editor");
+					}
+				} else {
+					throw new MCPException("Unable to initialize editor");
+				}
+			} else {
+				throw new MCPException("The resource URI is not a file or editor");
 			}
-		} else if (resource == null) {
-			throw new MCPException("URI did not resolve to file or editor");
-		} else {
-			throw new MCPException("Cound not resolve URI");
 		}
-
-		throw new MCPException("The resource URI could not be resolved");
-
 	}
 
 }

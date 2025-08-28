@@ -104,21 +104,9 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 		}
 	}
 	
-	public String getResourceContent(String uri) {
-		IResourceAdapter<?> adapter =  server.getResourceAdapter(uri);
-		if (adapter != null) {
-			return adapter.toContent();
-		}
-		return null;
+	public IResourceAdapter<?, ?> getResourceAdapter(String uri) {
+		return server.getResourceAdapter(uri);
 	}
-	
-	public Object getEclipseResource(String uri) {
-		IResourceAdapter<?> adapter =  server.getResourceAdapter(uri);
-		if (adapter != null) {
-			return adapter.getModel();
-		}
-		return null;
-	}	
 
 	@Override
 	public void activityManagerChanged(ActivityManagerEvent event) {

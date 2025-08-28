@@ -61,7 +61,7 @@ public class MCPServer {
 	
 	Set<SyncToolSpecification> removedTools;
 	Set<SyncResourceSpecification> dynamicResources;
-	List<IResourceAdapter<?>> resourceAdapters;
+	List<IResourceAdapter<?, ?>> resourceAdapters;
 	
 	
 	org.eclipse.jetty.server.Server jettyServer = null;
@@ -74,7 +74,7 @@ public class MCPServer {
 		
 		removedTools = new HashSet<SyncToolSpecification>(); 
 		dynamicResources = new HashSet<SyncResourceSpecification>();
-		resourceAdapters = new ArrayList<IResourceAdapter<?>>();
+		resourceAdapters = new ArrayList<IResourceAdapter<?, ?>>();
 	}
 	
 	public void start() {
@@ -185,8 +185,8 @@ public class MCPServer {
 		}
 	}
 
-	public IResourceAdapter<?> getResourceAdapter(String uri) {
-		for (IResourceAdapter<?> adapter: resourceAdapters) {
+	public IResourceAdapter<?, ?> getResourceAdapter(String uri) {
+		for (IResourceAdapter<?, ?> adapter: resourceAdapters) {
 			if (new DefaultMcpUriTemplateManager(adapter.getTemplate()).matches(uri)) {
 				return adapter.fromUri(uri);
 			}

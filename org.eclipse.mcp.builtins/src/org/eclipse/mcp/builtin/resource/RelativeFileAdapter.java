@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +25,15 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.builtins.json.Resource;
+import org.eclipse.mcp.Schema.File;
+import org.eclipse.mcp.Schema.Files;
 import org.eclipse.mcp.factory.IResourceAdapter;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
-public class RelativeFileAdapter implements IResourceAdapter<IResource> {
+public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
 	
 	final String template = "file://workspace/{relativePath}";
 	final String prefix = template.substring(0, template.indexOf("{"));
@@ -56,7 +58,7 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 				resource = workspace.getRoot().findMember(relativePath);
 				
 				if (resource == null) {
-					relativePath = URLDecoder.decode(relativePath);
+					relativePath = URLDecoder.decode(relativePath, StandardCharsets.UTF_8);
 					resource = workspace.getRoot().findMember(relativePath);
 				}
 			}
@@ -73,12 +75,12 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 	}
 	
 	@Override
-	public IResourceAdapter<IResource> fromUri(String uri) {
+	public RelativeFileAdapter fromUri(String uri) {
 		return new RelativeFileAdapter(uri);
 	}
 
 	@Override
-	public IResourceAdapter<IResource> fromModel(IResource console) {
+	public RelativeFileAdapter fromModel(IResource console) {
 		return new RelativeFileAdapter(console);
 	}
 
@@ -88,9 +90,9 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 	}
 
 	@Override
-	public IResourceAdapter<IResource>[] getChildren(int depth) {
+	public Files getChildren(int depth) {
 		
-		List<RelativeFileAdapter> children = new ArrayList<RelativeFileAdapter>();
+		List<File> children = new ArrayList<File>();
 		depth = Math.max(0, Math.min(2, depth));
 
 		if (resource instanceof IContainer) {
@@ -100,7 +102,7 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 						@Override
 						public boolean visit(IResource child) throws CoreException {
 							if (child != resource) {
-								children.add(new RelativeFileAdapter(child));
+								children.add(new RelativeFileAdapter(child).toJson());
 							}
 							return true;
 						}
@@ -111,7 +113,7 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 			}
 		}
 		
-		return children.toArray(RelativeFileAdapter[]::new);
+		return new Files(children.toArray(File[]::new));
 	}
 
 	@Override
@@ -120,8 +122,8 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 	}
 
 	@Override
-	public Object toJson() {
-		return new Resource(resource);
+	public File toJson() {
+		return new File(resource.getName(), resource instanceof IContainer, toResourceLink());
 	}
 
 	@Override
@@ -156,7 +158,7 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource> {
 
 	@Override
 	public String toUri() {
-		return prefix + URLEncoder.encode( resource.getFullPath().toPortableString().substring(1));
+		return prefix + URLEncoder.encode( resource.getFullPath().toPortableString().substring(1), StandardCharsets.UTF_8);
 	}
 
 	@Override

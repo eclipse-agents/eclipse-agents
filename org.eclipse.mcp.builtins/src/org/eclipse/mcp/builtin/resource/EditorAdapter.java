@@ -6,20 +6,34 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IMarkSelection;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.mcp.MCPException;
+import org.eclipse.mcp.Schema.Files;
 import org.eclipse.mcp.builtins.Activator;
-import org.eclipse.mcp.builtins.json.Editor;
+import org.eclipse.mcp.builtins.Schema.Editor;
+import org.eclipse.mcp.builtins.Schema.Editors;
+import org.eclipse.mcp.builtins.Schema.TextEditorSelection;
+import org.eclipse.mcp.builtins.Schema.TextSelection;
 import org.eclipse.mcp.factory.IResourceAdapter;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -30,7 +44,7 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
-public class EditorAdapter implements IResourceAdapter<IEditorReference> {
+public class EditorAdapter implements IResourceAdapter<IEditorReference, Editor> {
 
 	final String template = "eclipse://editor/{name}";
 	final String prefix = template.substring(0, template.indexOf("{"));
@@ -47,7 +61,7 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 		if (tm.matches(uri)) {
 			Map<String, String> variables = tm.extractVariableValues(uri);
 			String name = variables.get("name");
-			name = URLDecoder.decode(name);
+			name = URLDecoder.decode(name,StandardCharsets.UTF_8);
 
 			for (IWorkbenchWindow window: PlatformUI.getWorkbench().getWorkbenchWindows()) {
 				for (IWorkbenchPage page: window.getPages()) {
@@ -71,16 +85,12 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 	}
 	
 	@Override
-	public IResourceAdapter<IEditorReference> fromUri(String uri) {
+	public EditorAdapter fromUri(String uri) {
 		return new EditorAdapter(uri);
-	}
-	
-	public IResourceAdapter<IEditorReference> fromEditorName(String name) {
-		return new EditorAdapter(prefix + URLEncoder.encode(name));
 	}
 
 	@Override
-	public IResourceAdapter<IEditorReference> fromModel(IEditorReference console) {
+	public EditorAdapter fromModel(IEditorReference console) {
 		return new EditorAdapter(console);
 	}
 
@@ -90,8 +100,8 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 	}
 
 	@Override
-	public IResourceAdapter<IEditorReference>[] getChildren(int depth) {
-		return new EditorAdapter[0];
+	public Files getChildren(int depth) {
+		return null;
 	}
 
 	@Override
@@ -100,8 +110,47 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 	}
 
 	@Override
-	public Object toJson() {
-		return new Editor(editorReference);
+	public Editor toJson() {
+		String name = editorReference.getTitle();
+		boolean isDirty = editorReference.isDirty();
+		String contentDescription = editorReference.getContentDescription();
+		String tooltip = editorReference.getTitleToolTip();
+		System.out.println(contentDescription);
+		System.out.println(tooltip);
+		
+		
+		boolean[] isActive = new boolean[] { false };
+		ResourceLink file = null;
+		ResourceLink editor = toResourceLink();
+		
+		IEditorPart part = editorReference.getEditor(false);
+		if (part != null) {
+			Activator.getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					IWorkbench workbench = PlatformUI.getWorkbench();
+					if (workbench != null) {
+						IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+						if (window != null) {
+							IWorkbenchPage page = window.getActivePage();
+							if (page != null) {
+								if (part == page.getActiveEditor()) {
+									isActive[0] = true;
+								}
+							}
+						}
+					}
+				}
+			});
+		
+			IEditorInput input = part.getEditorInput();
+			if (input instanceof IFileEditorInput) {
+				RelativeFileAdapter adapter = new RelativeFileAdapter( ((IFileEditorInput)input).getFile());
+				file = adapter.toResourceLink();
+			}
+		}
+
+		return new Editor(name, editor, file, isActive[0], isDirty);
 	}
 
 	@Override
@@ -134,7 +183,7 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 
 	@Override
 	public String toUri() {
-		return prefix + URLEncoder.encode(editorReference.getTitle());
+		return prefix + URLEncoder.encode(editorReference.getTitle(), StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -176,5 +225,103 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference> {
 			}
 		});
 		return result.toString();
+	}
+	
+	// custom
+	
+	public EditorAdapter fromEditorName(String name) {
+		return new EditorAdapter(prefix + URLEncoder.encode(name, StandardCharsets.UTF_8));
+	}
+
+	public TextEditorSelection getEditorSelection() {
+		
+		Editor editor = (Editor)toJson();
+		TextSelection selection = getTextSelection();
+		return new TextEditorSelection(editor, selection);
+	}
+
+	
+	public TextSelection getTextSelection() {
+		TextSelection[] result = new TextSelection[] { null };
+		
+		Display.getDefault().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IEditorPart part = editorReference.getEditor(false);
+				ISelection selection = null;
+				
+				if (part instanceof ITextEditor) {
+					selection = ((ITextEditor)part).getSelectionProvider().getSelection();
+				} else if (part instanceof ISelectionProvider) {
+					selection = ((ISelectionProvider)part).getSelection();
+				}
+
+				if (selection instanceof ITextSelection) {
+					ITextSelection textSelection = (ITextSelection) selection;
+					result[0] = new TextSelection(
+							textSelection.getOffset(),
+							textSelection.getLength(),
+							textSelection.getStartLine(),
+							textSelection.getEndLine(),
+							textSelection.getText());
+
+				} else if (selection instanceof IMarkSelection) {
+					IMarkSelection markSelection = (IMarkSelection) selection;
+					int offset = markSelection.getOffset();
+					int length = markSelection.getLength();
+					try {
+						result[0] = new TextSelection(
+								offset,
+								length,
+								markSelection.getDocument().getLineOfOffset(offset),
+								markSelection.getDocument().getLineOfOffset(offset + length),
+								markSelection.getDocument().get(offset, length));
+
+					} catch (BadLocationException e) {
+						e.printStackTrace();
+						result[0] = new TextSelection(
+								markSelection.getOffset(),
+								markSelection.getLength(),
+								(Integer)null, (Integer)null, null);
+					} 
+				}
+			}
+		});
+		return result[0];
+	}
+	
+	public static IEditorPart getActiveEditor() {
+		IEditorPart[] activeEditor = new IEditorPart[] { null };
+		
+		Display.getDefault().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				if (workbench != null) {
+					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					if (window != null) {
+						IWorkbenchPage page = window.getActivePage();
+						if (page != null && page.getActiveEditor() != null) {
+							activeEditor[0] = page.getActiveEditor();
+						}
+					}
+				}
+			}
+		});
+		return activeEditor[0];
+	}
+	
+	public static Editors getEditors() {
+		List<Editor> editors = new ArrayList<Editor>();
+		for (IWorkbenchWindow ww : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+			for (IWorkbenchPage page : ww.getPages()) {
+				for (IEditorReference reference : page.getEditorReferences()) {
+					EditorAdapter adapter = new EditorAdapter(reference);
+					editors.add(adapter.toJson());
+				}
+			}
+		}
+
+		return new Editors(editors.toArray(Editor[]::new));
 	}
 }

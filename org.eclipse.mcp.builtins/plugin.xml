@@ -7,19 +7,19 @@
          id="org.eclipse.mcp.builtins"
          name="Eclipse Platform MCP Servers">
       <contributor
-            id="org.eclipse.mcp.builtins.BuiltinsFactory"
+            id="org.eclipse.mcp.builtins.FactoryProvider"
             name="Platform MCP"
             description="MCP Services for Eclipse Platform"
             activityId="org.eclipse.mcp.platform">
-         <factory class="org.eclipse.mcp.builtins.BuiltinFactoryProvider"/>
+         <factory class="org.eclipse.mcp.builtins.FactoryProvider"/>
       </contributor>
    </extension>
    
     <extension point="org.eclipse.ui.activities">
 
       <activity id="org.eclipse.mcp.platform" 
-          description="Editors, Consoles and Problems"
-          name="Editors, Consoles and Problems" />
+          description="Editors, Files, Consoles and Problems"
+          name="Eclipse Platform" />
 
       <categoryActivityBinding activityId="org.eclipse.mcp.platform"
           categoryId="org.eclipse.mcp.activity" />

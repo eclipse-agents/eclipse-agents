@@ -2,10 +2,15 @@ package org.eclipse.mcp.builtin.resource;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.builtins.json.Console;
+import org.eclipse.mcp.Schema.Files;
+import org.eclipse.mcp.builtins.Schema.Console;
+import org.eclipse.mcp.builtins.Schema.Consoles;
 import org.eclipse.mcp.factory.IResourceAdapter;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -16,7 +21,7 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
-public class ConsoleAdapter implements IResourceAdapter<IConsole> {
+public class ConsoleAdapter implements IResourceAdapter<IConsole, Console> {
 
 	final String template = "eclipse://console/{name}";
 	final String prefix = template.substring(0, template.indexOf("{"));
@@ -33,7 +38,7 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 		if (tm.matches(uri)) {
 			Map<String, String> variables = tm.extractVariableValues(uri);
 			String name = variables.get("name");
-			name = URLDecoder.decode(name);
+			name = URLDecoder.decode(name, StandardCharsets.UTF_8);
 
 			IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
 			for (IConsole console: manager.getConsoles()) {
@@ -54,12 +59,12 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 	}
 	
 	@Override
-	public IResourceAdapter<IConsole> fromUri(String uri) {
+	public ConsoleAdapter fromUri(String uri) {
 		return new ConsoleAdapter(uri);
 	}
 
 	@Override
-	public IResourceAdapter<IConsole> fromModel(IConsole console) {
+	public ConsoleAdapter fromModel(IConsole console) {
 		return new ConsoleAdapter(console);
 	}
 
@@ -69,8 +74,8 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 	}
 
 	@Override
-	public IResourceAdapter<IConsole>[] getChildren(int depth) {
-		return new ConsoleAdapter[0];
+	public Files getChildren(int depth) {
+		return null;
 	}
 
 	@Override
@@ -79,8 +84,8 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 	}
 
 	@Override
-	public Object toJson() {
-		return new Console(console);
+	public Console toJson() {
+		return new Console(console.getName(), console.getType(), toUri());
 	}
 
 	@Override
@@ -95,7 +100,7 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 
 	@Override
 	public String toUri() {
-		return prefix + URLEncoder.encode(console.getName());
+		return prefix + URLEncoder.encode(console.getName(), StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -104,6 +109,16 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole> {
 			return ((TextConsole)console).getDocument().get();
 		}
 		return "...";
+	}
+	
+	public static Consoles getConsoles() {
+		List<Console> consoles = new ArrayList<Console>();
+		IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+		for (IConsole console : manager.getConsoles()) {
+			ConsoleAdapter adapter = new ConsoleAdapter(console);
+			consoles.add(adapter.toJson());
+		}
+		return new Consoles(consoles.toArray(Console[]::new));
 	}
 
 }

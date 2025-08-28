@@ -15,7 +15,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mcp.builtins.BuiltinFactoryProvider;
+import org.eclipse.mcp.builtins.FactoryProvider;
 import org.eclipse.mcp.factory.IFactoryProvider;
 import org.eclipse.mcp.internal.MCPServer;
 import org.eclipse.swt.widgets.Display;
@@ -38,7 +38,7 @@ public final class RouterTest {
 	
 	
 	final static MCPServer server = new MCPServer("junit", "junit", 3028, new IFactoryProvider[] {
-			new BuiltinFactoryProvider()
+			new FactoryProvider()
 	});
 
 	public static TestSuite suite() {
