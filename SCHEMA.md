@@ -1,31 +1,37 @@
+```json
 {
   "resourceTemplates": [
     {
-      "name": "Eclipse Editor",
+      "name": "Eclipse IDE Text Editor",
       "uriTemplate": "eclipse://editor/{name}",
       "description": "Content of an Eclipse Text Editor",
-      "mimeType": "text/plain",
-      "annotations": {
-        "audience": [],
-        "priority": -1
-      }
+      "mimeType": "text/plain"
+    },
+    {
+      "name": "PDS Member",
+      "uriTemplate": "file://mvs/{host}/{pds}/{member}",
+      "description": "A file that is a member of a an IBM System z Multiple Virtual Storage(MVS) Partitioned Data Set (PDS)",
+      "mimeType": "text/plain"
     },
     {
       "name": "Eclipse Workspace File",
-      "uriTemplate": "file://workspace/{relative-path}",
+      "uriTemplate": "file://workspace/{project}/{projectRelativePath}",
       "description": "Content of an file in an Eclipse workspace",
-      "mimeType": "text/plain",
-      "annotations": {
-        "audience": [],
-        "priority": -1
-      }
+      "mimeType": "text/plain"
     }
+  ],
+  "resources": [
+    "openEditors": [{
+      "name": "ELAXFSQL.jcl",
+      "uri": "eclipse://editor/ELAXFSQL.jcl",
+      "description": "com.ibm.systemz.db2.test.samples/cobol/example1/ELAXFSQL.jcl",
+      "mimeType": "text/plain"
+    }]
   ],
   "tools": [
     {
       "name": "currentSelection",
-      "title": "Currrent Selection",
-      "description": "Return the text selection of active Eclipse IDE text editor",
+      "description": "Return the active Eclipse IDE text editor and its selected text",
       "inputSchema": {
         "type": "object",
         "properties": {},
@@ -35,79 +41,55 @@
         "type": "object",
         "properties": {
           "editor": {
-            "allOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "buffer": {
-                    "$ref": "#/$defs/ResourceLink",
-                    "description": "The contents of the text editor"
-                  },
-                  "file": {
-                    "$ref": "#/$defs/ResourceLink",
-                    "description": "The file being edited containing the last saved changes"
-                  },
-                  "isActive": {
-                    "type": "boolean",
-                    "description": "Whether this is the editor has the user's focus"
-                  },
-                  "isDirty": {
-                    "type": "boolean",
-                    "description": "Whether text editor contains unsaved changes"
-                  },
-                  "name": {
-                    "type": "string",
-                    "description": "Title of this editor"
-                  }
-                },
-                "description": "An Eclipse IDE text editor"
+            "type": "object",
+            "properties": {
+              "editor": {
+                "$ref": "#/$defs/ResourceLink"
               },
-              {
-                "description": "Selected Text Editor"
+              "file": {
+                "$ref": "#/$defs/ResourceLink"
+              },
+              "isActive": {
+                "type": "boolean"
+              },
+              "isDirty": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
               }
-            ]
+            }
           },
           "textSelection": {
-            "allOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "endLine": {
-                    "type": "integer",
-                    "description": "line of the last character of the selected text"
-                  },
-                  "length": {
-                    "type": "integer",
-                    "description": "length of the text selection"
-                  },
-                  "offset": {
-                    "type": "integer",
-                    "description": "position of the first selected character"
-                  },
-                  "startLine": {
-                    "type": "integer",
-                    "description": "line of the offset of the selected text"
-                  },
-                  "text": {
-                    "type": "string",
-                    "description": "selected text"
-                  }
-                },
-                "description": "Range of characters selected in a text editor"
+            "type": "object",
+            "properties": {
+              "endLine": {
+                "type": "integer",
+                "format": "int32"
               },
-              {
-                "description": "Selected text"
+              "length": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "offset": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "startLine": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "text": {
+                "type": "string"
               }
-            ]
+            }
           }
         },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$defs": {
           "ResourceLink": {
             "type": "object",
             "properties": {
-              "_meta": {
-                "type": "object"
-              },
               "annotations": {
                 "type": "object",
                 "properties": {
@@ -116,18 +98,22 @@
                     "items": {
                       "type": "string",
                       "enum": [
-                        "user",
-                        "assistant"
+                        "USER",
+                        "ASSISTANT"
                       ]
                     }
                   },
                   "priority": {
-                    "type": "number"
+                    "type": "number",
+                    "format": "double"
                   }
                 }
               },
               "description": {
                 "type": "string"
+              },
+              "meta": {
+                "type": "object"
               },
               "mimeType": {
                 "type": "string"
@@ -136,37 +122,29 @@
                 "type": "string"
               },
               "size": {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               "title": {
                 "type": "string"
               },
               "uri": {
                 "type": "string"
-              },
-              "type": {
-                "const": "resource_link"
               }
-            },
-            "required": [
-              "type"
-            ]
+            }
           }
-        },
-        "description": ""
+        }
       },
       "annotations": {
         "title": "Currrent Selection",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "listEditors",
-      "title": "List Editors",
       "description": "List open Eclipse IDE text editors",
       "inputSchema": {
         "type": "object",
@@ -181,38 +159,30 @@
             "items": {
               "type": "object",
               "properties": {
-                "buffer": {
-                  "$ref": "#/$defs/ResourceLink",
-                  "description": "The contents of the text editor"
+                "editor": {
+                  "$ref": "#/$defs/ResourceLink"
                 },
                 "file": {
-                  "$ref": "#/$defs/ResourceLink",
-                  "description": "The file being edited containing the last saved changes"
+                  "$ref": "#/$defs/ResourceLink"
                 },
                 "isActive": {
-                  "type": "boolean",
-                  "description": "Whether this is the editor has the user's focus"
+                  "type": "boolean"
                 },
                 "isDirty": {
-                  "type": "boolean",
-                  "description": "Whether text editor contains unsaved changes"
+                  "type": "boolean"
                 },
                 "name": {
-                  "type": "string",
-                  "description": "Title of this editor"
+                  "type": "string"
                 }
-              },
-              "description": "An Eclipse IDE text editor"
+              }
             }
           }
         },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$defs": {
           "ResourceLink": {
             "type": "object",
             "properties": {
-              "_meta": {
-                "type": "object"
-              },
               "annotations": {
                 "type": "object",
                 "properties": {
@@ -221,18 +191,22 @@
                     "items": {
                       "type": "string",
                       "enum": [
-                        "user",
-                        "assistant"
+                        "USER",
+                        "ASSISTANT"
                       ]
                     }
                   },
                   "priority": {
-                    "type": "number"
+                    "type": "number",
+                    "format": "double"
                   }
                 }
               },
               "description": {
                 "type": "string"
+              },
+              "meta": {
+                "type": "object"
               },
               "mimeType": {
                 "type": "string"
@@ -241,37 +215,29 @@
                 "type": "string"
               },
               "size": {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               "title": {
                 "type": "string"
               },
               "uri": {
                 "type": "string"
-              },
-              "type": {
-                "const": "resource_link"
               }
-            },
-            "required": [
-              "type"
-            ]
+            }
           }
-        },
-        "description": "List of Eclipse IDE text editors"
+        }
       },
       "annotations": {
         "title": "List Editors",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "listConsoles",
-      "title": "List Consoles",
       "description": "List open Eclipse IDE consoles",
       "inputSchema": {
         "type": "object",
@@ -287,34 +253,28 @@
               "type": "object",
               "properties": {
                 "name": {
-                  "type": "string",
-                  "description": "Console name"
+                  "type": "string"
                 },
                 "type": {
                   "type": "string"
                 },
-                "uri": {
-                  "type": "string"
-                }
-              },
-              "description": "An Eclipse IDE console"
+                "uri": {}
+              }
             }
           }
         },
-        "description": "List of Eclipse IDE consoles"
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
       },
       "annotations": {
         "title": "List Consoles",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "listProjects",
-      "title": "List Projects",
       "description": "List open Eclipse IDE projects",
       "inputSchema": {
         "type": "object",
@@ -324,17 +284,28 @@
       "outputSchema": {
         "type": "object",
         "properties": {
-          "resources": {
+          "depthSearched": {
+            "type": "string",
+            "enum": [
+              "CHILDREN",
+              "GRANDCHILDREN",
+              "INFINITE"
+            ]
+          },
+          "files": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "workspace_uri": {
+                "isFolder": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "uri": {
                   "type": "object",
                   "properties": {
-                    "_meta": {
-                      "type": "object"
-                    },
                     "annotations": {
                       "type": "object",
                       "properties": {
@@ -343,18 +314,22 @@
                           "items": {
                             "type": "string",
                             "enum": [
-                              "user",
-                              "assistant"
+                              "USER",
+                              "ASSISTANT"
                             ]
                           }
                         },
                         "priority": {
-                          "type": "number"
+                          "type": "number",
+                          "format": "double"
                         }
                       }
                     },
                     "description": {
                       "type": "string"
+                    },
+                    "meta": {
+                      "type": "object"
                     },
                     "mimeType": {
                       "type": "string"
@@ -363,72 +338,80 @@
                       "type": "string"
                     },
                     "size": {
-                      "type": "integer"
+                      "type": "integer",
+                      "format": "int64"
                     },
                     "title": {
                       "type": "string"
                     },
                     "uri": {
                       "type": "string"
-                    },
-                    "type": {
-                      "const": "resource_link"
                     }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "description": "Relative path for resource within Eclipse workspace"
+                  }
                 }
               }
             }
           }
         },
-        "description": "List of file and/or folder resources in the Eclipse workspace"
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
       },
       "annotations": {
         "title": "List Projects",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "listChildResources",
-      "title": "List Child Resources",
-      "description": "List child resources of an Eclipse project or folder",
+      "description": "List child resources of an Eclipse workspace, project or folder URI",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "resourceURI": {
+          "arg0": {
             "type": "string",
             "description": "URI of an eclipse project or folder"
           },
-          "depth": {
-            "type": "integer",
-            "description": "0 for immediate children, 1 for children and grandchildren, 2 for infinite depth"
+          "arg1": {
+            "type": "string",
+            "enum": [
+              "CHILDREN",
+              "GRANDCHILDREN",
+              "INFINITE"
+            ],
+            "description": "CHILDREN, GRANDCHILDREN or INFINITE"
           }
         },
         "required": [
-          "resourceURI"
+          "arg0"
         ]
       },
       "outputSchema": {
         "type": "object",
         "properties": {
-          "resources": {
+          "depthSearched": {
+            "type": "string",
+            "enum": [
+              "CHILDREN",
+              "GRANDCHILDREN",
+              "INFINITE"
+            ]
+          },
+          "files": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "workspace_uri": {
+                "isFolder": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "uri": {
                   "type": "object",
                   "properties": {
-                    "_meta": {
-                      "type": "object"
-                    },
                     "annotations": {
                       "type": "object",
                       "properties": {
@@ -437,18 +420,22 @@
                           "items": {
                             "type": "string",
                             "enum": [
-                              "user",
-                              "assistant"
+                              "USER",
+                              "ASSISTANT"
                             ]
                           }
                         },
                         "priority": {
-                          "type": "number"
+                          "type": "number",
+                          "format": "double"
                         }
                       }
                     },
                     "description": {
                       "type": "string"
+                    },
+                    "meta": {
+                      "type": "object"
                     },
                     "mimeType": {
                       "type": "string"
@@ -457,118 +444,103 @@
                       "type": "string"
                     },
                     "size": {
-                      "type": "integer"
+                      "type": "integer",
+                      "format": "int64"
                     },
                     "title": {
                       "type": "string"
                     },
                     "uri": {
                       "type": "string"
-                    },
-                    "type": {
-                      "const": "resource_link"
                     }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "description": "Relative path for resource within Eclipse workspace"
+                  }
                 }
               }
             }
           }
         },
-        "description": "List of file and/or folder resources in the Eclipse workspace"
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
       },
       "annotations": {
         "title": "List Child Resources",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "readResource",
-      "title": "Read Resources",
-      "description": "Returns the contents of a file, editor, or console URI",
+      "description": "Returns the contents of an Eclipse workspace file, editor, or console URI",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "uri": {
+          "arg0": {
             "type": "string",
             "description": "URI of an eclipse file, editor or console"
           }
         },
         "required": [
-          "uri"
+          "arg0"
         ]
       },
       "annotations": {
-        "title": "Read Resources",
+        "title": "Read Resource",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "openEditor",
-      "title": "openEditor",
-      "description": "open an Eclipse IDE editor on a file and set an initial text selection",
+      "description": "open an Eclipse IDE editor on a file URI and set an initial text selection",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "fileUri": {
+          "arg0": {
             "type": "string",
-            "description": "URI file in the Eclipse workspace"
+            "description": "Eclipse workspace file uri"
           },
-          "selectionOffset": {
+          "arg1": {
             "type": "integer",
-            "description": "offset of the selected text"
+            "format": "int32",
+            "description": "offset of the text selection"
           },
-          "selectionLength": {
+          "arg2": {
             "type": "integer",
-            "description": "length of the selected text"
+            "format": "int32",
+            "description": "length of the text selection"
           }
         },
         "required": [
-          "fileUri"
+          "arg0"
         ]
       },
       "outputSchema": {
         "type": "object",
         "properties": {
-          "buffer": {
-            "$ref": "#/$defs/ResourceLink",
-            "description": "The contents of the text editor"
+          "editor": {
+            "$ref": "#/$defs/ResourceLink"
           },
           "file": {
-            "$ref": "#/$defs/ResourceLink",
-            "description": "The file being edited containing the last saved changes"
+            "$ref": "#/$defs/ResourceLink"
           },
           "isActive": {
-            "type": "boolean",
-            "description": "Whether this is the editor has the user's focus"
+            "type": "boolean"
           },
           "isDirty": {
-            "type": "boolean",
-            "description": "Whether text editor contains unsaved changes"
+            "type": "boolean"
           },
           "name": {
-            "type": "string",
-            "description": "Title of this editor"
+            "type": "string"
           }
         },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$defs": {
           "ResourceLink": {
             "type": "object",
             "properties": {
-              "_meta": {
-                "type": "object"
-              },
               "annotations": {
                 "type": "object",
                 "properties": {
@@ -577,18 +549,22 @@
                     "items": {
                       "type": "string",
                       "enum": [
-                        "user",
-                        "assistant"
+                        "USER",
+                        "ASSISTANT"
                       ]
                     }
                   },
                   "priority": {
-                    "type": "number"
+                    "type": "number",
+                    "format": "double"
                   }
                 }
               },
               "description": {
                 "type": "string"
+              },
+              "meta": {
+                "type": "object"
               },
               "mimeType": {
                 "type": "string"
@@ -597,109 +573,96 @@
                 "type": "string"
               },
               "size": {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               "title": {
                 "type": "string"
               },
               "uri": {
                 "type": "string"
-              },
-              "type": {
-                "const": "resource_link"
               }
-            },
-            "required": [
-              "type"
-            ]
+            }
           }
-        },
-        "description": "An Eclipse IDE text editor"
+        }
       },
       "annotations": {
-        "title": "openEditor",
+        "title": "Open Editor",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "closeEditor",
-      "title": "closeEditor",
       "description": "close an Eclipse IDE editor",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "editorUri": {
+          "arg0": {
             "type": "string",
-            "description": "URI of an Eclipse editor"
+            "description": "URI of an open Eclipse editor"
           }
         },
         "required": [
-          "editorUri"
+          "arg0"
         ]
       },
-      "outputSchema": {
-        "type": "object"
-      },
       "annotations": {
-        "title": "closeEditor",
+        "title": "Close Editor",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "saveEditor",
-      "title": "saveEditor",
-      "description": "open an Eclipse IDE editor on a file and set an initial text selection",
+      "description": "save the contents of a dirty Eclipse IDE editor to file",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "editorUri": {
+          "arg0": {
             "type": "string",
-            "description": "URI of an Eclipse editor"
+            "description": "URI of an open Eclipse editor"
           }
         },
         "required": [
-          "editorUri"
+          "arg0"
         ]
       },
       "annotations": {
-        "title": "saveEditor",
+        "title": "Save Editor",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "changeEditorText",
-      "title": "changeEditorText",
       "description": "Make one or more changes to an Eclipse text editor",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "editorURI": {
+          "arg0": {
             "type": "string",
-            "description": "URI of an Eclipse editor"
+            "description": "Open Eclipse editor URI"
           },
-          "replacements": {
+          "arg1": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
                 "length": {
                   "type": "integer",
+                  "format": "int32",
                   "description": "the length of text after the offset to remove"
                 },
                 "offset": {
                   "type": "integer",
+                  "format": "int32",
                   "description": "the character offset to insert the text"
                 },
                 "text": {
@@ -713,37 +676,35 @@
           }
         },
         "required": [
-          "editorURI",
-          "replacements"
+          "arg0",
+          "arg1"
         ]
       },
       "annotations": {
-        "title": "changeEditorText",
+        "title": "Change Editor Text",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "listProblems",
-      "title": "listProblems",
       "description": "list Eclipse IDE compilation and configuration problems",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "resourceURI": {
+          "arg0": {
             "type": "string",
-            "description": "Eclipse workspace file URI"
+            "description": "Eclipse workspace file or editor URI"
           },
-          "severity": {
+          "arg1": {
             "type": "string",
-            "description": "One of ERROR, INFO or WARNING"
+            "description": "One of ERROR, INFO or WARNING. Default i"
           }
         },
         "required": [
-          "resourceURI"
+          "arg0"
         ]
       },
       "outputSchema": {
@@ -756,39 +717,44 @@
               "properties": {
                 "charEnd": {
                   "type": "integer",
-                  "description": "An integer value indicating where a text marker ends. This attribute is zero-relative and exclusive."
+                  "format": "int32"
                 },
                 "charStart": {
                   "type": "integer",
-                  "description": "An integer value indicating where a text marker starts. This attribute is zero-relative and inclusive."
+                  "format": "int32"
                 },
                 "creationTime": {
-                  "type": "integer"
+                  "type": "integer",
+                  "format": "int64"
                 },
                 "done": {
-                  "type": "boolean",
-                  "description": "A boolean value indicating whether the marker"
+                  "type": "boolean"
                 },
                 "id": {
-                  "type": "integer"
+                  "type": "integer",
+                  "format": "int64"
                 },
                 "lineNumber": {
                   "type": "integer",
-                  "description": "An integer value indicating the line number for a text marker. This attribute is 1-relative"
+                  "format": "int32"
                 },
                 "location": {
-                  "type": "string",
-                  "description": "The location is a human-readable (localized) string which can be used to distinguish between markers on a resource"
+                  "type": "string"
                 },
                 "message": {
                   "type": "string"
                 },
+                "priority": {
+                  "type": "string",
+                  "enum": [
+                    "HIGH",
+                    "LOW",
+                    "NORMAL"
+                  ]
+                },
                 "resource_link": {
                   "type": "object",
                   "properties": {
-                    "_meta": {
-                      "type": "object"
-                    },
                     "annotations": {
                       "type": "object",
                       "properties": {
@@ -797,18 +763,22 @@
                           "items": {
                             "type": "string",
                             "enum": [
-                              "user",
-                              "assistant"
+                              "USER",
+                              "ASSISTANT"
                             ]
                           }
                         },
                         "priority": {
-                          "type": "number"
+                          "type": "number",
+                          "format": "double"
                         }
                       }
                     },
                     "description": {
                       "type": "string"
+                    },
+                    "meta": {
+                      "type": "object"
                     },
                     "mimeType": {
                       "type": "string"
@@ -817,50 +787,57 @@
                       "type": "string"
                     },
                     "size": {
-                      "type": "integer"
+                      "type": "integer",
+                      "format": "int64"
                     },
                     "title": {
                       "type": "string"
                     },
                     "uri": {
                       "type": "string"
-                    },
-                    "type": {
-                      "const": "resource_link"
                     }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "description": "The associated file or editor"
+                  }
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "ERROR",
+                    "INFO",
+                    "WARNING"
+                  ]
                 },
                 "type": {
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                    "Bookmark",
+                    "Problem",
+                    "Task",
+                    "Text"
+                  ]
                 }
               }
             }
           }
-        }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
       },
       "annotations": {
-        "title": "listProblems",
+        "title": "List Problems",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     },
     {
       "name": "listTasks",
-      "title": "listTasks",
-      "description": "list codebase locations containing TODO comments",
+      "description": "list codebase locations of tasks including TODO comments",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "resourceURI": {
+          "arg0": {
             "type": "string",
-            "description": "Eclipse workspace file URI"
+            "description": "Eclipse workspace file or editor URI"
           }
         },
         "required": []
@@ -875,39 +852,44 @@
               "properties": {
                 "charEnd": {
                   "type": "integer",
-                  "description": "An integer value indicating where a text marker ends. This attribute is zero-relative and exclusive."
+                  "format": "int32"
                 },
                 "charStart": {
                   "type": "integer",
-                  "description": "An integer value indicating where a text marker starts. This attribute is zero-relative and inclusive."
+                  "format": "int32"
                 },
                 "creationTime": {
-                  "type": "integer"
+                  "type": "integer",
+                  "format": "int64"
                 },
                 "done": {
-                  "type": "boolean",
-                  "description": "A boolean value indicating whether the marker"
+                  "type": "boolean"
                 },
                 "id": {
-                  "type": "integer"
+                  "type": "integer",
+                  "format": "int64"
                 },
                 "lineNumber": {
                   "type": "integer",
-                  "description": "An integer value indicating the line number for a text marker. This attribute is 1-relative"
+                  "format": "int32"
                 },
                 "location": {
-                  "type": "string",
-                  "description": "The location is a human-readable (localized) string which can be used to distinguish between markers on a resource"
+                  "type": "string"
                 },
                 "message": {
                   "type": "string"
                 },
+                "priority": {
+                  "type": "string",
+                  "enum": [
+                    "HIGH",
+                    "LOW",
+                    "NORMAL"
+                  ]
+                },
                 "resource_link": {
                   "type": "object",
                   "properties": {
-                    "_meta": {
-                      "type": "object"
-                    },
                     "annotations": {
                       "type": "object",
                       "properties": {
@@ -916,18 +898,22 @@
                           "items": {
                             "type": "string",
                             "enum": [
-                              "user",
-                              "assistant"
+                              "USER",
+                              "ASSISTANT"
                             ]
                           }
                         },
                         "priority": {
-                          "type": "number"
+                          "type": "number",
+                          "format": "double"
                         }
                       }
                     },
                     "description": {
                       "type": "string"
+                    },
+                    "meta": {
+                      "type": "object"
                     },
                     "mimeType": {
                       "type": "string"
@@ -936,39 +922,48 @@
                       "type": "string"
                     },
                     "size": {
-                      "type": "integer"
+                      "type": "integer",
+                      "format": "int64"
                     },
                     "title": {
                       "type": "string"
                     },
                     "uri": {
                       "type": "string"
-                    },
-                    "type": {
-                      "const": "resource_link"
                     }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "description": "The associated file or editor"
+                  }
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "ERROR",
+                    "INFO",
+                    "WARNING"
+                  ]
                 },
                 "type": {
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                    "Bookmark",
+                    "Problem",
+                    "Task",
+                    "Text"
+                  ]
                 }
               }
             }
           }
-        }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
       },
       "annotations": {
-        "title": "listTasks",
+        "title": "List Tasks",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
-        "openWorldHint": false,
-        "returnDirect": false
+        "openWorldHint": true
       }
     }
   ]
 }
+```
