@@ -32,14 +32,14 @@ Bundle-ClassPath: .,
  lib/jetty-server-12.0.18.jar,
  lib/jetty-session-12.0.18.jar,
  lib/jetty-util-12.0.18.jar,
- lib/slf4j-api-2.0.16.jar
+ lib/slf4j-api-2.0.16.jar,
+ lib/jakarta.servlet-api-6.1.0.jar
+Import-Package: jakarta.servlet;version="6.1.0",
+ jakarta.servlet.annotation;version="[6.1.0,7.0.0)",
+ jakarta.servlet.http;version="[6.1.0,7.0.0)"
 Export-Package: org.eclipse.mcp;uses:="org.eclipse.core.runtime,org.eclipse.ui.dialogs,org.eclipse.jface.dialogs",
  org.eclipse.mcp.internal;x-friends:="org.eclipse.mcp.builtins,org.eclipse.mcp.test,org.eclipse.mcp.test",
  org.eclipse.mcp.internal.preferences;x-friends:="org.eclipse.mcp.test",
  org.eclipse.mcp.platform,
  org.eclipse.mcp.platform.resource,
  org.eclipse.mcp.resource
-Import-Package: com.fasterxml.jackson.databind;version="2.17.0",
- jakarta.servlet;version="6.1.0",
- jakarta.servlet.annotation;version="[6.1.0,7.0.0)",
- jakarta.servlet.http;version="[6.1.0,7.0.0)"

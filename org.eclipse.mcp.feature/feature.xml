@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.mcp.feature"
+      label="MCP Feature"
+      version="1.0.0.qualifier"
+      provider-name="IBM">
+
+   <description url="http://www.example.com/description">
+      Eclipse MCP Services
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import plugin="com.fasterxml.jackson.core.jackson-annotations"/>
+      <import plugin="com.fasterxml.jackson.core.jackson-core"/>
+      <import plugin="com.fasterxml.jackson.core.jackson-databind"/>
+      <import plugin="jakarta.servlet"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.mcp"
+         version="0.0.0"/>
+
+   <plugin
+         id="io.modelcontextprotocol"
+         version="0.0.0"/>
+
+</feature>
