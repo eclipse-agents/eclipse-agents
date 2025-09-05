@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtins;
+package org.eclipse.mcp.platform;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

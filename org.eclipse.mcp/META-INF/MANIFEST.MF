@@ -7,12 +7,20 @@ Bundle-Activator: org.eclipse.mcp.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.jface,
- com.google.gson;bundle-version="2.13.1",
  io.modelcontextprotocol;bundle-version="0.11.2",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.17.2",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="2.17.2",
  com.fasterxml.jackson.core.jackson-core;bundle-version="2.17.2",
- org.eclipse.core.filesystem
+ org.eclipse.core.filesystem,
+ org.eclipse.core.resources,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.console,
+ org.eclipse.ui.ide,
+ org.eclipse.jface.text,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.compare,
+ org.eclipse.swt,
+ org.eclipse.ui.editors
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.eclipse.mcp
 Bundle-ActivationPolicy: lazy
@@ -26,8 +34,11 @@ Bundle-ClassPath: .,
  lib/jetty-util-12.0.18.jar,
  lib/slf4j-api-2.0.16.jar
 Export-Package: org.eclipse.mcp;uses:="org.eclipse.core.runtime,org.eclipse.ui.dialogs,org.eclipse.jface.dialogs",
- org.eclipse.mcp.internal;x-friends:="org.eclipse.mcp.test,org.eclipse.mcp.builtins,org.eclipse.mcp.builtins.test",
- org.eclipse.mcp.internal.preferences;x-friends:="org.eclipse.mcp.test"
+ org.eclipse.mcp.internal;x-friends:="org.eclipse.mcp.builtins,org.eclipse.mcp.test,org.eclipse.mcp.test",
+ org.eclipse.mcp.internal.preferences;x-friends:="org.eclipse.mcp.test",
+ org.eclipse.mcp.platform,
+ org.eclipse.mcp.platform.resource,
+ org.eclipse.mcp.resource
 Import-Package: com.fasterxml.jackson.databind;version="2.17.0",
  jakarta.servlet;version="6.1.0",
  jakarta.servlet.annotation;version="[6.1.0,7.0.0)",

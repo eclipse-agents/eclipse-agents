@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resourceadapters;
+package org.eclipse.mcp.platform.resource;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,26 +12,23 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
-import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.Schema.DEPTH;
-import org.eclipse.mcp.Schema.Files;
-import org.eclipse.mcp.builtins.Schema.Marker;
-import org.eclipse.mcp.builtins.Schema.PRIORITY;
-import org.eclipse.mcp.builtins.Schema.Problems;
-import org.eclipse.mcp.builtins.Schema.SEVERITY;
-import org.eclipse.mcp.builtins.Schema.TYPE;
-import org.eclipse.mcp.builtins.Schema.Tasks;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Marker;
+import org.eclipse.mcp.platform.resource.ResourceSchema.PRIORITY;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Problems;
+import org.eclipse.mcp.platform.resource.ResourceSchema.SEVERITY;
+import org.eclipse.mcp.platform.resource.ResourceSchema.TYPE;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Tasks;
+import org.eclipse.mcp.resource.IResourceAdapter;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 
 /**
  * support for Problem and Task markers
  */
-public class MarkerAdapter implements IResourceAdapter<IMarker, Marker> {
+public class MarkerAdapter implements IResourceAdapter<Marker> {
 	
 	TYPE type;
 	String message;
@@ -87,36 +84,6 @@ public class MarkerAdapter implements IResourceAdapter<IMarker, Marker> {
 			throw new MCPException(e);
 		}
 	}
-	
-	@Override
-	public IResourceAdapter<IMarker, Marker> fromUri(String uri) {
-		throw new MCPException("Not supported");
-	}
-
-	@Override
-	public IResourceAdapter<IMarker, Marker> fromModel(IMarker marker) {
-		return new MarkerAdapter(marker);
-	}
-
-	@Override
-	public boolean supportsChildren() {
-		return false;
-	}
-
-	@Override
-	public Files getChildren(DEPTH depth) {
-		return null;
-	}
-
-	@Override
-	public String[] getTemplates() {
-		throw new MCPException("Not supported");
-	}
-
-	@Override
-	public IMarker getModel() {
-		throw new MCPException("Not supported");
-	}
 
 	@Override
 	public Marker toJson() {
@@ -136,20 +103,7 @@ public class MarkerAdapter implements IResourceAdapter<IMarker, Marker> {
 				
 	}
 
-	@Override
-	public ResourceLink toResourceLink() {
-		throw new MCPException("Not supported");
-	}
 
-	@Override
-	public String toUri() {
-		throw new MCPException("Not supported");
-	}
-
-	@Override
-	public String toContent() {
-		throw new MCPException("Not supported");
-	}
 	
 	private void processMarker(IMarker marker) throws Exception {
 		id = marker.getId();

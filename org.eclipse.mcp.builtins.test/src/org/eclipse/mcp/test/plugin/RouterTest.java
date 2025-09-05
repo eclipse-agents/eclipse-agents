@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtins.test.plugin;
+package org.eclipse.mcp.test.plugin;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -16,8 +16,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mcp.IFactoryProvider;
-import org.eclipse.mcp.builtins.FactoryProvider;
 import org.eclipse.mcp.internal.MCPServer;
+import org.eclipse.mcp.platform.FactoryProvider;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -44,14 +44,6 @@ public final class RouterTest {
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
 	
-		
-
-		suite.addTest(new TestCase("Don't run in UI Thread") {
-			@Override
-			protected void runTest() throws Throwable {
-				Assert.assertTrue("Dont run test in UI thread", !Thread.currentThread().equals((Display.getDefault().getThread())));
-			}
-		});
 		
 		String content = "public class HelloWorld {\n" +
 				"    public static void main(String[] args) {\n"  +
@@ -171,7 +163,7 @@ public final class RouterTest {
 		suite.addTest(new TestCase("getEclipseResource: " + uri) {
 			@Override
 			protected void runTest() throws Throwable {
-				Object eclipseResource = server.getResourceAdapter(uri).getModel();
+				Object eclipseResource = server.getResourceTemplate(uri).getModel();
 				System.out.println(uri + ": " + eclipseResource);
 				Assert.assertEquals(eclipseResource.getClass().getCanonicalName(), className);
 
@@ -183,7 +175,7 @@ public final class RouterTest {
 		suite.addTest(new TestCase("getResourceContent: " + uri) {
 			@Override
 			protected void runTest() throws Throwable {
-				String resourceContent = server.getResourceAdapter(uri).toContent();
+				String resourceContent = server.getResourceTemplate(uri).toContent();
 				System.out.println(uri + ": " + resourceContent);
 				Assert.assertEquals(uri, resourceContent.trim(), content.trim());
 			}

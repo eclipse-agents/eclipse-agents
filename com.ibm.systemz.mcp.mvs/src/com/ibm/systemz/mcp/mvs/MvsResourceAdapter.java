@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.Schema.DEPTH;
-import org.eclipse.mcp.Schema.File;
-import org.eclipse.mcp.Schema.Files;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Children;
+import org.eclipse.mcp.platform.resource.ResourceSchema.DEPTH;
+import org.eclipse.mcp.platform.resource.ResourceSchema.File;
+import org.eclipse.mcp.resource.IResourceHierarchy;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.SystemStartHere;
 import org.eclipse.rse.core.subsystems.ISubSystem;
@@ -36,7 +36,7 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
 import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
-public class MvsResourceAdapter implements IResourceAdapter<IPhysicalResource, File> {
+public class MvsResourceAdapter implements IResourceHierarchy<IPhysicalResource, File> {
 
 	final String[] templates = new String[] {
 			"file://mvs/{host}",
@@ -99,12 +99,7 @@ public class MvsResourceAdapter implements IResourceAdapter<IPhysicalResource, F
 	}
 
 	@Override
-	public boolean supportsChildren() {
-		return lazyLoadResource() instanceof IPhysicalContainer;
-	}
-
-	@Override
-	public Files getChildren(DEPTH depth) {
+	public Children<File> getChildren(DEPTH depth) {
 		List<File> files = new ArrayList<File>();
 		IPhysicalResource resource = lazyLoadResource();
 		if (resource != null) {
@@ -118,7 +113,7 @@ public class MvsResourceAdapter implements IResourceAdapter<IPhysicalResource, F
 				}
 			}
 		}
-		return new Files(files.toArray(File[]::new), DEPTH.CHILDREN);
+		return new Children<File>(files.toArray(File[]::new), DEPTH.CHILDREN);
 	}
 
 	@Override

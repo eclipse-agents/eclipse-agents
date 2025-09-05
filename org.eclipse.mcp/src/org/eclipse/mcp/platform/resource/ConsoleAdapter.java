@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resourceadapters;
+package org.eclipse.mcp.platform.resource;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -7,12 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.Schema.DEPTH;
-import org.eclipse.mcp.Schema.Files;
-import org.eclipse.mcp.builtins.Schema.Console;
-import org.eclipse.mcp.builtins.Schema.Consoles;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Console;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Consoles;
+import org.eclipse.mcp.resource.IResourceTemplate;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -25,7 +23,7 @@ import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 /**
  * support for resource template: eclipse://console/{name}
  */
-public class ConsoleAdapter implements IResourceAdapter<IConsole, Console> {
+public class ConsoleAdapter implements IResourceTemplate<IConsole, Console> {
 
 	final String template = "eclipse://console/{name}";
 	final String prefix = template.substring(0, template.indexOf("{"));
@@ -70,16 +68,6 @@ public class ConsoleAdapter implements IResourceAdapter<IConsole, Console> {
 	@Override
 	public ConsoleAdapter fromModel(IConsole console) {
 		return new ConsoleAdapter(console);
-	}
-
-	@Override
-	public boolean supportsChildren() {
-		return false;
-	}
-
-	@Override
-	public Files getChildren(DEPTH depth) {
-		return null;
 	}
 
 	@Override

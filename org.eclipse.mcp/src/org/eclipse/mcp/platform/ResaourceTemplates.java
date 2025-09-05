@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtins;
+package org.eclipse.mcp.platform;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +17,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.content.IContentTypeManager;
-import org.eclipse.mcp.builtin.resourceadapters.EditorAdapter;
-import org.eclipse.mcp.builtin.resourceadapters.RelativeFileAdapter;
+import org.eclipse.mcp.platform.resource.EditorAdapter;
+import org.eclipse.mcp.platform.resource.RelativeFileAdapter;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;

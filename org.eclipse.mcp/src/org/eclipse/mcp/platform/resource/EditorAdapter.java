@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resourceadapters;
+package org.eclipse.mcp.platform.resource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,15 +20,13 @@ import org.eclipse.jface.text.IMarkSelection;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.mcp.IResourceAdapter;
+import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.Schema.DEPTH;
-import org.eclipse.mcp.Schema.Files;
-import org.eclipse.mcp.builtins.Activator;
-import org.eclipse.mcp.builtins.Schema.Editor;
-import org.eclipse.mcp.builtins.Schema.Editors;
-import org.eclipse.mcp.builtins.Schema.TextEditorSelection;
-import org.eclipse.mcp.builtins.Schema.TextSelection;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Editor;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Editors;
+import org.eclipse.mcp.platform.resource.ResourceSchema.TextEditorSelection;
+import org.eclipse.mcp.platform.resource.ResourceSchema.TextSelection;
+import org.eclipse.mcp.resource.IResourceTemplate;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -48,7 +46,7 @@ import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 /**
  * support for resource template: eclipse://editor/{name}
  */
-public class EditorAdapter implements IResourceAdapter<IEditorReference, Editor> {
+public class EditorAdapter implements IResourceTemplate<IEditorReference, Editor> {
 
 	final String template = "eclipse://editor/{name}";
 	final String prefix = template.substring(0, template.indexOf("{"));
@@ -96,16 +94,6 @@ public class EditorAdapter implements IResourceAdapter<IEditorReference, Editor>
 	@Override
 	public EditorAdapter fromModel(IEditorReference console) {
 		return new EditorAdapter(console);
-	}
-
-	@Override
-	public boolean supportsChildren() {
-		return false;
-	}
-
-	@Override
-	public Files getChildren(DEPTH depth) {
-		return null;
 	}
 
 	@Override

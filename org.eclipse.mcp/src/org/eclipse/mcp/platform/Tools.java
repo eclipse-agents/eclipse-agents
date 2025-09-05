@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtins;
+package org.eclipse.mcp.platform;
 
 
 import java.util.Arrays;
@@ -11,13 +11,23 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.mcp.Activator;
-import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.Schema.DEPTH;
-import org.eclipse.mcp.builtin.resourceadapters.ConsoleAdapter;
-import org.eclipse.mcp.builtin.resourceadapters.EditorAdapter;
-import org.eclipse.mcp.builtin.resourceadapters.MarkerAdapter;
-import org.eclipse.mcp.builtin.resourceadapters.RelativeFileAdapter;
+import org.eclipse.mcp.platform.resource.ConsoleAdapter;
+import org.eclipse.mcp.platform.resource.EditorAdapter;
+import org.eclipse.mcp.platform.resource.MarkerAdapter;
+import org.eclipse.mcp.platform.resource.RelativeFileAdapter;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Children;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Consoles;
+import org.eclipse.mcp.platform.resource.ResourceSchema.DEPTH;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Editor;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Editors;
+import org.eclipse.mcp.platform.resource.ResourceSchema.File;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Problems;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Tasks;
+import org.eclipse.mcp.platform.resource.ResourceSchema.TextEditorSelection;
+import org.eclipse.mcp.platform.resource.ResourceSchema.TextReplacement;
+import org.eclipse.mcp.resource.IResourceHierarchy;
+import org.eclipse.mcp.resource.IResourceTemplate;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -39,7 +49,7 @@ public class Tools {
 			description = "Return the active Eclipse IDE text editor and its selected text", 
 			annotations = @McpTool.McpAnnotations(
 					title = "Currrent Selection"))
-	public Schema.TextEditorSelection currentSelection() {
+	public TextEditorSelection currentSelection() {
 		
 		
 		IEditorPart activePart = EditorAdapter.getActiveEditor();
@@ -55,7 +65,7 @@ public class Tools {
 			description = "List open Eclipse IDE text editors", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Editors"))
-	public Schema.Editors listEditors() {
+	public Editors listEditors() {
 		return EditorAdapter.getEditors();
 	}
 
@@ -63,7 +73,7 @@ public class Tools {
 			description = "List open Eclipse IDE consoles", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Consoles"))
-	public Schema.Consoles listConsoles() {
+	public Consoles listConsoles() {
 
 		return ConsoleAdapter.getConsoles();
 	}
@@ -72,7 +82,7 @@ public class Tools {
 			description = "List open Eclipse IDE projects", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Projects"))
-	public Schema.Files listProjects() {
+	public Children<File> listProjects() {
 		RelativeFileAdapter adapter = new RelativeFileAdapter(ResourcesPlugin.getWorkspace().getRoot());
 		return adapter.getChildren(DEPTH.CHILDREN);
 	}
@@ -81,7 +91,7 @@ public class Tools {
 			description = "List child resources of an Eclipse workspace, project or folder URI", 
 			annotations = @McpTool.McpAnnotations(
 					title = "List Child Resources"))
-	public Schema.Files listChildResources(
+	public Children<?> listChildResources(
 			@McpToolParam(
 					description = "URI of an eclipse project or folder") 
 					String resourceURI,
@@ -90,15 +100,15 @@ public class Tools {
 					required = false) 
 					DEPTH depth) {
 
-		IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(resourceURI);
+		IResourceTemplate<?, ?> adapter = Activator.getDefault().getServerManager().getResourceTemplate(resourceURI);
 		
 		if (adapter == null) {
 			throw new MCPException("The uri could not be resolved: " + resourceURI);
-		} else if (!adapter.supportsChildren()) {
+		} else if (!(adapter instanceof IResourceHierarchy)) {
 			throw new MCPException("The uri does not support children: " + resourceURI);
 		}
 		
-		return adapter.getChildren(depth);
+		return ((IResourceHierarchy<?, ?>)adapter).getChildren(depth);
 	}
 
 	@McpTool(name = "readResource", 
@@ -110,7 +120,7 @@ public class Tools {
 					description = "URI of an eclipse file, editor or console") 
 					String uri) {
 
-		IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(uri);
+		IResourceTemplate<?, ?> adapter = Activator.getDefault().getServerManager().getResourceTemplate(uri);
 	
 		if (adapter == null) {
 			throw new MCPException("The uri could not be resolved");
@@ -130,7 +140,7 @@ public class Tools {
 			description = "open an Eclipse IDE editor on a file URI and set an initial text selection", 
 			annotations = @McpTool.McpAnnotations(
 					title = "Open Editor"))
-	public Schema.Editor openEditor(
+	public Editor openEditor(
 			@McpToolParam(
 					description = "Eclipse workspace file uri") 
 					String fileUri,
@@ -145,7 +155,7 @@ public class Tools {
 
 		RelativeFileAdapter adapter = new RelativeFileAdapter(fileUri);
 		IResource resource = adapter.getModel();
-		final Schema.Editor[] result = new Schema.Editor[] { null };
+		final Editor[] result = new Editor[] { null };
 
 		if (resource instanceof IFile) {
 			Display.getDefault().syncExec(new Runnable() {
@@ -257,16 +267,16 @@ public class Tools {
 			@McpToolParam(description = "Open Eclipse editor URI") 
 			String editorURI,
 			@McpToolParam(description = "One or more text replacements to be applied in order") 
-			Schema.TextReplacement[] replacements) {
+			TextReplacement[] replacements) {
 
 		EditorAdapter adapter = new EditorAdapter(editorURI);
 		final IEditorReference reference = adapter.getModel();
 		boolean[] result = new boolean[] { false };
 
 		// TODO apply changes in reverse order
-		Arrays.sort(replacements, new Comparator<Schema.TextReplacement>() {
+		Arrays.sort(replacements, new Comparator<TextReplacement>() {
 			@Override
-			public int compare(Schema.TextReplacement o1, Schema.TextReplacement o2) {
+			public int compare(TextReplacement o1, TextReplacement o2) {
 				return o2.offset() - o1.offset();
 			}
 
@@ -289,7 +299,7 @@ public class Tools {
 							}
 
 							try {
-								for (Schema.TextReplacement replacement : replacements) {
+								for (TextReplacement replacement : replacements) {
 									document.replace(replacement.offset(), replacement.length(), replacement.text());
 								}
 								result[0] = true;
@@ -321,7 +331,7 @@ public class Tools {
 			description = "list Eclipse IDE compilation and configuration problems", 
 			annotations = @McpTool.McpAnnotations(
 				title = "List Problems"))
-	public Schema.Problems listProblems(
+	public Problems listProblems(
 			@McpToolParam(
 				description = "Eclipse workspace file or editor URI")
 				String resourceURI,
@@ -335,7 +345,7 @@ public class Tools {
 		if (resourceURI == null || resourceURI.isEmpty()) {
 			return MarkerAdapter.getProblems(ResourcesPlugin.getWorkspace().getRoot());
 		} else {
-			IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(resourceURI);
+			IResourceTemplate<?, ?> adapter = Activator.getDefault().getServerManager().getResourceTemplate(resourceURI);
 			if (adapter instanceof RelativeFileAdapter) {
 				return MarkerAdapter.getProblems(((RelativeFileAdapter)adapter).getModel());
 			} else if (adapter instanceof EditorAdapter) {
@@ -359,7 +369,7 @@ public class Tools {
 	@McpTool (name = "listTasks", 
 			description = "list codebase locations of tasks including TODO comments", 
 			annotations = @McpTool.McpAnnotations(title = "List Tasks"))
-	public Schema.Tasks listTasks(
+	public Tasks listTasks(
 			@McpToolParam(description = "Eclipse workspace file or editor URI", 
 			required = false) 
 			String resourceURI) {
@@ -367,7 +377,7 @@ public class Tools {
 		if (resourceURI == null || resourceURI.isEmpty()) {
 			return MarkerAdapter.getTasks(ResourcesPlugin.getWorkspace().getRoot());
 		} else {
-			IResourceAdapter<?, ?> adapter = Activator.getDefault().getServerManager().getResourceAdapter(resourceURI);
+			IResourceTemplate<?, ?> adapter = Activator.getDefault().getServerManager().getResourceTemplate(resourceURI);
 			if (adapter instanceof RelativeFileAdapter) {
 				return MarkerAdapter.getTasks(((RelativeFileAdapter)adapter).getModel());
 			} else if (adapter instanceof EditorAdapter) {

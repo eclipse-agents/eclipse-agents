@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtin.resourceadapters;
+package org.eclipse.mcp.platform.resource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +25,11 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.MCPException;
-import org.eclipse.mcp.Schema.DEPTH;
-import org.eclipse.mcp.Schema.File;
-import org.eclipse.mcp.Schema.Files;
+import org.eclipse.mcp.platform.resource.ResourceSchema.Children;
+import org.eclipse.mcp.platform.resource.ResourceSchema.DEPTH;
+import org.eclipse.mcp.platform.resource.ResourceSchema.File;
+import org.eclipse.mcp.resource.IResourceHierarchy;
 
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
@@ -37,7 +38,7 @@ import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 /**
  * support for resource template: file://workspace/{relativePath}
  */
-public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
+public class RelativeFileAdapter implements IResourceHierarchy<IResource, File> {
 	
 	final String template = "file://workspace/{relativePath}";
 	final String prefix = template.substring(0, template.indexOf("{"));
@@ -89,12 +90,7 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
 	}
 
 	@Override
-	public boolean supportsChildren() {
-		return resource instanceof IContainer;
-	}
-
-	@Override
-	public Files getChildren(DEPTH depth) {
+	public Children<File> getChildren(DEPTH depth) {
 		
 		List<File> children = new ArrayList<File>();
 		if (depth == null) {
@@ -119,7 +115,7 @@ public class RelativeFileAdapter implements IResourceAdapter<IResource, File> {
 			}
 		}
 		
-		return new Files(children.toArray(File[]::new), depth);
+		return new Children<File>(children.toArray(File[]::new), depth);
 	}
 
 	@Override

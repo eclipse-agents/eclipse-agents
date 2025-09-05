@@ -1,5 +1,7 @@
 package org.eclipse.mcp;
 
+import org.eclipse.mcp.resource.IResourceTemplate;
+
 /**
  * Convenience for creating multiple factories programmatically
  */
@@ -11,7 +13,7 @@ public interface IFactoryProvider {
 	 * resolve URIs to json and resource content
 	 * @return
 	 */
-	public IResourceAdapter<?, ?>[] createResourceAdapters();
+	public IResourceTemplate<?, ?>[] createResourceTemplates();
 	
 	/**
 	 * Return objects annotated with annotations from "mcp-annotations'

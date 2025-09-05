@@ -19,9 +19,34 @@
 
 	<extension point="org.eclipse.ui.activities">
 		<category id="org.eclipse.mcp.activity"
-			description="Connect Agentic clients to Model Context Protocol servers contributed by Eclipse plugins"
-			name="Agentic Tools" />
+			description="Connect Agentic clients to Model Context Protocol servers running within the workbench"
+			name="MCP Services" />
 	</extension>
+	
+	<extension
+          point="org.eclipse.mcp.modelContextProtocolServer"
+          id="org.eclipse.mcp.platform"
+          name="Eclipse Platform Services">
+       <contributor
+             id="org.eclipse.mcp.platform.contributor"
+             name="Eclipse Platform Services"
+             description="Eclipse Platform Services for Files, Editors, Consoles and Markers"
+             activityId="org.eclipse.mcp.platform">
+          <factory class="org.eclipse.mcp.platform.FactoryProvider"/>
+       </contributor>
+    </extension>
+    
+     <extension point="org.eclipse.ui.activities">
+   
+       <activity id="org.eclipse.mcp.platform" 
+           description="Services for Editors, Files, Consoles, Problems and Tasks"
+           name="Eclipse Platform Services" />
+   
+       <categoryActivityBinding activityId="org.eclipse.mcp.platform"
+           categoryId="org.eclipse.mcp.activity" />
+    
+       <defaultEnablement id="org.eclipse.mcp.platform" />
+     </extension>
 
 	<extension point="org.eclipse.ui.preferencePages">
 		<page
