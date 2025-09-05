@@ -1,5 +1,4 @@
-com.ibm.systemz.mcp.mvs
-com.ibm.systemz.mcp.mvs.job
 org.eclipse.mcp
-org.eclipse.mcp.builtin.resourceadapters
-org.eclipse.mcp.builtins
+org.eclipse.mcp.platform
+org.eclipse.mcp.platform.resource
+org.eclipse.mcp.resource
