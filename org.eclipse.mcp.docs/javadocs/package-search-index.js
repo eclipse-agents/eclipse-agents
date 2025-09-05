@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.ibm.systemz.mcp.mvs"},{"l":"com.ibm.systemz.mcp.mvs.job"},{"l":"org.eclipse.mcp.builtin.resourceadapters"},{"l":"org.eclipse.mcp.builtins"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.eclipse.mcp"},{"l":"org.eclipse.mcp.platform"},{"l":"org.eclipse.mcp.platform.resource"},{"l":"org.eclipse.mcp.resource"}];updateSearchResults();
