@@ -8,6 +8,10 @@
  *******************************************************************************/
 package org.eclipse.mcp.internal.preferences;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferencePage;
@@ -15,6 +19,7 @@ import org.eclipse.mcp.Activator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.VerifyEvent;
@@ -27,6 +32,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
@@ -57,7 +63,7 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 		Composite parent = new Composite(ancestor, SWT.NONE);
 		GridLayout layout = new GridLayout();
-		layout.numColumns = 2;
+		layout.numColumns = 3;
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 		parent.setLayout(layout);
@@ -75,12 +81,12 @@ public class McpGeneralPreferencePage extends PreferencePage
 			}
 		});
 		link.setLayoutData(new GridData());
-		((GridData)link.getLayoutData()).horizontalSpan = 2;
+		((GridData)link.getLayoutData()).horizontalSpan = 3;
 		
 		serverEnable = new Button(parent, SWT.CHECK);
 		serverEnable.setText("Serve over HTTP");
 		serverEnable.setLayoutData(new GridData());
-		((GridData)serverEnable.getLayoutData()).horizontalSpan = 2;
+		((GridData)serverEnable.getLayoutData()).horizontalSpan = 3;
 		
 		Label label = new Label(parent, SWT.NONE);
 		label.setText("HTTP Port:");
@@ -90,6 +96,19 @@ public class McpGeneralPreferencePage extends PreferencePage
 		serverPort.setLayoutData(new GridData());
 		serverPort.addVerifyListener(integerListener);
 
+		Button pathCopy = new Button(parent, SWT.PUSH);
+		pathCopy.setLayoutData(new GridData());
+		pathCopy.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_COPY));
+		pathCopy.setToolTipText("Copy to clipboard");
+		pathCopy.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				StringSelection strSelection = new StringSelection("http://localhost:" + serverPort.getText() + "/sse");
+				Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				systemClipboard.setContents(strSelection, null);
+			}
+		});
+		
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent,
 				"org.eclipse.mcp.internal.preferences.McpGeneralPreferencePage"); //$NON-NLS-1$
 

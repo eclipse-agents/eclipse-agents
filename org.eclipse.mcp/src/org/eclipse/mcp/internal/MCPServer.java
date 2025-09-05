@@ -11,7 +11,8 @@ import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.mcp.IFactoryProvider;
-import org.eclipse.mcp.IResourceAdapter;
+import org.eclipse.mcp.resource.IResourceAdapter;
+import org.eclipse.mcp.resource.IResourceTemplate;
 import org.springaicommunity.mcp.provider.complete.SyncMcpCompletionProvider;
 import org.springaicommunity.mcp.provider.prompt.SyncMcpPromptProvider;
 import org.springaicommunity.mcp.provider.resource.SyncMcpResourceProvider;
@@ -61,7 +62,7 @@ public class MCPServer {
 	
 	Set<SyncToolSpecification> removedTools;
 	Set<SyncResourceSpecification> dynamicResources;
-	List<IResourceAdapter<?, ?>> resourceAdapters;
+	List<IResourceTemplate<?, ?>> resourceTemplates;
 	
 	
 	org.eclipse.jetty.server.Server jettyServer = null;
@@ -74,21 +75,21 @@ public class MCPServer {
 		
 		removedTools = new HashSet<SyncToolSpecification>(); 
 		dynamicResources = new HashSet<SyncResourceSpecification>();
-		resourceAdapters = new ArrayList<IResourceAdapter<?, ?>>();
+		resourceTemplates = new ArrayList<IResourceTemplate<?, ?>>();
 	}
 	
 	public void start() {
 	
 		removedTools.clear();
 		dynamicResources.clear();
-		resourceAdapters.clear();
+		resourceTemplates.clear();
 		
 		List<Object> annotated = new ArrayList<Object>();
 		for (IFactoryProvider factory: factories) {
 			for (Object o: factory.getAnnotatedObjects()) {
 				annotated.add(o);
 			}
-			resourceAdapters.addAll(Arrays.asList(factory.createResourceAdapters()));
+			resourceTemplates.addAll(Arrays.asList(factory.createResourceTemplates()));
 		}
 		
 		completions = new SyncMcpCompletionProvider(annotated).getCompleteSpecifications();
@@ -133,7 +134,7 @@ public class MCPServer {
 
 		for (IFactoryProvider factory: factories) {
 			factory.initialize(new MCPServices(this));
-			factory.createResourceAdapters();
+			factory.createResourceTemplates();
 		}
 
 		syncServer.notifyResourcesListChanged();
@@ -185,8 +186,8 @@ public class MCPServer {
 		}
 	}
 
-	public IResourceAdapter<?, ?> getResourceAdapter(String uri) {
-		for (IResourceAdapter<?, ?> adapter: resourceAdapters) {
+	public IResourceTemplate<?, ?> getResourceTemplate(String uri) {
+		for (IResourceTemplate<?, ?> adapter: resourceTemplates) {
 			for (String template: adapter.getTemplates()) {
 				if (new DefaultMcpUriTemplateManager(template).matches(uri)) {
 					return adapter.fromUri(uri);

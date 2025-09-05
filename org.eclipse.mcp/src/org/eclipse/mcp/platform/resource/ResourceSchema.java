@@ -1,4 +1,4 @@
-package org.eclipse.mcp.builtins;
+package org.eclipse.mcp.platform.resource;
 
 import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,7 +8,51 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 import io.modelcontextprotocol.spec.McpSchema;
 
-public class Schema extends org.eclipse.mcp.Schema {
+public class ResourceSchema {
+
+	public enum DEPTH { 
+		CHILDREN(0), 
+		GRANDCHILDREN(1), 
+		INFINITE(2);
+		
+		int value;
+		private DEPTH(int value) {
+			this.value = value;
+		}
+		
+		public int value() {
+			return value;
+		}
+	};
+	
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonClassDescription("Element of an hierarchical file system")
+	public record File (
+		
+		@JsonProperty
+		String name,
+		
+		@JsonPropertyDescription("Folders may have children")
+		@JsonProperty
+		boolean isFolder,
+		
+		@JsonProperty
+		McpSchema.ResourceLink uri) {
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public record Children<T> (
+
+		@JsonProperty
+		T[] children,
+	
+		@JsonPropertyDescription("The actual depth searched, may differ from input")
+		@JsonProperty
+		DEPTH depthSearched) {
+		
+	}
 
 	public enum SEVERITY { ERROR, INFO, WARNING };
 	public enum PRIORITY { HIGH, LOW, NORMAL };

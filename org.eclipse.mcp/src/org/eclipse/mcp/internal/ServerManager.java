@@ -9,9 +9,9 @@ import java.util.Set;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.IFactoryProvider;
-import org.eclipse.mcp.IResourceAdapter;
 import org.eclipse.mcp.internal.ExtensionManager.Contributor;
 import org.eclipse.mcp.internal.preferences.IPreferenceConstants;
+import org.eclipse.mcp.resource.IResourceTemplate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.activities.ActivityManagerEvent;
 import org.eclipse.ui.activities.IActivity;
@@ -104,8 +104,8 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 		}
 	}
 	
-	public IResourceAdapter<?, ?> getResourceAdapter(String uri) {
-		return server.getResourceAdapter(uri);
+	public IResourceTemplate<?, ?> getResourceTemplate(String uri) {
+		return server.getResourceTemplate(uri);
 	}
 
 	@Override

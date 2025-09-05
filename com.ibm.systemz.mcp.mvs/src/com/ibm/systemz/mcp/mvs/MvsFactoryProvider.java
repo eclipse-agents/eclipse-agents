@@ -2,13 +2,13 @@ package com.ibm.systemz.mcp.mvs;
 
 import org.eclipse.mcp.IFactoryProvider;
 import org.eclipse.mcp.IMCPServices;
-import org.eclipse.mcp.IResourceAdapter;
+import org.eclipse.mcp.resource.IResourceTemplate;
 
 public class MvsFactoryProvider implements IFactoryProvider {
 
 	@Override
-	public IResourceAdapter<?, ?>[] createResourceAdapters() {
-		return new IResourceAdapter[] { new MvsResourceAdapter() };
+	public IResourceTemplate<?, ?>[] createResourceTemplates() {
+		return new IResourceTemplate[] { new MvsResourceAdapter() };
 	}
 
 	@Override
