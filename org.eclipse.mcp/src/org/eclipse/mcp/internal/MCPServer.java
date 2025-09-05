@@ -11,7 +11,6 @@ import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.mcp.IFactoryProvider;
-import org.eclipse.mcp.resource.IResourceAdapter;
 import org.eclipse.mcp.resource.IResourceTemplate;
 import org.springaicommunity.mcp.provider.complete.SyncMcpCompletionProvider;
 import org.springaicommunity.mcp.provider.prompt.SyncMcpPromptProvider;

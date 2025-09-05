@@ -31,6 +31,7 @@
              id="org.eclipse.mcp.platform.contributor"
              name="Eclipse Platform Services"
              description="Eclipse Platform Services for Files, Editors, Consoles and Markers"
+             provider="Eclipse"
              activityId="org.eclipse.mcp.platform">
           <factory class="org.eclipse.mcp.platform.FactoryProvider"/>
        </contributor>

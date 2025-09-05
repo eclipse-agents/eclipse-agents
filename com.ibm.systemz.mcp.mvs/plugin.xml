@@ -10,7 +10,9 @@
       <contributor
          id="com.ibm.systemz.mcp.mvs.contributor"
          name="MVS Subsystem Contributions"
-         activityId="com.ibm.systemz.mcp.mvs.activity">
+         activityId="com.ibm.systemz.mcp.mvs.activity"
+         description="MVS"
+         provider="IBM">
          <factory class = "com.ibm.systemz.mcp.mvs.MvsFactoryProvider"/>
       </contributor>
       

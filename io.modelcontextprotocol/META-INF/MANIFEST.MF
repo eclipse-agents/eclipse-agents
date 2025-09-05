@@ -46,4 +46,4 @@ Bundle-ClassPath: .,
  lib/jsonschema-module-swagger-2-4.38.0.jar,
  lib/swagger-annotations-2.2.36.jar,
  lib/swagger-core-2.2.36.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-17
