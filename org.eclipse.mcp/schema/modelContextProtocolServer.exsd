@@ -33,7 +33,7 @@ You may use your own preferences to remove/add your tools to the server dynamica
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="factory"/>
+            <element ref="contributor"/>
          </sequence>
          <attribute name="id" type="string">
             <annotation>

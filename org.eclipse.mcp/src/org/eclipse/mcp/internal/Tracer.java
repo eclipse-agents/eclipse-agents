@@ -87,7 +87,7 @@ public class Tracer implements DebugOptionsListener, DebugTrace {
 	};
 
    private Tracer(BundleContext context) {
-	   Hashtable props = new Hashtable(4);
+	   Hashtable<String, String> props = new Hashtable<String, String>(4);
        props.put(DebugOptions.LISTENER_SYMBOLICNAME, Activator.PLUGIN_ID);
        context.registerService(DebugOptionsListener.class.getName(), this, props);
 	}
