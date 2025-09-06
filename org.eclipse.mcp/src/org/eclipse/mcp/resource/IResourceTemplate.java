@@ -1,6 +1,7 @@
 package org.eclipse.mcp.resource;
 
 import io.modelcontextprotocol.spec.McpSchema.ResourceLink;
+import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 
 public interface IResourceTemplate<T, U> extends IResourceAdapter<U> {
 
@@ -17,4 +18,13 @@ public interface IResourceTemplate<T, U> extends IResourceAdapter<U> {
 	public String toUri();
 	
 	public String toContent();
+	
+	public default boolean matches(String uri) {
+		for (String template: getTemplates()) {
+			if (new DefaultMcpUriTemplateManager(template).matches(uri)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

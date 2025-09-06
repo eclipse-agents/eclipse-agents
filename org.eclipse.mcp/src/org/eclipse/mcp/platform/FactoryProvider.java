@@ -4,7 +4,7 @@ import org.eclipse.mcp.IFactoryProvider;
 import org.eclipse.mcp.IMCPServices;
 import org.eclipse.mcp.platform.resource.ConsoleAdapter;
 import org.eclipse.mcp.platform.resource.EditorAdapter;
-import org.eclipse.mcp.platform.resource.RelativeFileAdapter;
+import org.eclipse.mcp.platform.resource.WorkspaceResourceAdapter;
 import org.eclipse.mcp.resource.IResourceTemplate;
 
 public class FactoryProvider implements IFactoryProvider {
@@ -21,7 +21,7 @@ public class FactoryProvider implements IFactoryProvider {
 		return new IResourceTemplate[] {
 			new ConsoleAdapter(),
 			new EditorAdapter(),
-			new RelativeFileAdapter()
+			new WorkspaceResourceAdapter()
 //			new AbsoluteFileAdapter()
 		};
 	}
