@@ -46,7 +46,7 @@ public class MarkerAdapter implements IResourceAdapter<Marker> {
 	public MarkerAdapter(IMarker marker) {
 		try {
 			processMarker(marker);
-			resource_link = new RelativeFileAdapter(marker.getResource()).toResourceLink();
+			resource_link = new WorkspaceResourceAdapter(marker.getResource()).toResourceLink();
 		} catch (Exception e) {
 			throw new MCPException(e);
 		}

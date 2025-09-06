@@ -3,8 +3,9 @@ package org.eclipse.mcp.platform.resource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.platform.resource.ResourceSchema.Children;
 import org.eclipse.mcp.platform.resource.ResourceSchema.DEPTH;
@@ -37,55 +39,98 @@ import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 /**
  * support for resource template: file://workspace/{relativePath}
  */
-public class RelativeFileAdapter implements IResourceHierarchy<IResource, File> {
+public class WorkspaceResourceAdapter implements IResourceHierarchy<IResource, File> {
 	
-	final String template = "file://workspace/{relativePath}";
-	final String prefix = template.substring(0, template.indexOf("{"));
+	final String relativeTemplate = "file://workspace/{relativePath}";
+	final String relativePrefix = relativeTemplate.substring(0, relativeTemplate.indexOf("{"));
+	final String absolutePrefix = "file:/";
+	
 	IResource resource;
 	
-	public RelativeFileAdapter() {}
+	public WorkspaceResourceAdapter() {}
 
-	public RelativeFileAdapter(IResource resource) {
+	public WorkspaceResourceAdapter(IResource resource) {
 		this.resource = resource;
 	}
 	
-	public RelativeFileAdapter(String uri) {
-		DefaultMcpUriTemplateManager tm = new DefaultMcpUriTemplateManager(template);
-		if (tm.matches(uri)) {
-			Map<String, String> variables = tm.extractVariableValues(uri);
-			String relativePath = variables.get("relativePath");
-			
+	@Override
+	public boolean matches(String uri) {
+		if (IResourceHierarchy.super.matches(uri)) {
+			// uri has escaped slashes
+			return true;
+		} else if (uri.startsWith(relativePrefix)) {
+			// uri has unescaped slashes
+			return true;
+		} else if (uri.startsWith(absolutePrefix)) {
+			// uri has unescaped slashes
+			return true;
+		}
+		return false;
+	}
+
+	public WorkspaceResourceAdapter(String uri) {
+		
+		DefaultMcpUriTemplateManager relative = new DefaultMcpUriTemplateManager(relativeTemplate);
+		String relativePath = null, absolutePath = null;
+		boolean isRelative = false;
+		
+		if (relative.matches(uri)) {
+			Map<String, String> variables = relative.extractVariableValues(uri);
+			relativePath = variables.get("relativePath");
+			relativePath = URLDecoder.decode(relativePath, StandardCharsets.UTF_8);
+			isRelative = true;
+		} else if (uri.startsWith(relativePrefix)) {
+			relativePath = uri.substring(relativePrefix.length());
+			isRelative = true;
+		} else if (uri.equals("file://workspace")) {
+				isRelative = true;
+		} else if (uri.startsWith(absolutePrefix)) {
+			absolutePath = uri;
+		} 
+		
+		if (isRelative) {
 			if (relativePath == null || relativePath.isBlank()) {
 				resource = ResourcesPlugin.getWorkspace().getRoot();
 			} else {
 				IWorkspace workspace = ResourcesPlugin.getWorkspace();
 				resource = workspace.getRoot().findMember(relativePath);
-				
-				if (resource == null) {
-					relativePath = URLDecoder.decode(relativePath, StandardCharsets.UTF_8);
-					resource = workspace.getRoot().findMember(relativePath);
+			}
+		} else if (absolutePath != null) {
+			IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			
+			IFile[] files = workspace.getRoot().findFilesForLocationURI(URI.create(absolutePath));
+			if (files != null && files.length > 0 && files[0] != null) {
+				resource = files[0];
+			} else {
+				IContainer[] containers = workspace.getRoot().findContainersForLocationURI(URI.create(absolutePath));
+				if (containers != null && containers.length > 0 && containers[0] != null) {
+					resource = containers[0];
 				}
 			}
+		} else {
+			throw new MCPException("Could not resolve file uri: " + uri);
 		}
 		
 		if (resource == null) {
-			throw new MCPException("uri not resolved: " + uri);
+			throw new MCPException("Could not find matching resource: " + uri);
 		}
 	}
 
 	@Override
 	public String[] getTemplates() {
-		return new String[] { template };
+		return new String[] { 
+			relativeTemplate
+		};
 	}
 	
 	@Override
-	public RelativeFileAdapter fromUri(String uri) {
-		return new RelativeFileAdapter(uri);
+	public WorkspaceResourceAdapter fromUri(String uri) {
+		return new WorkspaceResourceAdapter(uri);
 	}
 
 	@Override
-	public RelativeFileAdapter fromModel(IResource console) {
-		return new RelativeFileAdapter(console);
+	public WorkspaceResourceAdapter fromModel(IResource console) {
+		return new WorkspaceResourceAdapter(console);
 	}
 
 	@Override
@@ -103,7 +148,7 @@ public class RelativeFileAdapter implements IResourceHierarchy<IResource, File> 
 						@Override
 						public boolean visit(IResource child) throws CoreException {
 							if (child != resource) {
-								children.add(new RelativeFileAdapter(child).toJson());
+								children.add(new WorkspaceResourceAdapter(child).toJson());
 							}
 							return true;
 						}
@@ -159,7 +204,7 @@ public class RelativeFileAdapter implements IResourceHierarchy<IResource, File> 
 
 	@Override
 	public String toUri() {
-		return prefix + URLEncoder.encode( resource.getFullPath().toPortableString().substring(1), StandardCharsets.UTF_8);
+		return resource.getLocationURI().toString();
 	}
 
 	@Override

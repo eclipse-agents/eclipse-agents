@@ -18,7 +18,7 @@ import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.content.IContentTypeManager;
 import org.eclipse.mcp.platform.resource.EditorAdapter;
-import org.eclipse.mcp.platform.resource.RelativeFileAdapter;
+import org.eclipse.mcp.platform.resource.WorkspaceResourceAdapter;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -69,7 +69,7 @@ public class ResaourceTemplates {
     	// condense from 2 variables to 1 variable
     	String uri = "file://workspace/" + 
     			URLEncoder.encode(project + "/" + projectRelativePath, StandardCharsets.UTF_8);
-    	RelativeFileAdapter adapter = new RelativeFileAdapter(uri);
+    	WorkspaceResourceAdapter adapter = new WorkspaceResourceAdapter(uri);
     	return adapter.toContent();
 	}
     

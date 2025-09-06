@@ -137,7 +137,7 @@ public class EditorAdapter implements IResourceTemplate<IEditorReference, Editor
 		
 			IEditorInput input = part.getEditorInput();
 			if (input instanceof IFileEditorInput) {
-				RelativeFileAdapter adapter = new RelativeFileAdapter( ((IFileEditorInput)input).getFile());
+				WorkspaceResourceAdapter adapter = new WorkspaceResourceAdapter( ((IFileEditorInput)input).getFile());
 				file = adapter.toResourceLink();
 			}
 		}

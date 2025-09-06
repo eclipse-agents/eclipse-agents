@@ -15,7 +15,7 @@ import org.eclipse.mcp.MCPException;
 import org.eclipse.mcp.platform.resource.ConsoleAdapter;
 import org.eclipse.mcp.platform.resource.EditorAdapter;
 import org.eclipse.mcp.platform.resource.MarkerAdapter;
-import org.eclipse.mcp.platform.resource.RelativeFileAdapter;
+import org.eclipse.mcp.platform.resource.WorkspaceResourceAdapter;
 import org.eclipse.mcp.platform.resource.ResourceSchema.Children;
 import org.eclipse.mcp.platform.resource.ResourceSchema.Consoles;
 import org.eclipse.mcp.platform.resource.ResourceSchema.DEPTH;
@@ -83,7 +83,7 @@ public class Tools {
 			annotations = @McpTool.McpAnnotations(
 					title = "List Projects"))
 	public Children<File> listProjects() {
-		RelativeFileAdapter adapter = new RelativeFileAdapter(ResourcesPlugin.getWorkspace().getRoot());
+		WorkspaceResourceAdapter adapter = new WorkspaceResourceAdapter(ResourcesPlugin.getWorkspace().getRoot());
 		return adapter.getChildren(DEPTH.CHILDREN);
 	}
 
@@ -153,7 +153,7 @@ public class Tools {
 					required = false) 
 					int selectionLength) {
 
-		RelativeFileAdapter adapter = new RelativeFileAdapter(fileUri);
+		WorkspaceResourceAdapter adapter = new WorkspaceResourceAdapter(fileUri);
 		IResource resource = adapter.getModel();
 		final Editor[] result = new Editor[] { null };
 
@@ -346,8 +346,8 @@ public class Tools {
 			return MarkerAdapter.getProblems(ResourcesPlugin.getWorkspace().getRoot());
 		} else {
 			IResourceTemplate<?, ?> adapter = Activator.getDefault().getServerManager().getResourceTemplate(resourceURI);
-			if (adapter instanceof RelativeFileAdapter) {
-				return MarkerAdapter.getProblems(((RelativeFileAdapter)adapter).getModel());
+			if (adapter instanceof WorkspaceResourceAdapter) {
+				return MarkerAdapter.getProblems(((WorkspaceResourceAdapter)adapter).getModel());
 			} else if (adapter instanceof EditorAdapter) {
 				IEditorReference reference = ((EditorAdapter)adapter).getModel();
 				IEditorPart part = reference.getEditor(true);
@@ -378,8 +378,8 @@ public class Tools {
 			return MarkerAdapter.getTasks(ResourcesPlugin.getWorkspace().getRoot());
 		} else {
 			IResourceTemplate<?, ?> adapter = Activator.getDefault().getServerManager().getResourceTemplate(resourceURI);
-			if (adapter instanceof RelativeFileAdapter) {
-				return MarkerAdapter.getTasks(((RelativeFileAdapter)adapter).getModel());
+			if (adapter instanceof WorkspaceResourceAdapter) {
+				return MarkerAdapter.getTasks(((WorkspaceResourceAdapter)adapter).getModel());
 			} else if (adapter instanceof EditorAdapter) {
 				IEditorReference reference = ((EditorAdapter)adapter).getModel();
 				IEditorPart part = reference.getEditor(true);
