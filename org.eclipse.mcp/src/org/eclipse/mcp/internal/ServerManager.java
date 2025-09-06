@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.mcp.Activator;
 import org.eclipse.mcp.IFactoryProvider;
@@ -18,6 +19,7 @@ import org.eclipse.ui.activities.IActivity;
 import org.eclipse.ui.activities.IActivityManager;
 import org.eclipse.ui.activities.IActivityManagerListener;
 
+
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 
 public class ServerManager implements IPreferenceConstants, IActivityManagerListener {
@@ -25,6 +27,7 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 	private MCPServer server = null;
 	private String name, description;
 	boolean isRunning = false;
+	private ListenerList<IServerListener> serverListeners = new ListenerList<IServerListener>();
 	
 	Set<String> activityIds;
 	
@@ -72,6 +75,10 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 			server = new MCPServer(name, description, port, factories.toArray(IFactoryProvider[]::new));
 			server.start();
 			isRunning = true;
+			
+			for (IServerListener listener: serverListeners) {
+				listener.serverStarted(server.getContentsDescription());
+			}
 		};
 		
 	}
@@ -81,6 +88,9 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 		isRunning = false;
 		if (server != null) {
 			server.stop();
+		}
+		for (IServerListener listener: serverListeners) {
+			listener.serverStopped();
 		}
 	}
 	
@@ -134,5 +144,25 @@ public class ServerManager implements IPreferenceConstants, IActivityManagerList
 				}
 			}
 		}
+	}
+	
+	public interface IServerListener {
+		public void serverStarted(String contents);
+		public void serverStopped();
+	}
+	
+	public void addServerListener(IServerListener listener) {
+		serverListeners.add(listener);
+	}
+	
+	public void removeServerListener(IServerListener listener) {
+		serverListeners.remove(listener);
+	}
+	
+	public String getServerContentsDescription() {
+		if (isRunning) {
+			return server.getContentsDescription();
+		}
+		return "Server is not running";
 	}
 }
