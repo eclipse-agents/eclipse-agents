@@ -16,6 +16,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.mcp.Activator;
+import org.eclipse.mcp.internal.ServerManager.IServerListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -40,13 +41,14 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 
 
 public class McpGeneralPreferencePage extends PreferencePage
-		implements IPreferenceConstants, IWorkbenchPreferencePage, SelectionListener, ModifyListener {
+		implements IPreferenceConstants, IWorkbenchPreferencePage, SelectionListener, ModifyListener, IServerListener {
 
 	VerifyListener integerListener;
 	PreferenceManager preferenceManager;
 	
 	Button serverEnable;
 	Text serverPort;
+	Text messages;
 
 	public McpGeneralPreferencePage() {
 		super();
@@ -63,13 +65,13 @@ public class McpGeneralPreferencePage extends PreferencePage
 
 		Composite parent = new Composite(ancestor, SWT.NONE);
 		GridLayout layout = new GridLayout();
-		layout.numColumns = 3;
+		layout.numColumns = 4;
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 		parent.setLayout(layout);
 
 		Link link = new Link(parent, SWT.NONE);
-		link.setText("To change the availability of categories of MCP categories, click <a>Capabilities</a>.");
+		link.setText("To change the availability of categories of MCP services, click <a>Capabilities</a>.");
 		link.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {}
@@ -81,12 +83,19 @@ public class McpGeneralPreferencePage extends PreferencePage
 			}
 		});
 		link.setLayoutData(new GridData());
-		((GridData)link.getLayoutData()).horizontalSpan = 3;
+		((GridData)link.getLayoutData()).horizontalSpan = 4;
+
+		Label instructions = new Label(parent, SWT.WRAP);
+		instructions.setText("Eclipse's built-in Model Context Protocol (MCP) server enables interactivity between the Eclipse IDE and Large Language Model services");
+		GridData gd = new GridData(GridData.GRAB_HORIZONTAL);
+		gd.widthHint = convertWidthInCharsToPixels(80);
+		gd.horizontalSpan = 4;
+		instructions.setLayoutData(gd);
 		
 		serverEnable = new Button(parent, SWT.CHECK);
-		serverEnable.setText("Serve over HTTP");
+		serverEnable.setText("Enable MCP HTTP Server");
 		serverEnable.setLayoutData(new GridData());
-		((GridData)serverEnable.getLayoutData()).horizontalSpan = 3;
+		((GridData)serverEnable.getLayoutData()).horizontalSpan = 1;
 		
 		Label label = new Label(parent, SWT.NONE);
 		label.setText("HTTP Port:");
@@ -109,12 +118,21 @@ public class McpGeneralPreferencePage extends PreferencePage
 			}
 		});
 		
+		messages = new Text(parent, SWT.MULTI | SWT.READ_ONLY | SWT.BORDER);
+		messages.setLayoutData(new GridData(GridData.FILL_BOTH));
+		((GridData)messages.getLayoutData()).horizontalSpan = 4;
+		
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent,
 				"org.eclipse.mcp.internal.preferences.McpGeneralPreferencePage"); //$NON-NLS-1$
 
 		loadPreferences();
 		updateValidation();
-
+		
+		Activator.getDefault().getServerManager().addServerListener(this);
+		if (Activator.getDefault().getServerManager().isRunning()) {
+			messages.setText(Activator.getDefault().getServerManager().getServerContentsDescription());
+		}
+		
 		return parent;
 	}
 
@@ -194,5 +212,21 @@ public class McpGeneralPreferencePage extends PreferencePage
 	@Override
 	public void modifyText(ModifyEvent event) {
 		updateValidation();
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		Activator.getDefault().getServerManager().removeServerListener(this);
+	}
+
+	@Override
+	public void serverStarted(String contents) {
+		messages.setText(contents);
+	}
+
+	@Override
+	public void serverStopped() {
+		messages.setText("");
 	}
 }

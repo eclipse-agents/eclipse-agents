@@ -31,7 +31,6 @@ import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
-import io.modelcontextprotocol.util.DefaultMcpUriTemplateManager;
 import jakarta.servlet.Servlet;
 
 public class MCPServer {
@@ -63,6 +62,8 @@ public class MCPServer {
 	Set<SyncResourceSpecification> dynamicResources;
 	List<IResourceTemplate<?, ?>> resourceTemplates;
 	
+	StringBuffer description;
+	
 	
 	org.eclipse.jetty.server.Server jettyServer = null;
 	
@@ -79,6 +80,8 @@ public class MCPServer {
 	
 	public void start() {
 	
+		description = new StringBuffer();
+
 		removedTools.clear();
 		dynamicResources.clear();
 		resourceTemplates.clear();
@@ -290,5 +293,29 @@ public class MCPServer {
 		}
 		
 		return false;
+	}
+	
+	public String getContentsDescription() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("MCP Server running on :" + this.url);
+		
+		buffer.append("\nTools:");
+		
+		for (SyncToolSpecification tool: tools) {
+			if (!removedTools.contains(tool)) {
+				buffer.append("\n\t" + tool.tool().name() + ": " + tool.tool().description());
+			}
+		}
+		
+		buffer.append("\nResource Templates:");
+		for (SyncResourceSpecification resource: resources) {
+			if (resource.resource().uri().contains("{")) {
+				buffer.append("\n\t" + resource.resource().name() + ": " + resource.resource().description());
+				buffer.append("\n\t\t" + resource.resource().uri());
+			}
+		}
+
+		return buffer.toString();
+		
 	}
 }

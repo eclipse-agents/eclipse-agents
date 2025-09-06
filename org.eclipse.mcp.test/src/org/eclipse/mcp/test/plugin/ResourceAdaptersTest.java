@@ -3,7 +3,6 @@ package org.eclipse.mcp.test.plugin;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +11,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -22,6 +22,9 @@ import org.eclipse.mcp.internal.MCPServer;
 import org.eclipse.mcp.platform.FactoryProvider;
 import org.eclipse.mcp.platform.resource.ConsoleAdapter;
 import org.eclipse.mcp.platform.resource.EditorAdapter;
+import org.eclipse.mcp.platform.resource.MarkerAdapter;
+import org.eclipse.mcp.platform.resource.ResourceSchema;
+import org.eclipse.mcp.platform.resource.ResourceSchema.DEPTH;
 import org.eclipse.mcp.platform.resource.WorkspaceResourceAdapter;
 import org.eclipse.mcp.resource.IResourceTemplate;
 import org.eclipse.swt.widgets.Display;
@@ -165,57 +168,43 @@ public final class ResourceAdaptersTest {
 	@Test
 	@DisplayName(relativeFile)
 	public void testFiles1() {
-		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
-				server.getResourceTemplate(relativeFile);
-		Assert.assertEquals(absoluteFile1, adapter.toUri());
+		validateFile(relativeFile);
 	}
 	
 	@Test
 	@DisplayName(relativeFileEscaped)
 	public void testFiles2() {
-		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
-				server.getResourceTemplate(relativeFileEscaped);
-		Assert.assertEquals(absoluteFile1, adapter.toUri());
+		validateFile(relativeFileEscaped);
 	}
 	
 	@Test
 	@DisplayName(absoluteFile1)
 	public void testFiles3() {
-		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
-				server.getResourceTemplate(absoluteFile1);
-		Assert.assertEquals(absoluteFile1, adapter.toUri());
+		validateFile(absoluteFile1);
 	}
 	
 	@Test
 	@DisplayName(absoluteFile3)
 	public void testFiles4() {
-		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
-				server.getResourceTemplate(absoluteFile3);
-		Assert.assertEquals(absoluteFile1, adapter.toUri());
+		validateFile(absoluteFile3);
 	}
 	
 	@Test
 	@DisplayName(relativeProject)
 	public void testFolder1() {
-		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
-				server.getResourceTemplate(relativeProject);
-		Assert.assertEquals(absoluteProject1, adapter.toUri());
+		validateProject(relativeProject);
 	}
 	
 	@Test
 	@DisplayName(absoluteProject1)
 	public void testFolder2() {
-		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
-				server.getResourceTemplate(absoluteProject1);
-		Assert.assertEquals(absoluteProject1, adapter.toUri());
+		validateProject(absoluteProject1);
 	}
 	
 	@Test
 	@DisplayName(absoluteProject3)
 	public void testFolder3() {
-		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
-				server.getResourceTemplate(absoluteProject3);
-		Assert.assertEquals(absoluteProject1, adapter.toUri());
+		validateProject(absoluteProject3);
 	}
 	
 	@Test
@@ -224,6 +213,7 @@ public final class ResourceAdaptersTest {
 		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
 				server.getResourceTemplate(relativeWorkspace);
 		Assert.assertEquals(absoluteWorkspace1, adapter.toUri());
+		Assert.assertTrue(adapter.getModel() instanceof IWorkspaceRoot);
 	}
 	
 	@Test
@@ -232,6 +222,44 @@ public final class ResourceAdaptersTest {
 		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter) 
 				server.getResourceTemplate(absoluteWorkspace1);
 		Assert.assertEquals(absoluteWorkspace1, adapter.toUri());
+		
+		ResourceSchema.Problems problems = MarkerAdapter.getProblems(adapter.getModel());
+		Assert.assertEquals(2, problems.problems().length);
+	}
+	
+	private void validateFile(String uri) {
+		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter)server.getResourceTemplate(uri);
+		Assert.assertEquals(absoluteFile1, adapter.toUri());
+		Assert.assertEquals(adapter.toContent(), content.trim());
+		Assert.assertFalse(adapter.toJson().toString().isBlank());
+		Assert.assertFalse(adapter.toResourceLink().toString().isBlank());
+		Assert.assertNotNull(adapter.getModel());
+		Assert.assertEquals(0, adapter.getChildren(DEPTH.CHILDREN).children().length);
+		
+		WorkspaceResourceAdapter second = new WorkspaceResourceAdapter(adapter.toUri());
+		WorkspaceResourceAdapter third = new WorkspaceResourceAdapter(adapter.getModel());
+		
+		Assert.assertEquals(adapter.toUri(), second.toUri());
+		Assert.assertEquals(adapter.toUri(), third.toUri());
+		
+		ResourceSchema.Problems problems = MarkerAdapter.getProblems(adapter.getModel());
+		Assert.assertEquals(1, problems.problems().length);
+	}
+	
+	private void validateProject(String uri) {
+		WorkspaceResourceAdapter adapter = (WorkspaceResourceAdapter)server.getResourceTemplate(uri);
+		Assert.assertEquals(absoluteProject1, adapter.toUri());
+		Assert.assertNull(adapter.toContent());
+		Assert.assertFalse(adapter.toJson().toString().isBlank());
+		Assert.assertFalse(adapter.toResourceLink().toString().isBlank());
+		Assert.assertTrue(adapter.getModel() instanceof IProject);
+		Assert.assertEquals(2, adapter.getChildren(DEPTH.CHILDREN).children().length);
+		
+		WorkspaceResourceAdapter second = new WorkspaceResourceAdapter(adapter.toUri());
+		WorkspaceResourceAdapter third = new WorkspaceResourceAdapter(adapter.getModel());
+		
+		Assert.assertEquals(adapter.toUri(), second.toUri());
+		Assert.assertEquals(adapter.toUri(), third.toUri());
 	}
 
 	public void testEclipseResource(String uri, String className) {

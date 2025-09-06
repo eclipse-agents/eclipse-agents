@@ -52,7 +52,7 @@
 	<extension point="org.eclipse.ui.preferencePages">
 		<page
 			id="org.eclipse.mcp.preferences.general"
-			name="Model Context Protocol Services"
+			name="MCP Services"
 			class="org.eclipse.mcp.internal.preferences.McpGeneralPreferencePage">
 			<keywordReference id="org.eclipse.mcp.keyword.mcp" />
 			<keywordReference id="org.eclipse.mcp.keyword.model" />
