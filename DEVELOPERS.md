@@ -16,11 +16,10 @@ The built-in MCP Server makes available a suite MCP resources, templates and too
 
 - [Extension Point Documentation](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/modelContextProtocolServer.html)
 - [Extension Point Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/package-summary.html)
-- [Extension Point Annotations Docs](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/experimental/annotated/package-summary.html)
 - Summaries of Platform MCP contributions:
-  - [Platform MCP Tools](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtins/tools/BuiltinAnnotatedToolsFactory.html#method-summary)
-  - [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtin/resource/templates/package-summary.html)
-  - [Platform Resource Factories](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtin/resource/factory/package-summary.html)
+  - [Platform MCP Tools](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/platform/Tools.html)
+  - [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/platform/ResaourceTemplates.html)
+  - [Platform Resource Controlers](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/platform/ResourceController.html)
 
 To expose an aspect of your IDE plugin as an MCP tool, do the following:
 
@@ -178,11 +177,8 @@ Thats all that is required.  Upon startup, MCP servers will start up and serve c
 
 - [Model Context Protocol](https://www.anthropic.com/news/model-context-protocol)
 - [java sdk](https://github.com/modelcontextprotocol/java-sdk)
-- [spring sdk](https://docs.spring.io/spring-ai-mcp/reference/mcp.html)
+- [mcp-annotations](https://github.com/spring-ai-community/mcp-annotations)
 - [java sdk jar](https://mvnrepository.com/artifact/io.modelcontextprotocol.sdk/mcp/0.8.1)
-- [quarkus examples](https://github.com/quarkiverse/quarkus-mcp-servers/tree/main/jdbc)
-- [spring mcp](https://github.com/spring-projects-experimental/spring-ai-mcp)
-- [MCP Client and Server with the Java MCP SDK and LangChain4j](https://glaforge.dev/posts/2025/04/04/mcp-client-and-server-with-java-mcp-sdk-and-langchain4j)
 
 ### Examples of Agentic IDE Tooling
 
