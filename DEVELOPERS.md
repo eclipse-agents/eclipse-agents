@@ -4,9 +4,9 @@ The [org.eclipse.mcp.modelContextProtocolServer extension point](https://pages.g
 
 It provides a simple mechanism to contribute MCP Tools and Resources to an MCP server running inside Eclipse.
 
-Optional access to the underlying [modelcontextprotocol/java-sdk](https://github.com/modelcontextprotocol/java-sdk) elements are available
-
 Uses [MCP Annotations](https://github.com/spring-ai-community/mcp-annotations) to annotate MCP java contributions.
+
+These annotations can abstract away the underlying usage of [modelcontextprotocol/java-sdk](https://github.com/modelcontextprotocol/java-sdk), though elements from the sdk are still available.
 
 Provides a centralized location for users customize Eclipse MCP capabilities and preferences.
 
@@ -22,48 +22,127 @@ The built-in MCP Server makes available a suite MCP resources, templates and too
   - [Platform Resource Templates](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtin/resource/templates/package-summary.html)
   - [Platform Resource Factories](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/builtin/resource/factory/package-summary.html)
 
-## Demonstrations
-
-- [Claude Conversation: What's wrong with my java project](https://claude.ai/share/31968356-df7e-471b-8fec-3b85868a2376)
-- [Demo for Plug-in Developers](https://ibm.box.com/s/s6nc9n1nlpi4uiuzl7jpo4x6ra25zrk5)
-- [Demo for Eclipse and IDz Users](https://ibm.box.com/s/sg4aq3w723cp7a7i75rdj0l1dgm3txg0)
-- [Early prototype of Eclipse and Chat interactivity](https://ibm.box.com/s/cv4dnrvm6heapmu0c1amucs9l177fvrh)
-
-Update your Eclipse plugin to contribute your own MCP tool and resource controllers to the platform in a few steps
-
-IT also adds a new "Platform MCP" preference page will let users:
-
-- Enable / Disable Platform MCP Server
-- Set the HTTP Port
-- Copy the URL to clipboard
-- Turn on/off capabilities/activities for different categories of MCP tools, resources and prompts
-- Add custom preference pages under the MCP preference page to toggle your plugin's behavior and contributions
-
 To expose an aspect of your IDE plugin as an MCP tool, do the following:
 
 ## Getting Started:  Lets create an MCP Tool using an Annotated method
 
-1. Create or open an Eclipse Plugin Project
-2. Add plugins `org.eclipse.mcp` and `io.modelcontextprotocol` as dependencies to your plugin
-3. Create a class that implements [MCPAnnotatedToolFactory.java](https://pages.github.ibm.com/jflicke/eclipse-mcp/org.eclipse.mcp.docs/javadocs/org/eclipse/mcp/experimental/annotated/MCPAnnotatedToolFactory.html)
+1. Add plugins `org.eclipse.mcp` and `io.modelcontextprotocol` as dependencies to your plugin
+2. On you project's Java Compiler preference page, check the option "Store information about method parameters (usable via reflection).
+3. Create a method that uses [MCP Annotations](https://github.com/spring-ai-community/mcp-annotations) to annotate MCP tool contribution.  An example from the platform package is:
 
 ```java
-public class MyToolFactory extends MCPAnnotatedToolFactory {
+	@McpTool (name = "openEditor", 
+			description = "open an Eclipse IDE editor on a file URI and set an initial text selection", 
+			annotations = @McpTool.McpAnnotations(
+					title = "Open Editor"))
+	public Editor openEditor(
+			@McpToolParam(
+					description = "Eclipse workspace file uri") 
+					String fileUri,
+			@McpToolParam(
+					description = "offset of the text selection", 
+					required = false) 
+					int selectionOffset,
+			@McpToolParam(
+					description = "length of the text selection", 
+					required = false) 
+					int selectionLength) {
 
-	@Tool (description = "Return the compilation issues for a file")
-	public String[] getProblems(
-		@ToolArg(description="The full path to the file to return prblems for")	String filePath) {
-		
-		List<String> result = new ArrayList<String>();
-		
-		/** Populate results with problems **/
-
-		return result.toArray(String[]::new);
-	}
+            // implementation
+          }
 }
 ```
 
-4. Implement the logic for your tool, returning an array of Strings as your result
+These annotations in combination with Jackson JSON annotations on the input and output parameters are used to create the MCP tool spec shared with MCP clients:
+
+```json
+    {
+      "name": "openEditor",
+      "description": "open an Eclipse IDE editor on a file URI and set an initial text selection",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fileUri": {
+            "type": "string",
+            "description": "Eclipse workspace file uri"
+          },
+          "selectionOffset": {
+            "type": "integer",
+            "format": "int32",
+            "description": "offset of the text selection"
+          },
+          "selectionLength": {
+            "type": "integer",
+            "format": "int32",
+            "description": "length of the text selection"
+          }
+        },
+        "required": [
+          "fileUri"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "editor": {
+            "$ref": "#/$defs/ResourceLink"
+          },
+          "file": {
+            "$ref": "#/$defs/ResourceLink"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isDirty": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$defs": {
+          "ResourceLink": {
+            "type": "object",
+            "properties": {
+              "annotations": {
+                ...
+              },
+              "description": {
+                "type": "string"
+              },
+              "meta": {
+                "type": "object"
+              },
+              "mimeType": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "title": {
+                "type": "string"
+              },
+              "uri": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "annotations": {
+        "title": "Open Editor",
+        ...
+      }
+    }
+```
+
+3. Implement the logic for your tool.
+4. Implement a org.eclipse.mcp.IFactoryProvider that returns your tool in method getAnnotatedObjects()
 
 ## Declare your tool as an extension in your plugin.xml
 
@@ -71,6 +150,8 @@ public class MyToolFactory extends MCPAnnotatedToolFactory {
     1. Add the 'org.eclipse.mcp.modelContextProtocolServer' extension
     2. Add the the extension a contributor
     3. Add to the contributor a factory
+    4. Add an activity
+       1. The activity can be used to enable/disable contributions from your extension
 
 Example:
 
@@ -82,7 +163,7 @@ Example:
 
       <contributor
          activityId="foo.com.my.activity.id">
-         <factory class = "foo.com.MyToolFactory"/>
+         <factory class = "foo.com.MyToolFactoryProvider"/>
       </contributor>
    </extension>
 ```
@@ -92,19 +173,6 @@ Thats all that is required.  Upon startup, MCP servers will start up and serve c
 1. The infrastructure will handle generation of JSON input and output schema and conversion between JSON and basic Java types.
 2. Use jackson JSON annotations such as @JsonProperty and @JsonPropertyDescription as necessary
 3. Register your toolFactory using an org.eclipse.mcp.modelContextProtocolServer extension in your plugin.xml
-
-### Future Considerations
-
-1. Mechanism for shell-shared MCP Clients to invoke MCP tools as Java calls rather than HTTP calls, removing the need for HTTP endpoints when consumed internally and hand registration of MCP endpoints into co-installed MCP clients.
-2. Preferences to  
-    1. Button to copy Server URL to clip-board
-    2. Button for opening Tool-specific property editors
-        1. For example, set the default Db2 Connection to use when running a SQL query.
-    3. ?Option to customize a Tools name/prompt
-3. Set of Built-in Tools and Examples, such as
-    1. Access to Problems
-    2. Access to Consoles
-    3. Access to Editors
 
 ### References
 
