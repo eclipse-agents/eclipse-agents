@@ -178,7 +178,6 @@ Thats all that is required.  Upon startup, MCP servers will start up and serve c
 - [Model Context Protocol](https://www.anthropic.com/news/model-context-protocol)
 - [java sdk](https://github.com/modelcontextprotocol/java-sdk)
 - [mcp-annotations](https://github.com/spring-ai-community/mcp-annotations)
-- [java sdk jar](https://mvnrepository.com/artifact/io.modelcontextprotocol.sdk/mcp/0.8.1)
 
 ### Examples of Agentic IDE Tooling
 
