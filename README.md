@@ -1,7 +1,11 @@
 
 # Eclipse IDE integrations with Coding Agents over ACP and MCP
 
-**NOTE: This code base is a work in progress and is a pre-release.  It is being shared at this time for communication and co-ordination purposes**
+## Scope
+
+Eclipse Agents adds an open-source coding agent chat experience to the Eclipse IDE, built on the [Model Context Protocol (MCP)](https://modelcontextprotocol.io) and [Agent Client Protocol (ACP)](https://agentclientprotocol.com). This is a working prototype with a fair number of rough edges.
+
+## Usage
 
 This feature adds an open-source Coding Agent chat experience to Eclipse, built atop two open protocols:
 
@@ -75,11 +79,15 @@ This feature runs a Model Context Protocol server within the Eclipse IDE VM enab
 
 ![acp code blocks](org.eclipse.agents.docs/images/acpExplain.png)
 
+## Contributing
+
+Contributions are very welcome! Please review [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a pull request.
+
 ## Demonstrations
 
 - [Tool Calls, Permissions, File Changes, Tasks (01/2026)](https://youtu.be/ugOxBeFw6t4?si=FYfOt2TvR1rs_YSW)
 - [HTML and Markdown display, Code Blocks, Resource Links (10/2025)](https://www.youtube.com/watch?v=1G8pt1H27fQ)
-- [Coding Agent developing SQL (09/2026)](https://www.youtube.com/watch?v=z1d67Xzq3UU)
+- [Coding Agent developing SQL (09/2025)](https://www.youtube.com/watch?v=z1d67Xzq3UU)
 - [Claude Conversation with Eclipse MCP: What's wrong with my java project](https://claude.ai/share/31968356-df7e-471b-8fec-3b85868a2376)
 
 ## Installation
@@ -105,3 +113,14 @@ This feature runs a Model Context Protocol server within the Eclipse IDE VM enab
 
 - There is currently a bug with gemini ACP so you'll need to target an older version
 - In preference page Coding Agents > Agent Services > Google Gemini set the Target Version to 0.9.0
+
+## License
+
+If you would like to see the detailed LICENSE click [here](LICENSE).
+
+```text
+#
+# Copyright IBM Corp. 2025 - 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+```
